@@ -55,16 +55,22 @@ Chunk size is in **words** (300 words ≈ 400 tokens, within BGE's 512-token lim
 
 ## 4. Load each chunk size into its own collection
 
+One collection per embedding model and chunk size (a collection is pinned to the model that built it):
+
 ```powershell
+# bge-large (project default model, ~1.3 GB)
+python scripts/load_documents.py --input data/processed/ich_w300.jsonl --collection ich_large_w300 --embedding-model BAAI/bge-large-en-v1.5
+python scripts/load_documents.py --input data/processed/ich_w150.jsonl --collection ich_large_w150 --embedding-model BAAI/bge-large-en-v1.5
+# bge-small (comparison / low-resource laptops)
 python scripts/load_documents.py --input data/processed/ich_w300.jsonl --collection ich_small_w300 --embedding-model BAAI/bge-small-en-v1.5
 python scripts/load_documents.py --input data/processed/ich_w150.jsonl --collection ich_small_w150 --embedding-model BAAI/bge-small-en-v1.5
 ```
 
-To use one of them in the dashboard or the scripts, set in `.env`:
+To use one of them in the dashboard or the scripts, set in `.env` (the default pilot setup):
 
 ```
-M2_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5
-M2_COLLECTION_NAME=ich_small_w300
+M2_EMBEDDING_MODEL=BAAI/bge-large-en-v1.5
+M2_COLLECTION_NAME=ich_large_w300
 ```
 
 and restart `python -m app.api`.
@@ -93,17 +99,24 @@ Write 15–20 questions in `benchmarks/pilot.jsonl`, one per line. For each, ope
 
 ## 7. Run the pilot benchmark
 
+`benchmarks/pilot.jsonl` already contains 20 draft questions (P001–P020) with page labels checked
+against the page text. They are marked `"labelled_by": "Member 2 pilot draft (AI-assisted, not
+expert-verified)"`: review each one against the PDF before relying on the numbers, and add your own.
+
 ```powershell
-python scripts/evaluate_retrieval.py --benchmark benchmarks/pilot.jsonl --configs benchmarks/configs.pilot.json
+pip install -r requirements-eval.txt   # once, for --ragas
+python scripts/evaluate_retrieval.py --benchmark benchmarks/pilot.jsonl --configs benchmarks/configs.pilot.json --ragas
 ```
 
-This compares, on the same questions:
+This compares, on the same questions (all five comparisons from the project brief):
 
 | Config | What it shows |
 |---|---|
-| `small_w300_dense_only` vs `small_w300_reranked` | what the reranker adds |
-| `small_w300_reranked` vs `small_w300_reranked_no_filter` | what the CTD filter adds |
-| `small_w300_reranked` vs `small_w150_reranked` | effect of chunk size |
+| `large_w300_dense_only` vs `large_w300_reranked` | what the reranker adds |
+| `large_w300_reranked` vs `large_w300_reranked_no_filter` | what the CTD filter adds |
+| `large_w300_reranked` vs `large_w150_reranked` | effect of chunk size (300 vs 150 words) |
+| `large_w300_reranked` vs `small_w300_reranked` | bge-large vs bge-small |
+| `small_*` rows | the same comparisons for the low-resource model |
 
 Results are saved in `results\` and appear on the dashboard's Benchmark tab.
 

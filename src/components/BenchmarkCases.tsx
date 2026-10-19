@@ -6,9 +6,15 @@ import { Empty, plural } from './shared'
 
 const emptyForm = { question_id: '', question: '', ctd_section: '3.2.S.4', chunk_ids: '', pages: '', expert_notes: '', labelled_by: '' }
 
-const METRICS = ['recall@5', 'precision@5', 'ndcg@5', 'mrr'] as const
+const METRICS = ['hit@1', 'recall@5', 'recall@10', 'mrr', 'ndcg@10'] as const
+const formatMs = (ms: number) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${Math.round(ms)} ms`)
 
-export default function BenchmarkCases({ canEdit }: { canEdit: boolean }) {
+const RAGAS = [
+  ['non_llm_context_recall', 'Ragas recall'],
+  ['non_llm_context_precision_with_reference', 'Ragas precision'],
+] as const
+
+export default function BenchmarkCases({ canEdit, benchmarkFile }: { canEdit: boolean; benchmarkFile?: string }) {
   const [cases, setCases] = useState<BenchmarkCase[]>([])
   const [results, setResults] = useState<BenchmarkResultFile[]>([])
   const [loading, setLoading] = useState(true)
@@ -78,6 +84,8 @@ export default function BenchmarkCases({ canEdit }: { canEdit: boolean }) {
   }
 
   const latest = results[0]
+  const ragasCols = RAGAS.filter(([key]) => latest?.runs.some(r => typeof r.ragas?.[key] === 'number'))
+  const otherQuestions = latest?.benchmark_file && benchmarkFile && latest.benchmark_file !== benchmarkFile
 
   return (
     <div>
@@ -95,12 +103,25 @@ export default function BenchmarkCases({ canEdit }: { canEdit: boolean }) {
           ) : (
             <>
               <p className="text-muted" style={{ marginBottom: 12 }}>
-                {latest.num_questions} question(s) · {new Date(latest.created_at).toLocaleString()} · benchmark sha256 {latest.benchmark_sha256.slice(0, 12)}
+                {plural(latest.num_questions, 'question')}
+                {latest.benchmark_file && <> from <code>{latest.benchmark_file}</code></>}
+                {' · '}{new Date(latest.created_at).toLocaleString()} · benchmark sha256 {latest.benchmark_sha256.slice(0, 12)}
               </p>
+              {otherQuestions && (
+                <div className="alert alert-info">
+                  These results were produced with <code>{latest.benchmark_file}</code>; the questions listed below are
+                  from <code>{benchmarkFile}</code>.
+                </div>
+              )}
               <div className="table-wrap">
                 <table>
                   <thead>
-                    <tr><th>Configuration</th><th>Passages</th>{METRICS.map(m => <th key={m} className="num">{m}</th>)}<th className="num">p50 latency</th><th>Checks</th></tr>
+                    <tr>
+                      <th>Configuration</th><th>Passages</th>
+                      {METRICS.map(m => <th key={m} className="num">{m}</th>)}
+                      {ragasCols.map(([key, label]) => <th key={key} className="num">{label}</th>)}
+                      <th className="num">p50 latency</th><th>Checks</th>
+                    </tr>
                   </thead>
                   <tbody>
                     {latest.runs.map(r => {
@@ -110,7 +131,10 @@ export default function BenchmarkCases({ canEdit }: { canEdit: boolean }) {
                           <td className="text-mono">{r.name}</td>
                           <td className="num">{r.knowledge_base_size}</td>
                           {METRICS.map(m => <td key={m} className="num">{r.aggregate[m] != null ? r.aggregate[m].toFixed(3) : 'n/a'}</td>)}
-                          <td className="num">{r.latency.p50_ms != null ? `${r.latency.p50_ms} ms` : 'n/a'}</td>
+                          {ragasCols.map(([key]) => (
+                            <td key={key} className="num">{typeof r.ragas?.[key] === 'number' ? r.ragas[key].toFixed(3) : 'n/a'}</td>
+                          ))}
+                          <td className="num">{r.latency.p50_ms != null ? formatMs(r.latency.p50_ms) : 'n/a'}</td>
                           <td>{issues ? <span className="pill pill-yellow">{issues} warning(s)</span> : <span className="pill pill-green">ok</span>}</td>
                         </tr>
                       )
@@ -173,7 +197,7 @@ export default function BenchmarkCases({ canEdit }: { canEdit: boolean }) {
       <div className="card">
         <div className="card-header">
           <span className="card-title">Benchmark questions ({cases.length})</span>
-          <span className="text-muted">Stored in member2-rag/benchmarks/benchmark.jsonl</span>
+          <span className="text-muted">Stored in member2-rag/benchmarks/{benchmarkFile ?? 'benchmark.jsonl'} (set by M2_BENCHMARK_FILE)</span>
         </div>
         {loading ? <div className="empty"><span className="spinner" /></div> : cases.length === 0 ? (
           <Empty title="No benchmark questions yet">Member 5 adds expert-labelled questions here or in the JSONL file.</Empty>

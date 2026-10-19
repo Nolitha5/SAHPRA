@@ -65,6 +65,21 @@ def test_shipped_benchmark_template_is_valid():
     assert all(i.relevant_chunk_ids and i.relevant_pages for i in items)
 
 
+def test_pilot_benchmark_and_configs_are_valid():
+    from pathlib import Path
+
+    from app.evaluation.benchmark import RunConfig
+
+    root = Path(__file__).parent.parent / "benchmarks"
+    items = load_benchmark(root / "pilot.jsonl")
+    assert len(items) >= 15 and all(i.relevant_pages for i in items)
+    # Drafted labels must say so until an expert has reviewed them.
+    assert all("not expert-verified" in (i.labelled_by or "") for i in items)
+    configs = [RunConfig(**c) for c in json.loads((root / "configs.pilot.json").read_text(encoding="utf-8"))]
+    assert all(c.relevance_level == "page" for c in configs)  # page labels work for every chunk size
+    assert {c.embedding_model for c in configs} == {"BAAI/bge-large-en-v1.5", "BAAI/bge-small-en-v1.5"}
+
+
 def _bench_file(tmp_path):
     rows = [
         {"question_id": "Q1", "question": "validation of analytical procedures", "ctd_section": "3.2.S.4.3",
@@ -114,3 +129,30 @@ def test_ragas_rows(service):
     rows = build_ragas_rows(service, items, {"Q1": ["ctx"]})
     assert rows[0]["retrieved_contexts"] == ["ctx"]
     assert "validation" in rows[0]["reference_contexts"][0]
+
+
+def test_ragas_rows_from_page_labels(service):
+    from app.evaluation.benchmark import PageRef
+
+    page_item = BenchmarkItem(question_id="Q2", question="q", ctd_section="3.2.S.4",
+                              relevant_pages=[PageRef(source_identifier="SYNTH-GL-A", page_number=2)])
+    rows = build_ragas_rows(service, [page_item], {"Q2": ["ctx"]})
+    assert rows and any("validation" in t for t in rows[0]["reference_contexts"])
+    missing = BenchmarkItem(question_id="Q3", question="q", ctd_section="3.2.S.4",
+                            relevant_pages=[PageRef(source_identifier="SYNTH-GL-A", page_number=999)])
+    assert build_ragas_rows(service, [missing], {"Q3": ["ctx"]}) == []
+
+
+def test_evaluate_non_llm_runs_real_ragas():
+    pytest.importorskip("ragas")
+    from app.evaluation.ragas_eval import evaluate_non_llm
+
+    ref = "Validation covers specificity, accuracy and precision."
+    other = "unrelated text about packaging"
+    scores = evaluate_non_llm([
+        {"user_input": "q1", "retrieved_contexts": [ref, other], "reference_contexts": [ref]},
+        {"user_input": "q2", "retrieved_contexts": [other], "reference_contexts": [ref]},
+    ])
+    assert scores["ragas_samples"] == 2
+    assert 0 < scores["non_llm_context_recall"] < 1  # one hit, one miss
+    assert evaluate_non_llm([]) == {"ragas_samples": 0}

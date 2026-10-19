@@ -52,6 +52,7 @@ def test_health(client):
     assert data["knowledge_base_size"] == 5
     assert data["editing_enabled"] is True
     assert data["reranker_model"]
+    assert data["benchmark_file"].endswith(".jsonl")
 
 
 def test_list_and_filter_passages(client):
@@ -178,8 +179,10 @@ def test_benchmark_results_listing(client, tmp_path):
     results.mkdir()
     (results / "retrieval_benchmark_20261014T100000Z.json").write_text(json.dumps({
         "created_at": "2026-10-14T10:00:00Z", "num_questions": 3, "benchmark_sha256": "abc",
+        "benchmark_file": "C:\\somewhere\\benchmarks\\pilot.jsonl",
         "runs": [{"config": {"name": "large_reranked"}, "knowledge_base_size": 8,
                   "aggregate": {"mrr": 0.5}, "latency": {"p50_ms": 12}}]}))
     (results / "retrieval_benchmark_broken.json").write_text("{not json")
     data = client.get("/api/benchmark/results").json()
     assert len(data) == 1 and data[0]["runs"][0]["name"] == "large_reranked"
+    assert data[0]["benchmark_file"] == "pilot.jsonl"  # file name only, never a local path

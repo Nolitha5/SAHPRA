@@ -184,6 +184,7 @@ export interface BenchmarkRunSummary {
 
 export interface BenchmarkResultFile {
   file: string
+  benchmark_file: string | null
   created_at: string
   num_questions: number
   benchmark_sha256: string
@@ -200,6 +201,7 @@ export interface Health {
   candidate_k: number
   final_k: number
   editing_enabled: boolean
+  benchmark_file: string
 }
 
 export interface ImportReport {

@@ -23,13 +23,13 @@ and returned as structured findings with full citations.**
 | Responsibility (from the delegation sheet)          | Where it lives                                   | Status |
 |------------------------------------------------------|--------------------------------------------------|--------|
 | Build and load the knowledge base (ChromaDB + metadata) | `app/knowledge_base/`, `scripts/load_documents.py` | Done, tested |
-| Embeddings with bge-large-en-v1.5                    | `app/embeddings/bge_embeddings.py`               | Done (wrapper tested; real model needs download) |
-| Reranking with bge-reranker                          | `app/retrieval/reranker.py`                      | Done (wrapper tested; real model needs download) |
+| Embeddings with bge-large-en-v1.5                    | `app/embeddings/bge_embeddings.py`               | Done, tested with the real model (integration tests) |
+| Reranking with bge-reranker                          | `app/retrieval/reranker.py`                      | Done, tested with the real model (integration tests) |
 | One shared retrieval service for the whole team      | `app/retrieval/retrieval_service.py`             | Done, tested |
 | Evidence/RERA agent (citations, "insufficient evidence") | `app/agents/evidence_rera.py`                 | Done, tested |
 | S.4 Control agent (specs, limits, methods, validation, batches) | `app/agents/s4_control.py`, `spec_comparison.py` | Done, tested |
-| Benchmark embeddings, chunk sizes, reranking         | `app/evaluation/`, `scripts/evaluate_retrieval.py` | Code done; **no real results yet** (needs real documents + expert labels) |
-| Ragas evaluation                                     | `app/evaluation/ragas_eval.py`                   | Done (non-LLM metrics) |
+| Benchmark embeddings, chunk sizes, reranking         | `app/evaluation/`, `scripts/evaluate_retrieval.py` | Done; **pilot results** on 4 ICH guidelines with draft labels (section 13). Final results need Member 3's corpus + Member 5's expert labels |
+| Ragas evaluation                                     | `app/evaluation/ragas_eval.py`                   | Done, run in the pilot (non-LLM metrics; chunk- or page-level labels) |
 
 ## 3. Architecture
 
@@ -413,9 +413,40 @@ missing from the index, and questions that appear word-for-word inside indexed p
 | LLMContextRecall / LLMContextPrecisionWithReference | + reference answer, + an LLM judge | ❌ Member 4's harness |
 | Faithfulness, ResponseRelevancy | + a generated response | ❌ my agents do not generate free text |
 
-**No benchmark results are reported in this README**, because no real documents or expert labels exist
-yet. The pipeline was verified end-to-end only with synthetic data and tiny random test models, whose
-numbers are meaningless.
+### Pilot results (2026-10-19)
+
+These are **pilot results**, not the project's final evaluation: 4 public ICH guidelines (Q6A, Q2(R2),
+Q3A(R2), Q11) converted by the temporary converter, and 20 questions (`benchmarks/pilot.jsonl`) labelled
+at page level by Member 2 with AI assistance, checked against the page text but **not expert-verified**.
+
+Setup: CPU only, `candidate_k=20`, `final_k=10`, reranker `BAAI/bge-reranker-base`, page-level relevance,
+benchmark SHA-256 `e330d323b971…`. Command:
+`python scripts/evaluate_retrieval.py --benchmark benchmarks/pilot.jsonl --configs benchmarks/configs.pilot.json --ragas`
+
+| Configuration | Hit@1 | Recall@5 | Recall@10 | MRR | nDCG@10 | p50 latency | Ragas ctx recall | Ragas ctx precision |
+|---|---|---|---|---|---|---|---|---|
+| bge-large, 300 words, dense only | 0.80 | 0.95 | 0.95 | 0.88 | 0.883 | 0.1 s | 0.787 | 0.803 |
+| **bge-large, 300 words, reranked** (main) | 0.80 | 0.93 | 0.95 | 0.88 | 0.876 | 5.9 s | 0.800 | 0.788 |
+| bge-large, 300 words, reranked, no CTD filter | 0.80 | 0.95 | 1.00 | 0.90 | 0.904 | 5.4 s | 0.812 | 0.821 |
+| bge-large, 150 words, reranked | 0.70 | 0.90 | 0.95 | 0.80 | 0.830 | 3.6 s | 0.580 | 0.674 |
+| bge-small, 300 words, dense only | 0.85 | 0.90 | 0.95 | 0.87 | 0.875 | 0.03 s | 0.750 | 0.789 |
+| bge-small, 300 words, reranked | 0.80 | 0.93 | 0.95 | 0.88 | 0.874 | 4.8 s | 0.787 | 0.780 |
+| bge-small, 150 words, reranked | 0.70 | 0.90 | 0.95 | 0.80 | 0.827 | 2.6 s | 0.560 | 0.677 |
+
+What can and cannot be concluded:
+
+* **With 20 questions, one question changes a score by 0.05.** Most differences above are within one or two
+  questions, so no configuration is shown to be better. A larger, expert-labelled set is needed.
+* Every configuration found a labelled page in the top 10 for 19 or 20 of 20 questions.
+* **Reranking** did not measurably improve ranking on this set, and adds about 5 seconds per query on CPU.
+* **150-word chunks** ranked the first relevant page lower (MRR 0.80 vs 0.88). Their lower Ragas recall is
+  partly an artefact: each labelled page is split into more chunks, all of which count as references.
+* **CTD filter:** the one question missed with the filter (P008, impurity listing in a specification, asked
+  for 3.2.S.4.1) is on ICH Q3A, which is tagged 3.2.S.3, so the filter excluded it. See Limitations.
+* Data-leakage checks: no question appears word-for-word in the index; no labels point to missing passages.
+
+The full per-question output is in `results/retrieval_benchmark_<UTC time>.json` (git-ignored; regenerate
+with the command above).
 
 ## 14. Integrating with the team
 
@@ -468,11 +499,19 @@ shared_retrieval = m2.retrieval                   # .retrieve(query, filters, ca
 
 ## 15. Limitations and future improvements
 
-* **No real regulatory corpus or results yet.** Real SAHPRA/ICH/WHO/pharmacopoeia passages must come from
+* **Pilot corpus only.** The knowledge base holds 4 public ICH guidelines (Q6A, Q2(R2), Q3A(R2), Q11)
+  converted by the temporary PDF converter. SAHPRA, WHO and pharmacopoeia passages must come from
   Member 3 (respecting each source's licence; pharmacopoeias are usually not freely redistributable).
-* **Real models not run in my build environment** (Hugging Face was not reachable there). The BGE wrapper
-  code was checked against the installed sentence-transformers 6.1.0 API with tiny local test models;
-  the 2 integration tests must be run on a machine with internet access.
+  Image-only pages (e.g. the Q6A decision trees, pages 26–35) have no text until OCR is added.
+* **Pilot labels are drafts.** The 20 pilot questions were labelled at page level by Member 2 with AI
+  assistance and checked against the page text, but not by a domain expert.
+* **One CTD section per passage.** A passage carries a single `ctd_section`. A guideline tagged with one
+  section (e.g. ICH Q3A as 3.2.S.3) is hidden by a filter for another section where it is also relevant
+  (Q3A's impurity-listing rules matter for 3.2.S.4.1). The pilot shows this (question P008). Mitigations:
+  per-page tags in the converter manifest (`page_sections`), searching without the filter, or multi-section
+  tags from Member 3.
+* **CPU latency.** With the reranker, a query takes several seconds on CPU (section 13). A GPU
+  (`M2_DEVICE=cuda`) or a smaller `M2_CANDIDATE_K` reduces this.
 * Relevance thresholds are uncalibrated heuristics.
 * Conflict detection uses **metadata only** (same document, different versions). Detecting two *different*
   documents that disagree in content needs NLP (e.g. an NLI model) — future work with Member 5.

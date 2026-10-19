@@ -46,56 +46,62 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="header">
-        <div className="header-logo">
+      <aside className="sidebar">
+        <div className="sidebar-brand">
           <span className="badge">M2</span>
-          <h1>Agentic QA-RAG · Member 2</h1>
+          <div>
+            <h1>Agentic QA-RAG · Member 2</h1>
+            <div className="sidebar-sub">Retrieval &amp; Knowledge Base · SAHPRA Module 3.2.S</div>
+          </div>
         </div>
-        <span className="header-sub">Retrieval &amp; Knowledge Base · SAHPRA Module 3.2.S</span>
-      </header>
 
-      <div className="statusbar">
-        {health ? (
-          <>
-            <span className="pill pill-green">Server connected</span>
-            <span><b>{health.knowledge_base_size}</b> passages in <code>{health.collection}</code></span>
-            <span className="text-muted hide-sm">Embeddings: <code>{health.embedding_model}</code></span>
-            <span className="text-muted hide-sm">Reranker: <code>{health.reranker_model ?? 'off'}</code></span>
-          </>
-        ) : (
-          <span className="pill pill-red">{healthError || 'Connecting…'}</span>
-        )}
-        <span className="statusbar-spacer" />
-        {health && !health.editing_enabled && <span className="pill pill-gray">Read-only (no editor token set on server)</span>}
-        {health?.editing_enabled && (
-          showToken ? (
-            <form className="row-actions" onSubmit={e => { e.preventDefault(); saveToken((e.currentTarget.elements.namedItem('token') as HTMLInputElement).value) }}>
-              <input id="editor-token" name="token" type="password" placeholder="Editor token" defaultValue={token} autoComplete="off" style={{ width: 200 }} />
-              <button className="btn btn-primary" type="submit">Save</button>
-              <button className="btn btn-ghost" type="button" onClick={() => setShowToken(false)}>Cancel</button>
-            </form>
-          ) : (
-            <button className="btn btn-ghost" onClick={() => setShowToken(true)}>
-              {token ? 'Editing unlocked · change token' : 'Unlock editing'}
+        <nav className="sidebar-nav" role="tablist" aria-orientation="vertical" aria-label="Sections">
+          {TABS.map(t => (
+            <button key={t.id} role="tab" aria-selected={tab === t.id}
+              className={`nav-btn ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id)}>
+              {t.label}
             </button>
-          )
-        )}
-      </div>
+          ))}
+        </nav>
 
-      <nav className="tabs" role="tablist">
-        {TABS.map(t => (
-          <button key={t.id} role="tab" aria-selected={tab === t.id}
-            className={`tab-btn ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id)}>
-            {t.label}
-          </button>
-        ))}
-      </nav>
+        <div className="sidebar-status">
+          {health ? (
+            <>
+              <span className="pill pill-green">Server connected</span>
+              <div><b>{health.knowledge_base_size}</b> passages in <code>{health.collection}</code></div>
+              <div className="text-muted hide-sm">Embeddings<br /><code>{health.embedding_model}</code></div>
+              <div className="text-muted hide-sm">Reranker<br /><code>{health.reranker_model ?? 'off'}</code></div>
+            </>
+          ) : (
+            <span className="pill pill-red">{healthError || 'Connecting…'}</span>
+          )}
+        </div>
+
+        <div className="sidebar-edit">
+          {health && !health.editing_enabled && <span className="pill pill-gray">Read-only (no editor token set on server)</span>}
+          {health?.editing_enabled && (
+            showToken ? (
+              <form className="token-form" onSubmit={e => { e.preventDefault(); saveToken((e.currentTarget.elements.namedItem('token') as HTMLInputElement).value) }}>
+                <input id="editor-token" name="token" type="password" placeholder="Editor token" defaultValue={token} autoComplete="off" />
+                <div className="row-actions">
+                  <button className="btn btn-primary" type="submit">Save</button>
+                  <button className="btn btn-ghost" type="button" onClick={() => setShowToken(false)}>Cancel</button>
+                </div>
+              </form>
+            ) : (
+              <button className="btn btn-ghost btn-block" onClick={() => setShowToken(true)}>
+                {token ? 'Editing unlocked · change token' : 'Unlock editing'}
+              </button>
+            )
+          )}
+        </div>
+      </aside>
 
       <main className="main">
         {tab === 'kb' && <KnowledgeBase canEdit={canEdit} onChanged={refreshHealth} />}
         {tab === 'search' && <SearchPanel />}
         {tab === 'agents' && <Findings />}
-        {tab === 'bench' && <BenchmarkCases canEdit={canEdit} />}
+        {tab === 'bench' && <BenchmarkCases canEdit={canEdit} benchmarkFile={health?.benchmark_file} />}
         {tab === 'arch' && <ArchitecturePage />}
       </main>
     </div>

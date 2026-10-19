@@ -18,7 +18,9 @@ which need only the expert-labelled reference passages - no API keys, no
 external LLM, fully reproducible.
 
 Reference contexts are the texts of the labelled relevant chunks, fetched from
-the knowledge base by chunk ID (chunk-level labels only).
+the knowledge base by chunk ID. For page-level labels (used to compare chunk
+sizes fairly) they are all chunks stored for the labelled pages, so each
+configuration is judged against its own chunking of the same pages.
 """
 
 from __future__ import annotations
@@ -38,12 +40,14 @@ def build_ragas_rows(
     items: Sequence[BenchmarkItem],
     contexts_by_question: dict[str, list[str]],
 ) -> list[dict]:
-    """Rows in Ragas' SingleTurnSample format (skips items without chunk labels)."""
+    """Rows in Ragas' SingleTurnSample format (skips items whose labels match nothing stored)."""
     rows = []
     for item in items:
-        if item.question_id not in contexts_by_question or not item.relevant_chunk_ids:
+        if item.question_id not in contexts_by_question:
             continue
         refs = [p.text for p in service.store.get(item.relevant_chunk_ids)]
+        if not refs:
+            refs = _page_texts(service, item)
         if not refs:
             continue
         row = {
@@ -57,10 +61,21 @@ def build_ragas_rows(
     return rows
 
 
+def _page_texts(service: RetrievalService, item: BenchmarkItem) -> list[str]:
+    """Texts of every stored chunk on the item's labelled pages."""
+    texts: list[str] = []
+    for ref in item.relevant_pages:
+        where = {"$and": [{"source_identifier": ref.source_identifier}, {"page_number": ref.page_number}]}
+        _, passages = service.store.list_passages(where, limit=200)
+        texts.extend(p.text for p in passages)
+    return texts
+
+
 def evaluate_non_llm(rows: list[dict]) -> dict[str, float]:
     """Run Ragas' non-LLM context metrics; returns mean scores."""
     if not rows:
-        return {}
+        # Say so explicitly: an empty dict would look like Ragas silently failed.
+        return {"ragas_samples": 0}
     try:
         from ragas import EvaluationDataset, SingleTurnSample, evaluate
         from ragas.metrics import NonLLMContextPrecisionWithReference, NonLLMContextRecall

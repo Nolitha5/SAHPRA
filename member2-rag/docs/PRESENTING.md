@@ -54,8 +54,16 @@ Three direct calls do not need a framework; avoiding it keeps the dependency lis
 visible and testable.
 
 **What results do you have?**
-Honest answer: the pipeline and 139 tests are complete; real benchmark numbers need Member 3's processed
-documents and Member 5's expert-labelled questions. Nothing has been reported that was not measured.
+Honest answer: the pipeline and its tests are complete, and I ran a **pilot benchmark** on 4 public ICH
+guidelines with 20 questions I labelled at page level (not expert-verified). Every configuration found a
+relevant page in the top 10 for 19 or 20 of the 20 questions (README section 13). With only 20 questions the
+differences between configurations are within one or two questions, so I do not claim that one is better.
+The final numbers need Member 3's full corpus and Member 5's expert labels. Nothing has been reported
+that was not measured.
+
+**Did the reranker help?**
+Not measurably on the pilot set, and it costs about 5 seconds per query on CPU. It stays switchable
+(`M2_RERANKER_ENABLED`), and the decision should be made on the expert benchmark.
 
 **How do you protect confidential sponsor data?**
 Sponsor evidence is kept separate, never logged (logs hold only a short fingerprint), hidden from object

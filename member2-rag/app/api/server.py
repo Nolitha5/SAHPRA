@@ -21,7 +21,7 @@ from __future__ import annotations
 import hmac
 import json
 import threading
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
@@ -156,6 +156,7 @@ def create_app(
             "candidate_k": settings.candidate_k,
             "final_k": settings.final_k,
             "editing_enabled": bool(settings.admin_token),
+            "benchmark_file": settings.benchmark_file.name,
         }
 
     # -- passages ---------------------------------------------------------
@@ -279,6 +280,8 @@ def create_app(
                 continue
             out.append({
                 "file": path.name,
+                # File name only (never a local path); PureWindowsPath splits on both / and \.
+                "benchmark_file": PureWindowsPath(data.get("benchmark_file") or "").name or None,
                 "created_at": data.get("created_at"),
                 "num_questions": data.get("num_questions"),
                 "benchmark_sha256": data.get("benchmark_sha256"),
