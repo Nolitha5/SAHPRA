@@ -1,0 +1,46 @@
+# --- Secrets and local configuration ---
+.env
+.env.*
+!.env.example
+
+# --- Local vector database (never commit) ---
+data/chroma/*
+!data/chroma/.gitkeep
+
+# --- Processed passages and source documents (licensing / confidentiality) ---
+data/processed/*
+!data/processed/.gitkeep
+data/raw/
+*.pdf
+*.docx
+
+# --- Sponsor dossiers and any private data ---
+sponsor/
+dossiers/
+private/
+*confidential*
+
+# --- Benchmark results (regenerate locally; share deliberately) ---
+results/*
+!results/.gitkeep
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+*.egg-info/
+.coverage
+htmlcov/
+
+# --- Model caches ---
+.cache/
+hf-cache/
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

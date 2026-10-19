@@ -1,0 +1,15 @@
+# Dashboard
+node_modules/
+dist/
+.vite/
+
+# Secrets and local settings
+.env
+.env.*
+!.env.example
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

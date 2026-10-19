@@ -1,0 +1,19 @@
+target-version = "py312"
+line-length = 120
+extend-exclude = [".venv", "data", "results"]
+
+[lint]
+# pycodestyle, pyflakes, import order, bugbear, pyupgrade, simplify, ruff-specific
+select = ["E", "W", "F", "I", "B", "UP", "SIM", "RUF"]
+ignore = [
+    "RUF001", "RUF002", "RUF003",  # intentional Unicode (µ, ≤, ×, …) in units and messages
+    "UP042",  # (str, Enum) -> StrEnum changes str() output, which the API and logs rely on
+]
+
+[lint.per-file-ignores]
+# scripts/ and tests/ put the project root on sys.path before importing app.*
+"scripts/*" = ["E402"]
+"tests/*" = ["E402"]
+
+[lint.isort]
+known-first-party = ["app", "tests"]

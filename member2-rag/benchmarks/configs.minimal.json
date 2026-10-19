@@ -1,0 +1,23 @@
+[
+  {
+    "name": "large_dense_only",
+    "collection_name": "regulatory_kb",
+    "embedding_model": "BAAI/bge-large-en-v1.5",
+    "use_reranker": false,
+    "use_section_filter": true,
+    "candidate_k": 20,
+    "final_k": 10,
+    "relevance_level": "chunk"
+  },
+  {
+    "name": "large_reranked",
+    "collection_name": "regulatory_kb",
+    "embedding_model": "BAAI/bge-large-en-v1.5",
+    "use_reranker": true,
+    "reranker_model": "BAAI/bge-reranker-base",
+    "use_section_filter": true,
+    "candidate_k": 20,
+    "final_k": 10,
+    "relevance_level": "chunk"
+  }
+]

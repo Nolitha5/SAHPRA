@@ -1,0 +1,70 @@
+{
+  "ctd_section": "3.2.S.4.4",
+  "assessment_question": "Are batch results consistent with the stated specification, and what regulatory guidance applies to batch analyses?",
+  "sponsor_evidence": [
+    {
+      "evidence_id": "SPONSOR-S441-T1",
+      "ctd_section": "3.2.S.4.4",
+      "description": "Batch analysis table (example values)",
+      "document_reference": "3.2.S.4.4 Table 1",
+      "content": "EXAMPLE ONLY - replace with dossier extract"
+    }
+  ],
+  "parameters": {
+    "topic": "batch_analyses",
+    "specification": [
+      {
+        "test_name": "Impurity X",
+        "lower_limit": null,
+        "upper_limit": "0.15",
+        "unit": "%",
+        "criterion_text": "NMT 0.15%"
+      },
+      {
+        "test_name": "Assay",
+        "lower_limit": "98.0",
+        "upper_limit": "102.0",
+        "unit": "% w/w",
+        "criterion_text": "98.0 - 102.0 % w/w"
+      },
+      {
+        "test_name": "Residual solvent Y",
+        "upper_limit": "500",
+        "unit": "ppm",
+        "criterion_text": "NMT 500 ppm"
+      }
+    ],
+    "batch_results": [
+      {
+        "batch_id": "EX-001",
+        "test_name": "Impurity X",
+        "reported_value": "0.08",
+        "unit": "%"
+      },
+      {
+        "batch_id": "EX-001",
+        "test_name": "Assay",
+        "reported_value": "99.6",
+        "unit": "% w/w"
+      },
+      {
+        "batch_id": "EX-001",
+        "test_name": "Residual solvent Y",
+        "reported_value": "<50",
+        "unit": "ppm"
+      },
+      {
+        "batch_id": "EX-002",
+        "test_name": "Impurity X",
+        "reported_value": "ND",
+        "unit": "%"
+      },
+      {
+        "batch_id": "EX-002",
+        "test_name": "Assay",
+        "reported_value": "101.96",
+        "unit": "% w/w"
+      }
+    ]
+  }
+}

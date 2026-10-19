@@ -1,0 +1,29 @@
+# Member 2 - Retrieval & Knowledge Base (RAG)
+# Tested together on Python 3.13 (Linux) on 2026-10-13. Recommended: Python 3.12 or 3.13.
+#
+# Install PyTorch FIRST if you only have a CPU (much smaller download):
+#   pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
+# Then:
+#   pip install -r requirements.txt
+
+chromadb==1.5.9
+sentence-transformers==6.1.0
+transformers==5.19.0
+torch==2.14.1
+pydantic==2.13.5
+python-dotenv==1.2.3
+pypdf==5.9.0          # temporary PDF converter (scripts/pdf_to_jsonl.py)
+numpy>=1.26,<3
+
+# Web API for the dashboard (FastAPI is built on Pydantic, already in the stack)
+fastapi==0.143.0
+uvicorn==0.53.0
+
+# Testing
+pytest==9.1.1
+reportlab==5.0.1      # tests only: builds small PDFs for the converter tests
+httpx==0.28.1
+
+# Not used on purpose: LangChain / LlamaIndex. The pipeline is a few direct
+# calls (embed -> ChromaDB -> cross-encoder), so a framework would add
+# dependencies without adding capability. See README "Design decisions".
