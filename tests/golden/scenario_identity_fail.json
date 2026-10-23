@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "scenario": "identity_fail",
+    "description": "Sponsor declares drug substance as Ethanol but supplies an incorrect CAS number (50-00-0 = Formaldehyde). The upstream agent has already identified this discrepancy and written it into the finding's rationale. The QA/Critic's role is to check whether the finding is structurally sound (citation present, score in range, rationale consistent with evidence). Because this finding IS well-formed — the rationale correctly and consistently describes the CAS mismatch, the citation is present, and the score is valid — QA/Critic returns PASS. The identity failure is visible to the assessor through the rationale and evidence fields. A PASS from QA/Critic means 'this finding is fit for assessor review', not 'the substance is compliant'.",
+    "version": "1.1",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-002",
+        "ctd_section": "3.2.S.1",
+        "rationale": "The declared CAS number 50-00-0 does not match the declared INN 'Ethanol'. CAS 50-00-0 refers to Formaldehyde, not Ethanol.",
+        "evidence_snippet": "Sponsor declares drug substance as Ethanol, CAS 50-00-0.",
+        "citation": "British Pharmacopoeia 2023, Ethanol monograph, p. 812",
+        "uncertainty_score": 5,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-002",
+        "qa_status": "PASS",
+        "note": "QA PASS = finding is structurally valid and ready for assessor review. The identity failure (CAS mismatch) is the regulatory concern captured in rationale; it is not a QA structural defect. The assessor will see the full rationale and evidence and must decide."
+      }
+    ],
+    "section_escalations": []
+  }
+}

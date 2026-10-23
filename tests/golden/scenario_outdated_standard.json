@@ -1,0 +1,46 @@
+{
+  "_meta": {
+    "scenario": "outdated_standard",
+    "description": "Sponsor claims BP 2019 for a submission made in March 2024. The current edition at that date was BP 2024. The S.5 agent must return NON_COMPLIANT. The QA/Critic receives the resulting finding; because the citation is present and the rationale is consistent with the evidence, it should PASS QA.",
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "s5_claim": {
+      "substance_name": "Ethanol",
+      "standard": "BP",
+      "edition_claimed": "BP 2019",
+      "test_method": "Purity by GC",
+      "submission_date": "2024-03-01"
+    },
+    "findings": [
+      {
+        "finding_id": "F-003",
+        "ctd_section": "3.2.S.5",
+        "rationale": "Sponsor claims compliance with BP 2019 edition. The current edition at submission date (2024-03-01) was BP 2024. Editions differ.",
+        "evidence_snippet": "Certificate of analysis references BP 2019 for purity test method.",
+        "citation": "Ethanol, BP 2024, p. 856",
+        "uncertainty_score": 20,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "s5_finding": {
+      "verdict": "NON_COMPLIANT",
+      "edition_current": "BP 2024",
+      "edition_claimed": "BP 2019"
+    },
+    "findings": [
+      {
+        "finding_id": "F-003",
+        "qa_status": "PASS",
+        "note": "Citation present, score in range, rationale consistent with evidence — QA passes. Regulatory concern (outdated edition) is captured in s5_finding.verdict."
+      }
+    ],
+    "section_escalations": []
+  }
+}

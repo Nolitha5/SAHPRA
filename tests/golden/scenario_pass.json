@@ -1,0 +1,56 @@
+{
+  "_meta": {
+    "scenario": "pass",
+    "description": "All findings are structurally valid: citations present, scores in range, rationales consistent with evidence. QA/Critic must assign PASS to every finding. No escalation should occur.",
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-001",
+        "ctd_section": "3.2.S.1",
+        "rationale": "The declared CAS number 64-17-5 matches the INN Ethanol and is consistent with the evidence provided.",
+        "evidence_snippet": "Sponsor declares drug substance as Ethanol, CAS 64-17-5, BP grade.",
+        "citation": "British Pharmacopoeia 2024, Ethanol monograph, p. 856",
+        "uncertainty_score": 10,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      },
+      {
+        "finding_id": "F-005",
+        "ctd_section": "3.2.S.3",
+        "rationale": "Particle size distribution meets specification.",
+        "evidence_snippet": "D90 value of 45 µm reported; specification states ≤ 50 µm.",
+        "citation": "In-house analytical method AM-045, version 3",
+        "uncertainty_score": 15,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      },
+      {
+        "finding_id": "F-006",
+        "ctd_section": "3.2.S.4",
+        "rationale": "Microbiological limits comply with ICH Q6A for a non-sterile drug substance.",
+        "evidence_snippet": "Total aerobic microbial count (TAMC) reported as < 10 CFU/g; ICH Q6A limit is ≤ 10³ CFU/g.",
+        "citation": "ICH Q6A Specifications: Test Procedures and Acceptance Criteria, section 3.2",
+        "uncertainty_score": 5,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      { "finding_id": "F-001", "qa_status": "PASS" },
+      { "finding_id": "F-005", "qa_status": "PASS" },
+      { "finding_id": "F-006", "qa_status": "PASS" }
+    ],
+    "section_escalations": []
+  }
+}
