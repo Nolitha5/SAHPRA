@@ -13,6 +13,7 @@ torch==2.14.1
 pydantic==2.13.5
 python-dotenv==1.2.3
 pypdf==5.9.0          # temporary PDF converter (scripts/pdf_to_jsonl.py)
+cryptography==50.0.2  # lets pypdf open owner-password PDFs (e.g. SAHPRA guidelines)
 numpy>=1.26,<3
 
 # Web API for the dashboard (FastAPI is built on Pydantic, already in the stack)

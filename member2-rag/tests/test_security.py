@@ -32,5 +32,5 @@ def test_agents_do_not_log_question_or_sponsor_content(service, caplog):
         EvidenceReraAgent(service).assess(question, "3.2.S.4.4", sponsor_evidence=sponsor)
         S4ControlAgent(service).assess(question, "batch_analyses", sponsor_evidence=sponsor)
     logged = " ".join(f"{r.getMessage()} {getattr(r, 'fields', '')}" for r in caplog.records)
-    assert caplog.records  # something was logged
+    assert caplog.records
     assert "QX-77" not in logged and "LOT-SECRET" not in logged

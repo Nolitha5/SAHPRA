@@ -4,7 +4,6 @@ Examples (from the member2-rag folder):
     python scripts/evaluate_retrieval.py --benchmark benchmarks/benchmark.jsonl \
         --configs benchmarks/configs.json --output-dir results
 
-    # also compute Ragas non-LLM context metrics (needs requirements-eval.txt)
     python scripts/evaluate_retrieval.py --benchmark benchmarks/benchmark.jsonl \
         --configs benchmarks/configs.json --ragas
 

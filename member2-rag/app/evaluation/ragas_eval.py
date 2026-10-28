@@ -74,7 +74,7 @@ def _page_texts(service: RetrievalService, item: BenchmarkItem) -> list[str]:
 def evaluate_non_llm(rows: list[dict]) -> dict[str, float]:
     """Run Ragas' non-LLM context metrics; returns mean scores."""
     if not rows:
-        # Say so explicitly: an empty dict would look like Ragas silently failed.
+
         return {"ragas_samples": 0}
     try:
         from ragas import EvaluationDataset, SingleTurnSample, evaluate

@@ -105,7 +105,7 @@ def parse_records(lines: Iterable[str]) -> LoadResult:
             continue
         try:
             record = PassageRecord(**obj)
-            record.to_metadata()  # full metadata validation (CTD format, dates, ...)
+            record.to_metadata()
         except ValidationError as exc:
             cid = obj.get("chunk_id") if isinstance(obj.get("chunk_id"), str) else None
             result.errors.append(RecordError(line_number, cid, _describe_validation_error(exc)))
@@ -145,7 +145,7 @@ def load_jsonl(path: Path | str) -> LoadResult:
         raise InputFileError(f"Input file not found: {path}")
     if path.suffix.lower() not in {".jsonl", ".ndjson"}:
         raise InputFileError(f"Expected a .jsonl file, got: {path.name}")
-    with path.open("r", encoding="utf-8-sig") as handle:  # tolerate Windows BOM
+    with path.open("r", encoding="utf-8-sig") as handle:
         result = parse_records(handle)
     if result.lines_read == 0:
         raise InputFileError(f"Input file is empty: {path}")

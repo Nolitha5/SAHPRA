@@ -23,14 +23,27 @@ export default function App() {
   const [healthError, setHealthError] = useState('')
   const [token, setToken] = useState(getEditorToken())
   const [showToken, setShowToken] = useState(false)
+  const [sidebarStats, setSidebarStats] = useState({ total: 0, sources: 0, sections: 0 })
 
+  // Also called after imports/deletes (onChanged), so the sidebar stats stay current.
   const refreshHealth = useCallback(async () => {
     try {
-      setHealth(await api.health())
+      const nextHealth = await api.health()
+      setHealth(nextHealth)
       setHealthError('')
     } catch (e) {
       setHealth(null)
       setHealthError((e as Error).message)
+    }
+    try {
+      const [page, facets] = await Promise.all([api.passages({ limit: 1, offset: 0 }), api.facets()])
+      setSidebarStats({
+        total: page.total,
+        sources: Object.keys(facets.issuing_organization ?? {}).length,
+        sections: Object.keys(facets.ctd_section ?? {}).length,
+      })
+    } catch {
+      setSidebarStats({ total: 0, sources: 0, sections: 0 })
     }
   }, [])
 
@@ -51,7 +64,7 @@ export default function App() {
           <span className="badge">M2</span>
           <div>
             <h1>Agentic QA-RAG · Member 2</h1>
-            <div className="sidebar-sub">Retrieval &amp; Knowledge Base · SAHPRA Module 3.2.S</div>
+            <div className="sidebar-sub">Retrieval &amp; Knowledge Base</div>
           </div>
         </div>
 
@@ -64,13 +77,26 @@ export default function App() {
           ))}
         </nav>
 
+        <div className="sidebar-stats" aria-label="Knowledge base summary">
+          <div className="sidebar-stat">
+            <span className="sidebar-stat-label">Passages</span>
+            <strong>{sidebarStats.total || health?.knowledge_base_size || 0}</strong>
+          </div>
+          <div className="sidebar-stat">
+            <span className="sidebar-stat-label">Issuers</span>
+            <strong>{sidebarStats.sources}</strong>
+          </div>
+          <div className="sidebar-stat">
+            <span className="sidebar-stat-label">Sections</span>
+            <strong>{sidebarStats.sections}</strong>
+          </div>
+        </div>
+
         <div className="sidebar-status">
           {health ? (
             <>
-              <span className="pill pill-green">Server connected</span>
-              <div><b>{health.knowledge_base_size}</b> passages in <code>{health.collection}</code></div>
-              <div className="text-muted hide-sm">Embeddings<br /><code>{health.embedding_model}</code></div>
-              <div className="text-muted hide-sm">Reranker<br /><code>{health.reranker_model ?? 'off'}</code></div>
+              <span className="pill pill-green">Connected</span>
+              <div><b>{health.knowledge_base_size}</b> available in <code>{health.collection}</code></div>
             </>
           ) : (
             <span className="pill pill-red">{healthError || 'Connecting…'}</span>
@@ -78,7 +104,7 @@ export default function App() {
         </div>
 
         <div className="sidebar-edit">
-          {health && !health.editing_enabled && <span className="pill pill-gray">Read-only (no editor token set on server)</span>}
+          {health && !health.editing_enabled && <span className="pill pill-gray">Read-only mode</span>}
           {health?.editing_enabled && (
             showToken ? (
               <form className="token-form" onSubmit={e => { e.preventDefault(); saveToken((e.currentTarget.elements.namedItem('token') as HTMLInputElement).value) }}>

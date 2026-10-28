@@ -40,12 +40,12 @@ There is no hosted database. Passages and their metadata live in ChromaDB on you
         │                        │       → BGE reranker → top 5
         │                        ▼
         ├── Knowledge base ◄──── ChromaDB  member2-rag/data/chroma/
-        │      import JSONL from Member 3 (validated by Pydantic)
+        │      import JSONL passages (validated by Pydantic)
         │
         └── Benchmark ─────────► benchmarks/benchmark.jsonl, results/*.json
 ```
 
-The dashboard, the command-line scripts and Member 1's Orchestrator all call the **same Python code**, so they always behave the same way.
+The dashboard and the server-side scripts all call the **same Python code**, so they behave consistently.
 
 ---
 
@@ -87,7 +87,7 @@ Interactive API documentation is at `/api/docs` while the server runs.
 | Only outdated, synthetic or suspicious sources | human-review | Regulatory evidence that requires human review |
 | Relevant, current sources | partial | Candidate regulatory evidence retrieved |
 
-Member 2's agents never output **verified**. Only Member 5's QA/Critic and the assessor can.
+The agents do not output a verified conclusion. Only the qualified assessor can decide final compliance.
 
 S.4 Control refuses to compare numbers (outcome *not compared*, which forces human review) when a limit or unit is missing, when units are not safely convertible (a bare `%` is never converted to ppm), or when a result is qualitative such as "Complies" or "ND". Values within rounding distance of a limit are flagged *borderline*.
 
@@ -106,7 +106,7 @@ S.4 Control refuses to compare numbers (outcome *not compared*, which forces hum
 
 ## Limitations
 
-* No real benchmark results exist yet. They need Member 3's processed regulatory passages and Member 5's expert-labelled questions.
+* Real benchmark results should be added from the current processed regulatory passages and labelled evaluation questions.
 * Relevance thresholds are starting values and must be calibrated on the benchmark.
 * Conflict detection uses metadata (versions and status), not the meaning of the text.
 * The editor token is a simple shared secret suitable for a local research workspace. A deployed multi-user system would need real user accounts.

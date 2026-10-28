@@ -57,7 +57,7 @@ class BGEReranker:
                     try:
                         import torch
                         from sentence_transformers import CrossEncoder
-                    except ImportError as exc:  # pragma: no cover
+                    except ImportError as exc:
                         raise ImportError(
                             "sentence-transformers is not installed. Run: pip install -r requirements.txt"
                         ) from exc

@@ -46,7 +46,7 @@ def readonly_client(settings, populated_store, embedder, tmp_path):
 ADMIN = {"X-Admin-Token": TOKEN}
 
 
-# --- status and reading ------------------------------------------------------
+
 def test_health(client):
     data = client.get("/api/health").json()
     assert data["knowledge_base_size"] == 5
@@ -71,7 +71,7 @@ def test_facets(client):
     assert facets["ctd_section"]["3.2.S.4.1"] == 1
 
 
-# --- editing permissions --------------------------------------------------------
+
 def test_writes_need_token(client):
     body = {"filename": "p.jsonl", "content": json.dumps(make_record(chunk_id="new-1"))}
     assert client.post("/api/passages/import", json=body).status_code == 401
@@ -109,7 +109,7 @@ def test_delete_passage(client):
     assert client.delete("/api/passages/syn-val-1", headers=ADMIN).status_code == 404
 
 
-# --- search and agents -------------------------------------------------------------
+
 def test_search(client):
     data = client.post("/api/search", json={"query": "validation of analytical procedures",
                                             "filters": {"ctd_sections": ["3.2.S.4.3"]}}).json()
@@ -143,7 +143,7 @@ def test_s4_agent_endpoint_with_example(client):
     findings = client.post("/api/agents/s4-control", json=example).json()
     assert len(findings) == 2
     assert findings[1]["metadata"]["comparison_counts"]["within_criteria"] == 4
-    assert findings[1]["metadata"]["confidential_comparison_rows"]  # shown to the assessor
+    assert findings[1]["metadata"]["confidential_comparison_rows"]
 
 
 def test_s4_bad_parameters_return_400_without_values(client):
@@ -159,7 +159,7 @@ def test_empty_kb_agent(settings, store, embedder, tmp_path):
     assert f["evidence_status"] == "empty_knowledge_base" and f["conclusion"].startswith("Insufficient evidence")
 
 
-# --- benchmark ----------------------------------------------------------------------
+
 def test_benchmark_cases_crud(client):
     assert client.get("/api/benchmark/cases").json() == []
     case = {"question_id": "Q1", "question": "Which tests belong in the specification?",
@@ -185,4 +185,4 @@ def test_benchmark_results_listing(client, tmp_path):
     (results / "retrieval_benchmark_broken.json").write_text("{not json")
     data = client.get("/api/benchmark/results").json()
     assert len(data) == 1 and data[0]["runs"][0]["name"] == "large_reranked"
-    assert data[0]["benchmark_file"] == "pilot.jsonl"  # file name only, never a local path
+    assert data[0]["benchmark_file"] == "pilot.jsonl"

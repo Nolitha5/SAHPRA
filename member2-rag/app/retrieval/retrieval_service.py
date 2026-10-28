@@ -76,7 +76,7 @@ class RetrievalService:
         if kb_size > 0:
             candidates = self.searcher.search(cleaned, k=candidate_k, filters=filters)
         if do_rerank and candidates:
-            passages = rerank(self.reranker, cleaned, candidates, top_n=final_k)  # type: ignore[arg-type]
+            passages = rerank(self.reranker, cleaned, candidates, top_n=final_k)
         else:
             passages = candidates[:final_k]
         latency_ms = round((time.perf_counter() - start) * 1000, 2)
@@ -85,7 +85,7 @@ class RetrievalService:
             logger,
             20,
             "retrieval_complete",
-            query=cleaned,  # redacted to a fingerprint by log_event
+            query=cleaned,
             kb_size=kb_size,
             candidates=len(candidates),
             returned=len(passages),
@@ -113,7 +113,7 @@ def build_retrieval_service(settings: Settings | None = None) -> RetrievalServic
         settings.chroma_dir,
         settings.collection_name,
         embedder.model_name,
-        embedding_dimension=None,  # checked lazily; avoids loading the model just to open the DB
+        embedding_dimension=None,
     )
     return RetrievalService(store, embedder, build_reranker(settings), settings)
 

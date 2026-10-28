@@ -71,7 +71,7 @@ class FakeReranker:
 
     def score(self, query: str, passages: Sequence[str]) -> list[float]:
         q = set(_tokens(query))
-        # Overlap count minus a small length penalty; can be negative (like logits).
+
         return [len(q & set(_tokens(p))) - 0.5 for p in passages]
 
 

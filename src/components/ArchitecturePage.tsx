@@ -14,7 +14,6 @@ export default function ArchitecturePage() {
     setDownloading(true)
     setPdfError('')
     try {
-      // Loaded only when needed, so the rest of the dashboard stays small.
       const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([import('jspdf'), import('html2canvas')])
       const canvas = await html2canvas(contentRef.current, {
         scale: 2,

@@ -35,17 +35,12 @@ export default function SearchPanel() {
 
   return (
     <div>
-      <div className="alert alert-info section-gap">
-        Runs the same shared retrieval service the agents use: BGE embedding search, then the BGE reranker.
-        Scores show relevance to the question only. They are not probabilities and say nothing about compliance.
-      </div>
-
       <form className="card section-gap" onSubmit={run}>
         <div className="card-body form-grid">
           <div className="form-group form-full">
             <label htmlFor="search-query">Question</label>
             <textarea id="search-query" value={query} onChange={e => setQuery(e.target.value)}
-              placeholder="e.g. What characteristics are assessed when validating an analytical procedure?" />
+              placeholder="Ask a question about the knowledge base" />
           </div>
           <div className="form-group">
             <label htmlFor="search-section">CTD section</label>
@@ -61,13 +56,12 @@ export default function SearchPanel() {
             </select>
           </div>
           <div className="checks form-full">
-            <label className="check"><input id="search-parents" type="checkbox" checked={parents} onChange={e => setParents(e.target.checked)} /> Include parent headings (e.g. 3.2.S)</label>
+            <label className="check"><input id="search-parents" type="checkbox" checked={parents} onChange={e => setParents(e.target.checked)} /> Include parent headings</label>
             <label className="check"><input id="search-current" type="checkbox" checked={currentOnly} onChange={e => setCurrentOnly(e.target.checked)} /> Current sources only</label>
-            <label className="check"><input id="search-rerank" type="checkbox" checked={rerank} onChange={e => setRerank(e.target.checked)} /> Rerank with BGE cross-encoder</label>
+            <label className="check"><input id="search-rerank" type="checkbox" checked={rerank} onChange={e => setRerank(e.target.checked)} /> Rerank results</label>
           </div>
           <div className="form-full row-actions">
             <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? 'Searching…' : 'Search'}</button>
-            {busy && <span className="text-muted">The first search loads the models and can take a minute.</span>}
           </div>
         </div>
       </form>
@@ -86,7 +80,7 @@ export default function SearchPanel() {
             {result.knowledge_base_size === 0
               ? <Empty title="The knowledge base is empty">Load passages first.</Empty>
               : result.passages.length === 0
-                ? <Empty title="No passages matched">Try another section or switch off "Current sources only". No result does not prove that no relevant rule exists.</Empty>
+                ? <Empty title="No passages matched">Try another section or switch off "Current sources only".</Empty>
                 : result.passages.map(p => <PassageCard key={p.chunk_id} p={p} />)}
           </div>
         </div>

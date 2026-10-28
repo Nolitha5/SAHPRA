@@ -55,7 +55,7 @@ class QueryHit:
     chunk_id: str
     text: str
     metadata: PassageMetadata
-    distance: float  # cosine distance in [0, 2]; similarity = 1 - distance
+    distance: float
 
 
 @dataclass
@@ -97,11 +97,11 @@ class ChromaDocumentStore:
             name=collection_name,
             configuration={"hnsw": {"space": "cosine"}},
             metadata=metadata,
-            embedding_function=None,  # we always pass our own vectors
+            embedding_function=None,
         )
         self._check_model_pin(embedding_dimension)
 
-    # ------------------------------------------------------------------
+
     def _check_model_pin(self, embedding_dimension: int | None) -> None:
         stored = self._collection.metadata or {}
         stored_model = stored.get("embedding_model")
@@ -118,7 +118,7 @@ class ChromaDocumentStore:
                 f"embedder produces {embedding_dimension}-dim vectors."
             )
 
-    # ------------------------------------------------------------------
+
     def count(self) -> int:
         return int(self._collection.count())
 

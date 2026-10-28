@@ -105,7 +105,7 @@ class EvidenceReraAgent:
                 },
             },
         )
-        if finding.qa_status == QAStatus.VERIFIED:  # invariant: Member 2 never verifies
+        if finding.qa_status == QAStatus.VERIFIED:
             raise RuntimeError("Evidence/RERA must not emit a 'verified' finding")
         log_event(
             logger,
