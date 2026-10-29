@@ -79,12 +79,12 @@ cd backend
 python -m pytest tests/ -v
 ```
 
-**39 tests — 3 files:**
+**41 tests — 3 files:**
 
 | File | What it covers |
 |---|---|
-| `tests/test_qa_critic.py` | QA/Critic rules: citation, score range, contradiction, escalation |
-| `tests/test_s5_standards.py` | S.5 agent: COMPLIANT, NON_COMPLIANT, NEEDS_REVIEW, replaceability |
+| `tests/test_qa_critic.py` | QA/Critic rules: citation, score range, contradiction, escalation; mock_findings F-005 out-of-range score |
+| `tests/test_s5_standards.py` | S.5 agent: COMPLIANT, NON_COMPLIANT, NEEDS_REVIEW, replaceability; S.5 layer of `scenario_outdated_standard.json` |
 | `tests/test_golden_scenarios.py` | Golden-answer scenario validation against QA/Critic output |
 
 ---
@@ -128,11 +128,11 @@ curl -X POST http://localhost:8000/qa/review \
 
 | File | Contents |
 |---|---|
-| `backend/mock_findings.json` | 5 synthetic findings across 3 CTD sections |
+| `backend/mock_findings.json` | `{_meta, findings}` object — 5 synthetic findings across 3 CTD sections. **F-005 has `uncertainty_score: 150` intentionally** to exercise QA/Critic out-of-range enforcement. For an all-PASS dataset use `tests/golden/scenario_pass.json`. |
 | `backend/s5_standards.py` (`_MOCK_RECORDS`) | BP Ethanol (2019, 2020, 2024) and USP Aspirin (42, 47) |
-| `tests/golden/scenario_pass.json` | 3 structurally valid findings — all PASS |
-| `tests/golden/scenario_identity_fail.json` | CAS number mismatch (Ethanol vs Formaldehyde) |
-| `tests/golden/scenario_outdated_standard.json` | BP 2019 claimed at 2024 submission date |
+| `tests/golden/scenario_pass.json` | 3 structurally valid findings — all PASS. F-005 uses score 15 (valid). |
+| `tests/golden/scenario_identity_fail.json` | CAS number mismatch (Ethanol vs Formaldehyde). QA PASS — structurally valid; regulatory concern for assessor. |
+| `tests/golden/scenario_outdated_standard.json` | BP 2019 claimed at 2024 submission date. Has `input.s5_claim` and `expected_output.s5_finding` for S.5 layer. |
 
 All mock data is synthetic and clearly labelled. No real dossier data is used.
 
@@ -161,14 +161,22 @@ Each file follows this schema:
 
 ```json
 {
-  "_meta":    { "scenario", "description", "version", "author" },
-  "input":    { "findings": [...] },
+  "_meta": {
+    "scenario": "...",
+    "description": "...",
+    "test_coverage": "...",
+    "version": "1.x",
+    "author": "M5"
+  },
+  "input": { "findings": [...] },
   "expected_output": {
-    "findings": [{ "finding_id", "qa_status" }],
+    "findings": [{ "finding_id": "...", "qa_status": "PASS|FLAG|ESCALATE" }],
     "section_escalations": []
   }
 }
 ```
+
+`scenario_outdated_standard.json` also carries `input.s5_claim` and `expected_output.s5_finding` for the S.5 agent layer.
 
 M4's harness should:
 1. Load `input.findings` into the QA/Critic.

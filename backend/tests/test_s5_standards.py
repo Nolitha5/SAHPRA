@@ -165,6 +165,45 @@ class _SingleRecordRepo:
         )
 
 
+# ── Golden scenario: outdated_standard ───────────────────────────────
+
+def test_golden_outdated_standard_s5_verdict():
+    """
+    Exercises the S.5 layer of scenario_outdated_standard.json, which has no
+    Python test coverage elsewhere.  The golden file records:
+      - substance_name: Ethanol, standard: BP, edition_claimed: BP 2019
+      - submission_date: 2024-03-01
+      - expected verdict: NON_COMPLIANT, edition_current: BP 2024
+    """
+    import json
+    from pathlib import Path
+
+    golden_path = (
+        Path(__file__).parent.parent.parent / "tests" / "golden" / "scenario_outdated_standard.json"
+    )
+    data = json.loads(golden_path.read_text(encoding="utf-8"))
+    claim_raw = data["input"]["s5_claim"]
+    expected = data["expected_output"]["s5_finding"]
+
+    from datetime import date as _date
+    claim = S5Claim(
+        substance_name=claim_raw["substance_name"],
+        standard=claim_raw["standard"],
+        edition_claimed=claim_raw["edition_claimed"],
+        test_method=claim_raw["test_method"],
+        submission_date=_date.fromisoformat(claim_raw["submission_date"]),
+    )
+    result = check_s5_claim(claim, repo)
+
+    assert result.verdict == expected["verdict"], (
+        f"Expected verdict {expected['verdict']!r}, got {result.verdict!r}"
+    )
+    assert result.edition_current == expected["edition_current"], (
+        f"Expected edition_current {expected['edition_current']!r}, got {result.edition_current!r}"
+    )
+    assert result.edition_claimed == expected["edition_claimed"]
+
+
 def test_custom_repository_is_accepted():
     claim = make_claim(
         substance_name="TestSubstance",

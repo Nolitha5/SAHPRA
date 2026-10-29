@@ -2,7 +2,9 @@
   "_meta": {
     "scenario": "pass",
     "description": "All findings are structurally valid: citations present, scores in range, rationales consistent with evidence. QA/Critic must assign PASS to every finding. No escalation should occur.",
-    "version": "1.0",
+    "findings_note": "F-005 here uses uncertainty_score=15 (valid). The mock_findings.json fixture uses a separate F-005 with score=150 to exercise out-of-range enforcement; that is intentional and documented in mock_findings.json._meta.",
+    "test_coverage": "test_golden_pass_all_findings_pass, test_golden_pass_no_escalations (test_golden_scenarios.py).",
+    "version": "1.1",
     "author": "M5"
   },
   "input": {

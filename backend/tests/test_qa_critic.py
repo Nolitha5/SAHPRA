@@ -168,3 +168,33 @@ def test_all_findings_preserved():
 
 def test_empty_list_returns_empty():
     assert review_findings([]) == []
+
+
+# ── Mock findings consistency ─────────────────────────────────────────
+
+def test_mock_findings_f005_out_of_range_score_is_flagged():
+    """
+    mock_findings.json contains F-005 with uncertainty_score=150 (out of range).
+    This test confirms the QA/Critic FLAGs it, and that no test elsewhere
+    accidentally treats mock_findings.json as an all-PASS dataset.
+    (scenario_pass.json uses a separate F-005 with score=15, which is correct.)
+    """
+    import json
+    from pathlib import Path
+
+    mock_path = Path(__file__).parent.parent / "mock_findings.json"
+    data = json.loads(mock_path.read_text(encoding="utf-8"))
+    from models import Finding
+
+    findings = [Finding(**f) for f in data["findings"]]
+    f005 = next(f for f in findings if f.finding_id == "F-005")
+    assert f005.uncertainty_score == 150, "Precondition: F-005 score must be 150 in mock_findings.json"
+
+    results = review_findings(findings)
+    result_map = {f.finding_id: f for f in results}
+    # F-004 (missing citation) and F-005 (score 150) are both in 3.2.S.3, so
+    # the escalation rule promotes both to ESCALATE. Either FLAG or ESCALATE
+    # means the out-of-range score was caught; PASS would mean it slipped through.
+    assert result_map["F-005"].qa_status in ("FLAG", "ESCALATE"), (
+        "F-005 with score 150 must not PASS — it must be FLAGged or ESCALATEd"
+    )

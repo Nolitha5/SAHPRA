@@ -230,6 +230,7 @@ body {
 }
 .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .submit-btn:not(:disabled):hover { background: #0d2137; }
+.submit-error { font-size: 0.82rem; color: var(--colour-reject); background: #ffebee; border: 1px solid var(--colour-reject); border-radius: var(--radius); padding: 0.4rem 0.75rem; margin-bottom: 0.5rem; }
 
 /* ── Recorded decision ──────────────────────────────────────────────── */
 .decision-recorded { display: flex; flex-direction: column; gap: 0.4rem; }

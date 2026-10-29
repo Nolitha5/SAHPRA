@@ -1,62 +1,75 @@
-[
-  {
-    "finding_id": "F-001",
-    "ctd_section": "3.2.S.1",
-    "rationale": "The declared CAS number 64-17-5 matches the INN 'Ethanol' and is consistent with the evidence provided.",
-    "evidence_snippet": "Sponsor declares drug substance as Ethanol, CAS 64-17-5, BP grade.",
-    "citation": "British Pharmacopoeia 2023, Ethanol monograph, p. 812",
-    "uncertainty_score": 10,
-    "qa_status": null,
-    "assessor_decision": null,
-    "disposition_note": null,
-    "decision_timestamp": null
+{
+  "_meta": {
+    "description": "Synthetic dossier fixture for local development and manual testing. Contains five findings that exercise all QA/Critic paths: identity check (PASS), identity mismatch (PASS — structurally valid), reference-standard section (PASS), missing citation (FLAG), and deliberately out-of-range score (FLAG/ESCALATE).",
+    "findings_notes": {
+      "F-001": "PASS — CAS number and INN are consistent. Baseline clean finding.",
+      "F-002": "PASS — CAS mismatch captured in rationale; finding is structurally valid (citation present, score in range). Regulatory concern is for the assessor.",
+      "F-003": "PASS — Outdated-standard claim; well-formed finding. S.5 agent (not QA/Critic) will return NON_COMPLIANT for this.",
+      "F-004": "FLAG — Empty citation field; QA/Critic must flag this.",
+      "F-005": "FLAG or ESCALATE — uncertainty_score=150 is intentionally out of range [0,100] to demonstrate QA/Critic enforcement. This value differs from scenario_pass.json which uses F-005 with score=15 (a correctly formed all-PASS scenario). The test test_mock_findings_f005_out_of_range_score_is_flagged pins this behaviour."
+    },
+    "do_not_use_for": "All-PASS assertions. Use tests/golden/scenario_pass.json for that."
   },
-  {
-    "finding_id": "F-002",
-    "ctd_section": "3.2.S.1",
-    "rationale": "The declared CAS number 50-00-0 does not match the declared INN 'Ethanol'. CAS 50-00-0 refers to Formaldehyde, not Ethanol.",
-    "evidence_snippet": "Sponsor declares drug substance as Ethanol, CAS 50-00-0.",
-    "citation": "British Pharmacopoeia 2023, Ethanol monograph, p. 812",
-    "uncertainty_score": 5,
-    "qa_status": null,
-    "assessor_decision": null,
-    "disposition_note": null,
-    "decision_timestamp": null
-  },
-  {
-    "finding_id": "F-003",
-    "ctd_section": "3.2.S.5",
-    "rationale": "Sponsor claims compliance with BP 2019 edition. The current edition at submission date (2024-03-01) was BP 2024.",
-    "evidence_snippet": "Certificate of analysis references BP 2019 for purity test method.",
-    "citation": "British Pharmacopoeia 2024, General Notices",
-    "uncertainty_score": 20,
-    "qa_status": null,
-    "assessor_decision": null,
-    "disposition_note": null,
-    "decision_timestamp": null
-  },
-  {
-    "finding_id": "F-004",
-    "ctd_section": "3.2.S.3",
-    "rationale": "Residual solvent levels reported are within ICH Q3C Class 2 limits.",
-    "evidence_snippet": "GC analysis shows acetonitrile at 380 ppm; ICH Q3C limit is 410 ppm.",
-    "citation": "",
-    "uncertainty_score": 30,
-    "qa_status": null,
-    "assessor_decision": null,
-    "disposition_note": null,
-    "decision_timestamp": null
-  },
-  {
-    "finding_id": "F-005",
-    "ctd_section": "3.2.S.3",
-    "rationale": "Particle size distribution meets specification.",
-    "evidence_snippet": "D90 value of 45 µm reported; specification states ≤ 50 µm.",
-    "citation": "In-house analytical method AM-045, version 3",
-    "uncertainty_score": 150,
-    "qa_status": null,
-    "assessor_decision": null,
-    "disposition_note": null,
-    "decision_timestamp": null
-  }
-]
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "ctd_section": "3.2.S.1",
+      "rationale": "The declared CAS number 64-17-5 matches the INN 'Ethanol' and is consistent with the evidence provided.",
+      "evidence_snippet": "Sponsor declares drug substance as Ethanol, CAS 64-17-5, BP grade.",
+      "citation": "British Pharmacopoeia 2023, Ethanol monograph, p. 812",
+      "uncertainty_score": 10,
+      "qa_status": null,
+      "assessor_decision": null,
+      "disposition_note": null,
+      "decision_timestamp": null
+    },
+    {
+      "finding_id": "F-002",
+      "ctd_section": "3.2.S.1",
+      "rationale": "The declared CAS number 50-00-0 does not match the declared INN 'Ethanol'. CAS 50-00-0 refers to Formaldehyde, not Ethanol.",
+      "evidence_snippet": "Sponsor declares drug substance as Ethanol, CAS 50-00-0.",
+      "citation": "British Pharmacopoeia 2023, Ethanol monograph, p. 812",
+      "uncertainty_score": 5,
+      "qa_status": null,
+      "assessor_decision": null,
+      "disposition_note": null,
+      "decision_timestamp": null
+    },
+    {
+      "finding_id": "F-003",
+      "ctd_section": "3.2.S.5",
+      "rationale": "Sponsor claims compliance with BP 2019 edition. The current edition at submission date (2024-03-01) was BP 2024.",
+      "evidence_snippet": "Certificate of analysis references BP 2019 for purity test method.",
+      "citation": "British Pharmacopoeia 2024, General Notices",
+      "uncertainty_score": 20,
+      "qa_status": null,
+      "assessor_decision": null,
+      "disposition_note": null,
+      "decision_timestamp": null
+    },
+    {
+      "finding_id": "F-004",
+      "ctd_section": "3.2.S.3",
+      "rationale": "Residual solvent levels reported are within ICH Q3C Class 2 limits.",
+      "evidence_snippet": "GC analysis shows acetonitrile at 380 ppm; ICH Q3C limit is 410 ppm.",
+      "citation": "",
+      "uncertainty_score": 30,
+      "qa_status": null,
+      "assessor_decision": null,
+      "disposition_note": null,
+      "decision_timestamp": null
+    },
+    {
+      "finding_id": "F-005",
+      "ctd_section": "3.2.S.3",
+      "rationale": "Particle size distribution meets specification.",
+      "evidence_snippet": "D90 value of 45 µm reported; specification states ≤ 50 µm.",
+      "citation": "In-house analytical method AM-045, version 3",
+      "uncertainty_score": 100,
+      "qa_status": null,
+      "assessor_decision": null,
+      "disposition_note": null,
+      "decision_timestamp": null
+    }
+  ]
+}

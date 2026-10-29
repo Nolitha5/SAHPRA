@@ -59,8 +59,8 @@ class MockM1Adapter:
     _FIXTURE = Path(__file__).parent.parent / "mock_findings.json"
 
     def get_findings(self, dossier_id: str) -> list[Finding]:  # noqa: ARG002
-        raw = json.loads(self._FIXTURE.read_text(encoding="utf-8"))
-        findings = [Finding(**item) for item in raw]
+        data = json.loads(self._FIXTURE.read_text(encoding="utf-8"))
+        findings = [Finding(**item) for item in data["findings"]]
         return review_findings(findings)
 
     def post_human_gate_result(

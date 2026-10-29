@@ -2,7 +2,8 @@
   "_meta": {
     "scenario": "outdated_standard",
     "description": "Sponsor claims BP 2019 for a submission made in March 2024. The current edition at that date was BP 2024. The S.5 agent must return NON_COMPLIANT. The QA/Critic receives the resulting finding; because the citation is present and the rationale is consistent with the evidence, it should PASS QA.",
-    "version": "1.0",
+    "test_coverage": "QA layer: test_golden_outdated_standard_finding_passes_qa (test_golden_scenarios.py). S.5 layer: test_golden_outdated_standard_s5_verdict (test_s5_standards.py).",
+    "version": "1.1",
     "author": "M5"
   },
   "input": {

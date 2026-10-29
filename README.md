@@ -1,5 +1,7 @@
 # SAHPRA API
 
+> **Note — M5 implementation:** This file describes the original Express/SQLite scaffold (port 3000, `/items` CRUD). The active M5 QA-RAG backend is a FastAPI service in `backend/` (port 8000). For the M5 architecture, agents, and endpoints see [README-M5.md](README-M5.md).
+
 A simple Express API with SQLite persistence for managing catalog items. The service exposes CRUD endpoints and is ready for local development.
 
 ## Features

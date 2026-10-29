@@ -1,15 +1,16 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { Finding, AssessorDecision, PendingDecision } from '../types'
 import QAStatusBadge from './QAStatusBadge'
 
 interface Props {
   finding: Finding
   onDecisionSubmit: (findingId: string, pending: PendingDecision) => void
+  submitError: string | null
 }
 
 const DECISIONS: AssessorDecision[] = ['Approve', 'Query', 'Reject']
 
-export default function FindingCard({ finding, onDecisionSubmit }: Props) {
+export default function FindingCard({ finding, onDecisionSubmit, submitError }: Props) {
   const [pending, setPending] = useState<PendingDecision>({
     decision: null,
     disposition_note: '',
@@ -28,6 +29,14 @@ export default function FindingCard({ finding, onDecisionSubmit }: Props) {
     onDecisionSubmit(finding.finding_id, pending)
     setSubmitted(true)
   }
+
+  // If App rolls back after a server error, submitted stays true but the finding
+  // no longer carries an assessor_decision — reset so the assessor can retry.
+  useEffect(() => {
+    if (submitted && !finding.assessor_decision && submitError) {
+      setSubmitted(false)
+    }
+  }, [submitted, finding.assessor_decision, submitError])
 
   const effectiveDecision = finding.assessor_decision ?? (submitted ? pending.decision : null)
 
@@ -125,6 +134,12 @@ export default function FindingCard({ finding, onDecisionSubmit }: Props) {
               onChange={(e) => setPending((p) => ({ ...p, disposition_note: e.target.value }))}
               placeholder="Enter any remarks for this finding…"
             />
+
+            {submitError && (
+              <p className="submit-error" role="alert">
+                Decision could not be saved: {submitError}. Please try again.
+              </p>
+            )}
 
             <button
               type="button"

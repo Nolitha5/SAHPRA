@@ -66,10 +66,6 @@ def get_finding(finding_id: str):
 
 # ── QA / Critic ───────────────────────────────────────────────────────
 
-class ReviewRequest(Finding.__class__.__bases__[0]):  # noqa: RUF023 — avoid re-importing BaseModel
-    pass
-
-
 from pydantic import BaseModel  # noqa: E402 — kept at use site for clarity
 
 

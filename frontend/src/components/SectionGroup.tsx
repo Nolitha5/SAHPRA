@@ -5,9 +5,10 @@ interface Props {
   section: string
   findings: Finding[]
   onDecisionSubmit: (findingId: string, pending: PendingDecision) => void
+  submitErrors: Record<string, string>
 }
 
-export default function SectionGroup({ section, findings, onDecisionSubmit }: Props) {
+export default function SectionGroup({ section, findings, onDecisionSubmit, submitErrors }: Props) {
   const flagCount = findings.filter(
     (f) => f.qa_status === 'FLAG' || f.qa_status === 'ESCALATE',
   ).length
@@ -27,7 +28,7 @@ export default function SectionGroup({ section, findings, onDecisionSubmit }: Pr
       </div>
       <div className="section-group__findings">
         {findings.map((f) => (
-          <FindingCard key={f.finding_id} finding={f} onDecisionSubmit={onDecisionSubmit} />
+          <FindingCard key={f.finding_id} finding={f} onDecisionSubmit={onDecisionSubmit} submitError={submitErrors[f.finding_id] ?? null} />
         ))}
       </div>
     </section>

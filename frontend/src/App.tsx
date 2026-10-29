@@ -19,6 +19,7 @@ export default function App() {
   const [findings, setFindings] = useState<Finding[]>([])
   const [loadState, setLoadState] = useState<LoadState>('loading')
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [submitErrors, setSubmitErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     fetchReviewedFindings()
@@ -34,6 +35,12 @@ export default function App() {
 
   async function handleDecisionSubmit(findingId: string, pending: PendingDecision) {
     if (!pending.decision) return
+
+    // Clear any previous error for this finding
+    setSubmitErrors((prev) => { const next = { ...prev }; delete next[findingId]; return next })
+
+    // Snapshot the finding's previous state so we can roll back on failure
+    const previous = findings.find((f) => f.finding_id === findingId) ?? null
 
     // Optimistic UI update — record locally before the server confirms
     setFindings((prev) =>
@@ -64,11 +71,14 @@ export default function App() {
       )
     } catch (err) {
       console.error('[api] submitDecision failed', err)
-      // Decision remains visible in UI; warn the user
-      alert(
-        `Your decision was recorded locally but could not be sent to the server.\n` +
-          (err instanceof Error ? err.message : String(err)),
-      )
+      // Roll back optimistic update so the assessor can retry
+      if (previous) {
+        setFindings((prev) => prev.map((f) => f.finding_id === findingId ? previous : f))
+      }
+      setSubmitErrors((prev) => ({
+        ...prev,
+        [findingId]: err instanceof Error ? err.message : 'Unknown server error',
+      }))
     }
   }
 
@@ -136,6 +146,7 @@ export default function App() {
                   section={section}
                   findings={grouped.get(section)!}
                   onDecisionSubmit={handleDecisionSubmit}
+                  submitErrors={submitErrors}
                 />
               ))
             )}

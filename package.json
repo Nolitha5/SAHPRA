@@ -1,13 +1,7 @@
 {
   "name": "sahpra",
   "version": "1.0.0",
-  "description": "This will be our Sahpra project repo neh?",
-  "main": "src/server.js",
-  "scripts": {
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js",
-    "test": "node --test"
-  },
+  "description": "SAHPRA Agentic QA-RAG Feasibility Study — M5 component. FastAPI backend in backend/, React/Vite frontend in frontend/. See README-M5.md.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Nolitha5/SAHPRA.git"
@@ -15,16 +9,8 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/Nolitha5/SAHPRA/issues"
   },
-  "homepage": "https://github.com/Nolitha5/SAHPRA#readme",
-  "dependencies": {
-    "express": "^5.3.0",
-    "sqlite3": "^6.0.1"
-  },
-  "devDependencies": {
-    "supertest": "^7.3.1"
-  }
+  "homepage": "https://github.com/Nolitha5/SAHPRA#readme"
 }
