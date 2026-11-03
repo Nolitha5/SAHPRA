@@ -315,7 +315,7 @@ tr:hover td { background: var(--bg); }
 .arch-markdown strong { font-weight: 700; }
 .arch-markdown a { color: #1a56db; text-decoration: none; }
 
-/* ── Additions for the Member 2 API dashboard ── */
+/* ── Additions for the API dashboard ── */
 code { font-family: 'Courier New', monospace; font-size: 12px; background: var(--bg); padding: 1px 5px; border-radius: 4px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .filters select { width: auto; min-width: 150px; }

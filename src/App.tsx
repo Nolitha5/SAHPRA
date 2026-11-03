@@ -63,7 +63,7 @@ export default function App() {
         <div className="sidebar-brand">
           <span className="badge">M2</span>
           <div>
-            <h1>Agentic QA-RAG · Member 2</h1>
+            <h1>Agentic QA-RAG</h1>
             <div className="sidebar-sub">Retrieval &amp; Knowledge Base</div>
           </div>
         </div>

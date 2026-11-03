@@ -38,7 +38,7 @@ async function request<T>(path: string, init: RequestInit = {}, edit = false): P
   try {
     res = await fetch(`/api${path}`, { ...init, headers: { ...headers, ...(init.headers as Record<string, string>) } })
   } catch {
-    throw new ApiError(0, 'Cannot reach the Member 2 server. Start it with: python -m app.api (in member2-rag).')
+    throw new ApiError(0, 'Cannot reach the server. Start it with: python -m app.api (in member2-rag).')
   }
   const text = await res.text()
   let body: { detail?: unknown } | null = null
@@ -47,7 +47,7 @@ async function request<T>(path: string, init: RequestInit = {}, edit = false): P
   } catch {
     if (!res.ok) {
       throw new ApiError(res.status, res.status >= 500
-        ? 'The Member 2 server is not responding. Start it with: python -m app.api (in member2-rag).'
+        ? 'The server is not responding. Start it with: python -m app.api (in member2-rag).'
         : `Request failed (HTTP ${res.status}).`)
     }
     throw new ApiError(res.status, 'The server sent a response that is not JSON.')

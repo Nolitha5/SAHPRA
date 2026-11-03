@@ -82,7 +82,7 @@ def create_app(
     model_lock = threading.Lock()
 
     app = FastAPI(
-        title="Member 2 · Retrieval & Knowledge Base API",
+        title="Agentic QA-RAG · Retrieval & Knowledge Base API",
         version=API_VERSION,
         docs_url="/api/docs",
         openapi_url="/api/openapi.json",

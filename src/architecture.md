@@ -1,6 +1,6 @@
-# Member 2 · Retrieval & Knowledge Base
+# Retrieval & Knowledge Base
 
-Agentic QA-RAG for SAHPRA CTD Module 3.2.S (drug substance). Member 2 owns the regulatory knowledge base, the shared retrieval service, and two agents: **Evidence/RERA** and **S.4 Control**.
+Agentic QA-RAG for SAHPRA CTD Module 3.2.S (drug substance). This component owns the regulatory knowledge base, the shared retrieval service, and two agents: **Evidence/RERA** and **S.4 Control**.
 
 This is a research-support tool. Every finding is cited, carries an uncertainty statement and is marked for review. The qualified human assessor makes every regulatory decision.
 
