@@ -10,7 +10,7 @@
     "relevance_level": "page",
     "chunk_size": 300,
     "chunk_overlap": 50,
-    "notes": "ICH pilot questions on the combined ICH + SAHPRA collection (249 passages). Checks that adding SAHPRA guidelines does not crowd out the ICH answers."
+    "notes": "Dense retrieval only, on the combined ICH + SAHPRA collection (248 passages). Used with pilot.jsonl (ICH) and pilot_sahpra.jsonl (SAHPRA)."
   },
   {
     "name": "large_w300_reranked",

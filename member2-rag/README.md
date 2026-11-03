@@ -103,6 +103,8 @@ member2-rag/
 ├── tests/                        # 142 unit tests + 2 integration tests
 ├── benchmarks/
 │   ├── benchmark.jsonl           # template (synthetic items - replace!)
+│   ├── pilot.jsonl               # 20 ICH pilot questions (page-level labels)
+│   ├── pilot_sahpra.jsonl        # 18 SAHPRA pilot questions (page-level labels)
 │   ├── configs.json              # the experiment arms
 │   └── configs.minimal.json
 ├── docs/PRESENTING.md            # how to explain and defend this component (added)
@@ -450,7 +452,35 @@ Bioequivalence, SAHPGL-PEM-02 v8; API Master File procedure, SAHPGL-PEM-03 v3) w
 bge-large 300-word collection (82 passages, 248 in total). The three bge-large 300-word configurations
 were re-run with `benchmarks/configs.pilot_sahpra.json`: every score was identical to the table above,
 so the extra passages did not displace the labelled ICH pages. The pilot questions are about ICH pages
-only; SAHPRA-specific questions still need to be written and labelled.
+only; SAHPRA-specific questions are evaluated separately below.
+
+### SAHPRA pilot results (2026-11-03)
+
+18 questions about the two SAHPRA guidelines (`benchmarks/pilot_sahpra.jsonl`): 12 on Module 3.2.S topics
+(APIMF procedure, CEP / WHO-prequalified APIs, multiple API manufacturers, specification and stability
+requirements) and 6 on SAHPRA review pathways. Labelled at page level by Member 2 with AI assistance,
+checked against the page text, **not expert-verified**. Same collection (248 passages) and settings as above.
+Command: `python scripts/evaluate_retrieval.py --benchmark benchmarks/pilot_sahpra.jsonl --configs benchmarks/configs.pilot_sahpra.json --ragas`
+
+| Configuration | Hit@1 | Recall@5 | Recall@10 | MRR | nDCG@10 | p50 latency | Ragas ctx recall | Ragas ctx precision |
+|---|---|---|---|---|---|---|---|---|
+| bge-large, 300 words, dense only | 0.50 | 0.62 | 0.62 | 0.57 | 0.553 | 0.15 s | 0.528 | 0.533 |
+| **bge-large, 300 words, reranked** (main) | 0.50 | 0.62 | 0.64 | 0.55 | 0.546 | 5.8 s | 0.500 | 0.498 |
+| bge-large, 300 words, reranked, no CTD filter | 0.67 | 0.93 | 1.00 | 0.77 | 0.816 | 6.3 s | 0.708 | 0.717 |
+
+What this shows:
+
+* **Without the CTD filter every SAHPRA question found its page in the top 10**, and 12 of 18 at rank 1.
+* **With the filter, 6 of 18 questions (S010–S015) cannot find their page at all.** The cause is coarse
+  section tagging, not the search itself: most Quality and Bioequivalence pages carry the broad tag `3.2`,
+  so a question filtered to `3.2.S.4.1` or `3.2.S.7` excludes them; page 17 covers both the specification
+  (3.2.S.4.1) and stability (3.2.S.7) rules but carries only one tag. This is the same limitation as P008
+  in the ICH pilot, and it is much larger on SAHPRA documents because they are organised by procedure
+  rather than by CTD section.
+* The tags were **not** changed to improve these scores. Recommended next steps: finer per-page tagging
+  from Member 3's pipeline, allowing several sections per passage, or including parent sections
+  (`include_parent_sections`) when filtering. Until then, the filter should be used with care for SAHPRA
+  questions.
 
 The full per-question output is in `results/retrieval_benchmark_<UTC time>.json` (git-ignored; regenerate
 with the command above).
