@@ -25,7 +25,7 @@ from statistics import mean, median
 def _top(retrieved: Sequence[str], k: int) -> list[str]:
     if k < 1:
         raise ValueError("k must be >= 1")
-
+    # Deduplicate while keeping order (page-level keys can repeat).
     seen: list[str] = []
     for item in retrieved:
         if item not in seen:

@@ -53,7 +53,7 @@ def _load_sentence_transformer(model_name: str, device: str) -> Any:
         if key not in _MODEL_CACHE:
             try:
                 from sentence_transformers import SentenceTransformer
-            except ImportError as exc:
+            except ImportError as exc:  # pragma: no cover - depends on install
                 raise ImportError(
                     "sentence-transformers is not installed. Run: pip install -r requirements.txt"
                 ) from exc
@@ -90,7 +90,7 @@ class BGEEmbeddings:
 
     @property
     def dimension(self) -> int:
-
+        # Renamed in sentence-transformers 5.x; support both spellings.
         getter = getattr(self.model, "get_embedding_dimension", None) or self.model.get_sentence_embedding_dimension
         return int(getter())
 

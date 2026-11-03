@@ -47,9 +47,9 @@ logger = get_logger("api")
 API_VERSION = "1.0"
 
 
-
-
-
+# ---------------------------------------------------------------------------
+# Request bodies
+# ---------------------------------------------------------------------------
 class SearchRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -69,9 +69,9 @@ class ImportRequest(BaseModel):
     dry_run: bool = False
 
 
-
-
-
+# ---------------------------------------------------------------------------
+# App factory
+# ---------------------------------------------------------------------------
 def create_app(
     components: Member2Components | None = None,
     settings: Settings | None = None,
@@ -96,10 +96,10 @@ def create_app(
             allow_headers=["Content-Type", "X-Admin-Token"],
         )
 
-
+    # -- errors -----------------------------------------------------------
     @app.exception_handler(RequestValidationError)
     async def _validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:
-
+        # FastAPI's default response echoes the submitted input; strip it.
         detail = [
             {"loc": [str(x) for x in err.get("loc", ())], "msg": err.get("msg", "invalid value")}
             for err in exc.errors()
@@ -114,7 +114,7 @@ def create_app(
     async def _corrupt(_: Request, exc: MetadataCorruptionError) -> JSONResponse:
         return JSONResponse(status_code=500, content={"detail": str(exc)})
 
-
+    # -- auth -------------------------------------------------------------
     def require_admin(x_admin_token: str | None = Header(default=None)) -> None:
         if not settings.admin_token:
             raise HTTPException(
@@ -143,7 +143,7 @@ def create_app(
                     ),
                 ) from None
 
-
+    # -- status -----------------------------------------------------------
     @app.get("/api/health")
     def health() -> dict[str, Any]:
         return {
@@ -159,7 +159,7 @@ def create_app(
             "benchmark_file": settings.benchmark_file.name,
         }
 
-
+    # -- passages ---------------------------------------------------------
     @app.get("/api/passages")
     def list_passages(
         ctd_section: str | None = Query(default=None, max_length=40),
@@ -223,7 +223,7 @@ def create_app(
         log_event(logger, 20, "passage_deleted", chunk_id=chunk_id)
         return {"deleted": chunk_id, "knowledge_base_size": m2.retrieval.store.count()}
 
-
+    # -- retrieval and agents ---------------------------------------------
     @app.post("/api/search")
     def search(body: SearchRequest) -> dict[str, Any]:
         result = run_model(
@@ -234,8 +234,8 @@ def create_app(
 
     def _run_agent(name: str, request: AgentRequest) -> list[dict[str, Any]]:
         findings = run_model(m2.agents[name].run, request)
-
-
+        # Returned in full: the caller supplied any sponsor data in this request
+        # and the dashboard needs the comparison rows. Nothing is logged or stored.
         return [f.model_dump(mode="json") for f in findings]
 
     @app.post("/api/agents/evidence-rera")
@@ -246,7 +246,7 @@ def create_app(
     def s4_control(request: AgentRequest) -> list[dict[str, Any]]:
         return _run_agent(S4ControlAgent.name, request)
 
-
+    # -- benchmark --------------------------------------------------------
     @app.get("/api/benchmark/cases")
     def list_cases() -> list[dict[str, Any]]:
         try:
@@ -280,7 +280,7 @@ def create_app(
                 continue
             out.append({
                 "file": path.name,
-
+                # File name only (never a local path); PureWindowsPath splits on both / and \.
                 "benchmark_file": PureWindowsPath(data.get("benchmark_file") or "").name or None,
                 "created_at": data.get("created_at"),
                 "num_questions": data.get("num_questions"),
@@ -301,7 +301,7 @@ def create_app(
             })
         return out
 
-
+    # -- built dashboard (optional) ----------------------------------------
     dist = Path(settings.web_dist)
     if (dist / "index.html").exists():
         app.mount("/", StaticFiles(directory=dist, html=True), name="dashboard")

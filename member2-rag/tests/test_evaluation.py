@@ -30,7 +30,7 @@ def test_metric_values():
     relevant = {"b", "d", "z"}
     assert recall_at_k(retrieved, relevant, 2) == pytest.approx(1 / 3)
     assert precision_at_k(retrieved, relevant, 2) == pytest.approx(0.5)
-    assert precision_at_k(["b"], relevant, 5) == pytest.approx(0.2)
+    assert precision_at_k(["b"], relevant, 5) == pytest.approx(0.2)  # fewer results not rewarded
     assert hit_at_k(retrieved, relevant, 1) == 0.0
     assert reciprocal_rank(retrieved, relevant) == pytest.approx(0.5)
     assert reciprocal_rank([], relevant) == 0.0
@@ -73,10 +73,10 @@ def test_pilot_benchmark_and_configs_are_valid():
     root = Path(__file__).parent.parent / "benchmarks"
     items = load_benchmark(root / "pilot.jsonl")
     assert len(items) >= 15 and all(i.relevant_pages for i in items)
-
+    # Drafted labels must say so until an expert has reviewed them.
     assert all("not expert-verified" in (i.labelled_by or "") for i in items)
     configs = [RunConfig(**c) for c in json.loads((root / "configs.pilot.json").read_text(encoding="utf-8"))]
-    assert all(c.relevance_level == "page" for c in configs)
+    assert all(c.relevance_level == "page" for c in configs)  # page labels work for every chunk size
     assert {c.embedding_model for c in configs} == {"BAAI/bge-large-en-v1.5", "BAAI/bge-small-en-v1.5"}
 
 
@@ -107,7 +107,7 @@ def test_run_benchmark_configs(tmp_path, service):
     assert rerank_run["aggregate"]["mrr"] == 1.0
     assert rerank_run["aggregate"]["recall@1"] == 1.0
     assert rerank_run["checks"]["missing_labelled_chunk_ids"] == []
-    assert report["runs"][3]["queries_evaluated"] == 1
+    assert report["runs"][3]["queries_evaluated"] == 1  # Q2 has no page labels
     assert report["runs"][3]["queries_skipped_no_labels_at_level"] == ["Q2"]
     out = save_report(report, tmp_path / "results")
     saved = json.loads(out.read_text())
@@ -154,5 +154,5 @@ def test_evaluate_non_llm_runs_real_ragas():
         {"user_input": "q2", "retrieved_contexts": [other], "reference_contexts": [ref]},
     ])
     assert scores["ragas_samples"] == 2
-    assert 0 < scores["non_llm_context_recall"] < 1
+    assert 0 < scores["non_llm_context_recall"] < 1  # one hit, one miss
     assert evaluate_non_llm([]) == {"ragas_samples": 0}

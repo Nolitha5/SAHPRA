@@ -100,7 +100,7 @@ member2-rag/
 │   ├── search.py                 # (added) try retrieval from the command line
 │   ├── run_agent.py              # (added) run either agent from the command line
 │   └── evaluate_retrieval.py
-├── tests/                        # 139 unit tests + 2 integration tests
+├── tests/                        # 142 unit tests + 2 integration tests
 ├── benchmarks/
 │   ├── benchmark.jsonl           # template (synthetic items - replace!)
 │   ├── configs.json              # the experiment arms
@@ -168,7 +168,7 @@ cp .env.example .env
 python -m pytest
 ```
 
-Expected: `139 passed, 2 deselected`.
+Expected: `142 passed, 2 deselected`.
 
 **Once the models are downloaded** (after the first search), set `HF_HUB_OFFLINE=1` and
 `TRANSFORMERS_OFFLINE=1` in `.env` (see `.env.example`). Otherwise every server start checks Hugging
@@ -363,7 +363,7 @@ method-validation completeness checklist, batch trend statistics.
 ## 12. Running tests
 
 ```powershell
-python -m pytest                 # 139 unit tests, no downloads, temp databases only
+python -m pytest                 # 142 unit tests, no downloads, temp databases only
 python -m pytest -m integration  # 2 tests with REAL models (downloads bge-small + bge-reranker-base)
 python -m pytest -v tests/test_s4_control.py
 python -m ruff check             # lint (pip install -r requirements-dev.txt once; config in ruff.toml)
@@ -445,6 +445,13 @@ What can and cannot be concluded:
   for 3.2.S.4.1) is on ICH Q3A, which is tagged 3.2.S.3, so the filter excluded it. See Limitations.
 * Data-leakage checks: no question appears word-for-word in the index; no labels point to missing passages.
 
+**Re-run with SAHPRA guidelines added (2026-10-28).** Two public SAHPRA guidelines (Quality and
+Bioequivalence, SAHPGL-PEM-02 v8; API Master File procedure, SAHPGL-PEM-03 v3) were added to the
+bge-large 300-word collection (82 passages, 248 in total). The three bge-large 300-word configurations
+were re-run with `benchmarks/configs.pilot_sahpra.json`: every score was identical to the table above,
+so the extra passages did not displace the labelled ICH pages. The pilot questions are about ICH pages
+only; SAHPRA-specific questions still need to be written and labelled.
+
 The full per-question output is in `results/retrieval_benchmark_<UTC time>.json` (git-ignored; regenerate
 with the command above).
 
@@ -500,7 +507,8 @@ shared_retrieval = m2.retrieval                   # .retrieve(query, filters, ca
 ## 15. Limitations and future improvements
 
 * **Pilot corpus only.** The knowledge base holds 4 public ICH guidelines (Q6A, Q2(R2), Q3A(R2), Q11)
-  converted by the temporary PDF converter. SAHPRA, WHO and pharmacopoeia passages must come from
+  and 2 public SAHPRA guidelines (SAHPGL-PEM-02, SAHPGL-PEM-03), converted by the temporary PDF
+  converter. Further SAHPRA, WHO and pharmacopoeia passages should come from
   Member 3 (respecting each source's licence; pharmacopoeias are usually not freely redistributable).
   Image-only pages (e.g. the Q6A decision trees, pages 26–35) have no text until OCR is added.
 * **Pilot labels are drafts.** The 20 pilot questions were labelled at page level by Member 2 with AI

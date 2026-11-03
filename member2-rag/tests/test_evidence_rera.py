@@ -40,7 +40,7 @@ def test_finding_structure_and_citations(service):
     assert finding.requires_human_review
     assert "not a compliance determination" in finding.conclusion
     assert finding.qa_status != QAStatus.VERIFIED
-    json.dumps(finding.model_dump(mode="json"))
+    json.dumps(finding.model_dump(mode="json"))  # serialisable for the Orchestrator
 
 
 def test_synthetic_data_forces_human_review(service):
@@ -73,19 +73,19 @@ def test_no_passages_retrieved_vs_not_relevant(service, settings):
     from app.schemas import SearchFilters
 
     agent = EvidenceReraAgent(service)
-
+    # Section with no indexed passages (parents excluded) -> nothing retrieved at all
     none = agent.assess("container closure", "3.2.S.6",
                         filters=SearchFilters(ctd_sections=["3.2.S.6"], include_parent_sections=False))
     assert none.evidence_status == EvidenceStatus.NO_PASSAGES_RETRIEVED
     assert none.qa_status == QAStatus.UNSUPPORTED
     assert "does not prove" in none.uncertainty
 
-
+    # Retrieved but irrelevant: question shares no words with passages -> reranker below threshold
     weak = agent.assess("zebra giraffe elephant", "3.2.S.4")
     assert weak.evidence_status == EvidenceStatus.RETRIEVED_NOT_RELEVANT
     assert weak.qa_status == QAStatus.HUMAN_REVIEW
     assert weak.regulatory_evidence == []
-    assert weak.metadata["below_threshold_candidates"]
+    assert weak.metadata["below_threshold_candidates"]  # still visible to assessor
     assert weak.conclusion.startswith("Insufficient evidence")
 
 
@@ -160,7 +160,7 @@ def test_citation_label():
 
     meta = PassageRecord(**make_record()).to_metadata()
     assert Citation.from_metadata(meta).short_label() == "TEST, Synthetic Test Guideline A, version 1.0, p.3"
-
+    # Versions that are already phrases are not prefixed ("version Final Version (Step 4)").
     meta = PassageRecord(**make_record(document_version="Final Version (Step 4)")).to_metadata()
     assert Citation.from_metadata(meta).short_label() == "TEST, Synthetic Test Guideline A, Final Version (Step 4), p.3"
 
@@ -185,4 +185,4 @@ def test_integration_factory_builds_both_agents(tmp_path):
     m2 = create_member2_components(Settings(chroma_dir=tmp_path, collection_name="int_kb", log_json=False))
     assert set(m2.agents) == {"evidence_rera", "s4_control"}
     assert all(agent.retrieval is m2.retrieval for agent in m2.agents.values())
-    assert m2.retrieval.store.count() == 0
+    assert m2.retrieval.store.count() == 0  # no model loaded, nothing indexed

@@ -7,6 +7,7 @@ Examples:
     python scripts/run_agent.py s4 --topic specification \
         --question "Which tests should the drug substance specification contain?"
 
+    # With structured sponsor data (see examples/s4_request.example.json):
     python scripts/run_agent.py s4 --request examples/s4_request.example.json
 
 Output is the redacted finding JSON (sponsor content removed). Use --unredacted

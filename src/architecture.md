@@ -12,7 +12,7 @@ This is a research-support tool. Every finding is cited, carries an uncertainty 
 |---|---|
 | Language | Python 3.12 / 3.13 |
 | Vector database | ChromaDB 1.5.9, persistent, cosine distance |
-| Embeddings | Configurable per collection: BAAI/bge-large-en-v1.5 is the project default; the ICH pilot collections use bge-small-en-v1.5. The status bar shows the model in use. |
+| Embeddings | BAAI/bge-large-en-v1.5 (1024 dimensions), used by the live collection `ich_large_w300`. Configurable per collection; bge-small-en-v1.5 was tested as a lighter comparison. The status bar shows the model in use. |
 | Reranker | BAAI/bge-reranker-base (cross-encoder) |
 | Model runtime | sentence-transformers 6.1.0 |
 | Data validation | Pydantic 2.13 |
@@ -106,7 +106,7 @@ S.4 Control refuses to compare numbers (outcome *not compared*, which forces hum
 
 ## Limitations
 
-* Real benchmark results should be added from the current processed regulatory passages and labelled evaluation questions.
+* Benchmark results so far are a pilot: 20 questions labelled at page level, not yet verified by a domain expert. With 20 questions, one question changes a score by 0.05.
 * Relevance thresholds are starting values and must be calibrated on the benchmark.
 * Conflict detection uses metadata (versions and status), not the meaning of the text.
 * The editor token is a simple shared secret suitable for a local research workspace. A deployed multi-user system would need real user accounts.

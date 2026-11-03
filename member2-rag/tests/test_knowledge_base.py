@@ -14,6 +14,7 @@ from app.schemas import ApplicabilityStatus, PassageRecord
 from tests.conftest import FakeEmbedder, make_record, write_jsonl
 
 
+# --- schema validation --------------------------------------------------------
 def test_valid_record_gets_hash_and_normalised_ctd():
     rec = PassageRecord(**make_record(ctd_section="3.2.s.4.1"))
     meta = rec.to_metadata()
@@ -40,7 +41,7 @@ def test_invalid_records_are_rejected_with_field_name(override, field):
     assert not result.records
     assert len(result.errors) == 1
     assert field in result.errors[0].message
-
+    # error messages must not echo passage text
     assert "Synthetic test passage" not in result.errors[0].message
 
 
@@ -58,12 +59,12 @@ def test_missing_optional_metadata_is_explicit_not_invented():
         "document_version", "page_number", "publication_or_effective_date", "applicability_status"
     }
     flat = to_chroma_metadata(meta, "m")
-    assert "document_version" not in flat and "page_number" not in flat
+    assert "document_version" not in flat and "page_number" not in flat  # omitted, not faked
     assert flat["provenance_complete"] is False
     assert from_chroma_metadata(flat) == meta
 
 
-
+# --- input files ---------------------------------------------------------------
 def test_missing_file(tmp_path):
     with pytest.raises(InputFileError, match="not found"):
         load_jsonl(tmp_path / "nope.jsonl")
@@ -108,7 +109,7 @@ def test_windows_bom_tolerated(tmp_path):
     assert len(load_jsonl(path).records) == 1
 
 
-
+# --- stable IDs and duplicates -------------------------------------------------
 def test_generated_chunk_id_is_stable():
     a = PassageRecord(**make_record(chunk_id=None))
     b = PassageRecord(**make_record(chunk_id=None))
@@ -118,7 +119,7 @@ def test_generated_chunk_id_is_stable():
 def test_positional_id_survives_text_correction():
     a = PassageRecord(**make_record(chunk_id=None, text="Original text."))
     b = PassageRecord(**make_record(chunk_id=None, text="Corrected text."))
-    assert a.chunk_id == b.chunk_id
+    assert a.chunk_id == b.chunk_id  # same page + chunk_index -> update, not duplicate
 
 
 def test_id_without_position_uses_content():
@@ -145,7 +146,7 @@ def test_conflicting_duplicate_ids_both_rejected():
     assert len(result.errors) == 2 and all("conflicting" in e.message for e in result.errors)
 
 
-
+# --- indexing and persistence ----------------------------------------------------
 def test_index_add_unchanged_update(tmp_path, store, embedder):
     path = write_jsonl(tmp_path / "p.jsonl", [make_record(chunk_id="a"), make_record(chunk_id="b", text="B text")])
     r1 = index_jsonl(path, store, embedder)
@@ -154,7 +155,7 @@ def test_index_add_unchanged_update(tmp_path, store, embedder):
 
     r2 = index_jsonl(path, store, embedder)
     assert (r2.added, r2.updated, r2.unchanged) == (0, 0, 2)
-    assert embedder.document_calls == calls
+    assert embedder.document_calls == calls  # unchanged passages are not re-embedded
 
     write_jsonl(path, [make_record(chunk_id="a", text="A corrected"), make_record(chunk_id="b", text="B text")])
     r3 = index_jsonl(path, store, embedder)

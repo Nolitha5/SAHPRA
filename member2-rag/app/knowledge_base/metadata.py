@@ -19,6 +19,7 @@ from pydantic import ValidationError
 
 from app.schemas import PassageMetadata
 
+# Derived keys we add for filtering; stripped again when reading back.
 _DERIVED_KEYS = {"ctd_section_root", "ctd_part", "provenance_complete", "embedding_model"}
 
 

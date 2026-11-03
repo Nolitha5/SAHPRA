@@ -29,9 +29,9 @@ class InvalidQueryError(ValueError):
     """The query is empty, too long, or otherwise unusable."""
 
 
-
-
-
+# Instruction-like text inside a *retrieved document* is suspicious: regulatory
+# passages are evidence, never instructions. We flag (not delete) such text so
+# downstream LLM components (Member 1/5) can treat it with extra caution.
 _INJECTION_PATTERNS = [
     re.compile(p, re.IGNORECASE)
     for p in (
@@ -85,9 +85,9 @@ def build_where(filters: SearchFilters | None) -> dict[str, Any] | None:
         for section in filters.ctd_sections:
             exact.add(section)
             if section == ctd_part(section):
-                parts.add(section)
+                parts.add(section)  # e.g. "3.2.S" -> everything in 3.2.S
             else:
-                roots.add(section)
+                roots.add(section)  # subsections share this root
             if filters.include_parent_sections:
                 exact.update(ctd_ancestors(section))
         ctd_clauses = [_in("ctd_section", sorted(exact))]

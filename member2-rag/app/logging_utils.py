@@ -19,7 +19,7 @@ from typing import Any
 
 _CONFIGURED = False
 
-
+# Keys that must never appear in structured log payloads.
 _FORBIDDEN_KEYS = {"text", "content", "sponsor_content", "passage_text", "question", "query"}
 
 

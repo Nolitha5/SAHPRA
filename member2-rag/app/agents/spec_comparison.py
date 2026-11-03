@@ -36,6 +36,9 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+# ---------------------------------------------------------------------------
+# Units
+# ---------------------------------------------------------------------------
 _UNIT_ALIASES = {
     "%w/w": "%w/w", "% w/w": "%w/w", "percent w/w": "%w/w", "%(w/w)": "%w/w", "% (w/w)": "%w/w",
     "%": "%", "percent": "%",
@@ -43,7 +46,7 @@ _UNIT_ALIASES = {
     "mg/g": "mg/g", "ug/g": "ug/g", "µg/g": "ug/g", "μg/g": "ug/g", "mcg/g": "ug/g",
     "mg/kg": "mg/kg", "ng/g": "ng/g",
 }
-
+# Explicit mass-fraction family -> factor to convert into a plain fraction.
 _MASS_FRACTION = {
     "%w/w": Decimal("1e-2"),
     "ppm": Decimal("1e-6"),
@@ -81,9 +84,9 @@ def _decimals(value: Decimal) -> int:
     return max(0, -exp) if isinstance(exp, int) else 0
 
 
-
-
-
+# ---------------------------------------------------------------------------
+# Models
+# ---------------------------------------------------------------------------
 class AcceptanceCriterion(BaseModel):
     """A numeric acceptance criterion for one test (sponsor or regulatory)."""
 
@@ -164,9 +167,9 @@ class ComparisonRow(BaseModel):
     borderline: bool = False
 
 
-
-
-
+# ---------------------------------------------------------------------------
+# Parsing
+# ---------------------------------------------------------------------------
 _NUM = r"(\d+(?:\.\d+)?)"
 _UNIT = r"\s*(%\s*w/w|%|ppm|ppb|mg/g|µg/g|μg/g|ug/g|mcg/g|mg/kg|ng/g)?"
 
@@ -192,7 +195,7 @@ def parse_criterion_text(text: str) -> tuple[Decimal | None, Decimal | None, str
             return _dec(m.group(1)), None, m.group(2)
         u1, u2 = m.group(2), m.group(4)
         if u1 and u2 and normalise_unit(u1) != normalise_unit(u2):
-            return None, None, None
+            return None, None, None  # inconsistent units inside one criterion
         return _dec(m.group(1)), _dec(m.group(3)), u1 or u2
     return None, None, None
 
@@ -223,9 +226,9 @@ def parse_reported_value(raw: str) -> tuple[str, Decimal | None, str]:
         return "unusable", None, "result is not a number"
 
 
-
-
-
+# ---------------------------------------------------------------------------
+# A. Batch results vs sponsor specification
+# ---------------------------------------------------------------------------
 def _within(v: Decimal, c: AcceptanceCriterion) -> bool:
     below = c.lower_limit is not None and (v < c.lower_limit or (v == c.lower_limit and not c.lower_inclusive))
     above = c.upper_limit is not None and (v > c.upper_limit or (v == c.upper_limit and not c.upper_inclusive))
@@ -287,7 +290,7 @@ def compare_batch_result(result: BatchResult, criterion: AcceptanceCriterion | N
             return ComparisonRow(**row, outcome=Outcome.WITHIN_CRITERIA,
                                  reason="reported below a value that is not above the upper limit")
         return not_compared("'<' result cannot be placed relative to these limits")
-
+    # kind == "above"
     if criterion.lower_limit is not None and criterion.upper_limit is None and value >= criterion.lower_limit:
         return ComparisonRow(**row, outcome=Outcome.WITHIN_CRITERIA,
                              reason="reported above a value that is not below the lower limit")
@@ -314,9 +317,9 @@ def compare_batches(
     return rows
 
 
-
-
-
+# ---------------------------------------------------------------------------
+# B. Sponsor specification vs regulatory limit
+# ---------------------------------------------------------------------------
 def compare_spec_to_regulatory(
     sponsor: AcceptanceCriterion, regulatory: AcceptanceCriterion, citation_resolves: bool
 ) -> ComparisonRow:

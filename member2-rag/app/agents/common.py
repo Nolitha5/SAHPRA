@@ -68,7 +68,7 @@ def is_relevant_enough(passage: RetrievedPassage, settings: Settings) -> bool:
         return passage.rerank_score >= settings.min_rerank_score
     if passage.retrieval_score is not None:
         return passage.retrieval_score >= settings.min_retrieval_score
-    return True
+    return True  # direct lookups were explicitly cited by a person/upstream step
 
 
 def _doc_key(p: RetrievedPassage) -> str:
@@ -129,8 +129,8 @@ def assess_evidence(result: RetrievalResult, settings: Settings) -> EvidenceAsse
     ):
         qa = QAStatus.HUMAN_REVIEW
     else:
-
-
+        # Candidate evidence exists, but relevance is a heuristic and nothing
+        # has been verified -> "partial" is the strongest label Member 2 gives.
         qa = QAStatus.PARTIAL
 
     return EvidenceAssessment(supporting, below, EvidenceStatus.CANDIDATE_EVIDENCE_FOUND, qa, flags, conflicts)

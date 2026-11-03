@@ -30,7 +30,7 @@ def batch(value, unit="%", test="Impurity A", bid="B1"):
     return BatchResult(batch_id=bid, test_name=test, reported_value=value, unit=unit)
 
 
-
+# --- evidence retrieval --------------------------------------------------------
 @pytest.mark.parametrize("topic", list(S4Topic))
 def test_topic_maps_to_section(service, topic):
     finding = S4ControlAgent(service).retrieve_evidence("drug substance", topic)
@@ -41,7 +41,7 @@ def test_topic_maps_to_section(service, topic):
 
 def test_evidence_finding_uses_shared_service(service):
     agent = S4ControlAgent(service)
-    assert agent.retrieval is service
+    assert agent.retrieval is service  # no separate DB or retrieval code
     finding = agent.retrieve_evidence("validation of analytical procedures", S4Topic.METHOD_VALIDATION)
     assert finding.regulatory_evidence and finding.citations
     assert finding.regulatory_evidence[0].metadata.ctd_section in {"3.2.S.4.3", "3.2.S.4", "3.2.S"}
@@ -53,7 +53,7 @@ def test_s4_empty_kb(empty_service):
     assert findings[0].qa_status == QAStatus.UNSUPPORTED
 
 
-
+# --- parsing and units ---------------------------------------------------------
 @pytest.mark.parametrize(
     "text, expected",
     [
@@ -72,7 +72,7 @@ def test_parse_criterion_text(text, expected):
 def test_unit_conversion_rules():
     assert convert(Decimal("0.05"), "% w/w", "ppm") == Decimal("500")
     assert convert(Decimal("1"), "mg/g", "%w/w") == Decimal("0.1")
-    assert convert(Decimal("1"), "%", "ppm") is None
+    assert convert(Decimal("1"), "%", "ppm") is None  # bare % is ambiguous
     assert convert(Decimal("1"), "°C", "ppm") is None
     assert convert(Decimal("1"), "µg/g", "ppm") == Decimal("1")
 
@@ -84,12 +84,12 @@ def test_invalid_criterion_rejected():
         AcceptanceCriterion(test_name="x", upper_limit="1", unit="%", source="regulatory")
 
 
-
+# --- batch vs spec ---------------------------------------------------------------
 @pytest.mark.parametrize(
     "value, unit, outcome",
     [
         ("0.05", "%", Outcome.WITHIN_CRITERIA),
-        ("0.10", "%", Outcome.WITHIN_CRITERIA),
+        ("0.10", "%", Outcome.WITHIN_CRITERIA),  # inclusive limit
         ("0.12", "%", Outcome.OUTSIDE_CRITERIA),
         ("<0.05", "%", Outcome.WITHIN_CRITERIA),
         ("<0.5", "%", Outcome.NOT_COMPARED),
@@ -97,7 +97,7 @@ def test_invalid_criterion_rejected():
         ("Complies", "%", Outcome.NOT_COMPARED),
         ("0,05", "%", Outcome.NOT_COMPARED),
         ("0.05", None, Outcome.NOT_COMPARED),
-        ("500", "ppm", Outcome.NOT_COMPARED),
+        ("500", "ppm", Outcome.NOT_COMPARED),  # % vs ppm: ambiguous, not converted
     ],
 )
 def test_batch_outcomes(value, unit, outcome):
@@ -162,7 +162,7 @@ def test_duplicate_spec_for_same_test_is_ambiguous(service):
     assert finding.metadata["comparison_counts"]["not_compared"] == 1
 
 
-
+# --- sponsor spec vs regulatory limit ------------------------------------------
 def reg(**kw):
     base = {"test_name": "Impurity A", "upper_limit": "0.15", "unit": "%", "source": "regulatory",
             "citation_chunk_id": "syn-spec-1"}
@@ -182,7 +182,7 @@ def test_regulatory_comparison_cites_kb_passage(service):
     assert [c.chunk_id for c in finding.citations] == ["syn-spec-1"]
     assert finding.regulatory_evidence[0].retrieval_method == "direct_lookup"
     assert finding.regulatory_evidence[0].retrieval_score is None
-    assert finding.qa_status == QAStatus.HUMAN_REVIEW
+    assert finding.qa_status == QAStatus.HUMAN_REVIEW  # cited source is synthetic
 
 
 def test_regulatory_limit_with_unknown_citation(service):
@@ -192,7 +192,7 @@ def test_regulatory_limit_with_unknown_citation(service):
     assert "not found in the knowledge base" in finding.uncertainty
 
 
-
+# --- orchestrator interface ------------------------------------------------------
 def test_run_with_parameters(service):
     req = AgentRequest(
         ctd_section="3.2.S.4.4",
@@ -215,12 +215,12 @@ def test_run_regulatory_limits_default_to_regulatory_source(service):
             parameters={"specification": [{"test_name": "Impurity A", "upper_limit": "0.10", "unit": "% w/w"}],
                         "regulatory_limits": [limit]}))
 
-
+    # No "source" key: still treated as a regulatory limit, not silently dropped.
     findings = run({"test_name": "Impurity A", "upper_limit": "0.15", "unit": "% w/w", "citation_chunk_id": "nope"})
     assert findings[-1].metadata["comparison_counts"]["not_compared"] == 1
     assert "not found in the knowledge base" in findings[-1].uncertainty
     with pytest.raises(ValueError, match=r"invalid S\.4 parameters"):
-        run({"test_name": "Impurity A", "upper_limit": "0.15", "unit": "% w/w"})
+        run({"test_name": "Impurity A", "upper_limit": "0.15", "unit": "% w/w"})  # citation required
 
 
 def test_run_invalid_parameters_do_not_echo_values(service):

@@ -43,9 +43,9 @@ def test_repair_split_words_joins_fragments_only():
                                "can not can not can not cannot in to in to into"])
     assert conv.repair_split_words("It shou ld be de fine d.", counts) == "It should be defined."
     assert conv.repair_split_words("All test s (shou ld), done", counts) == "All tests (should), done"
-
+    # Two ordinary words are never merged, even if the joined form exists.
     assert conv.repair_split_words("we can not go in to it", counts) == "we can not go in to it"
-
+    # Joined form too rare in the document: leave alone.
     assert conv.repair_split_words("pseudo polymorphs", counts) == "pseudo polymorphs"
 
 
@@ -81,7 +81,7 @@ def test_convert_pdf_end_to_end(tmp_path):
                          page_sections={4: "3.2.S.4.3"})
     rows, report = conv.convert(doc, chunk_size=20, overlap=5)
     assert report.pages_total == 4 and report.pages_without_text == [3]
-    assert report.header_footer_lines_removed >= 6
+    assert report.header_footer_lines_removed >= 6  # header + "Page n of 4" footer
     assert all("HEADER" not in r["text"] and "Page" not in r["text"] for r in rows)
     assert all("Validation covers specificity" in r["text"] for r in rows if r["chunk_index"] == 0)
     assert {r["page_number"] for r in rows} == {1, 2, 4}

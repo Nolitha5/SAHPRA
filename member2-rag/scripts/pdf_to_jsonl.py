@@ -44,13 +44,13 @@ from pydantic import ValidationError
 
 from app.schemas import ApplicabilityStatus, DocumentType, PassageRecord, normalise_ctd_section
 
-MIN_PAGE_CHARS = 40
+MIN_PAGE_CHARS = 40  # below this a page is treated as having no extractable text
 _SLUG = re.compile(r"[^A-Za-z0-9]+")
 
 
-
-
-
+# ---------------------------------------------------------------------------
+# Data
+# ---------------------------------------------------------------------------
 @dataclass
 class SourceDoc:
     pdf: Path
@@ -62,8 +62,8 @@ class SourceDoc:
     effective_date: str | None = None
     applicability_status: str = "unknown"
     document_type: str = "guideline"
-    ctd_section: str | None = None
-    page_sections: dict[int, str] = field(default_factory=dict)
+    ctd_section: str | None = None  # default for every page
+    page_sections: dict[int, str] = field(default_factory=dict)  # page -> section
     first_page: int = 1
     last_page: int | None = None
 
@@ -79,9 +79,9 @@ class ConvertReport:
     rejected: list[str] = field(default_factory=list)
 
 
-
-
-
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 def slug(value: str) -> str:
     return _SLUG.sub("-", value).strip("-").lower() or "x"
 
@@ -130,7 +130,7 @@ def extract_pages(pdf: Path) -> list[str]:
     most words split by kerning ("shou ld"); plain mode is the per-page fallback."""
     try:
         from pypdf import PdfReader
-    except ImportError as exc:
+    except ImportError as exc:  # pragma: no cover
         raise SystemExit("pypdf is not installed. Run: pip install -r requirements.txt") from exc
     reader = PdfReader(str(pdf))
     pages = []
@@ -139,21 +139,21 @@ def extract_pages(pdf: Path) -> list[str]:
         for kwargs in ({"extraction_mode": "layout"}, {}):
             try:
                 text = page.extract_text(**kwargs) or ""
-            except Exception:
+            except Exception:  # a single broken page should not stop the document
                 continue
-            if len(text.strip()) >= MIN_PAGE_CHARS:
+            if len(text.strip()) >= MIN_PAGE_CHARS:  # layout mode can miss text on some pages
                 break
         pages.append(text)
     return pages
 
 
 def _norm_line(line: str) -> str:
-
+    # Page numbers inside headers/footers change per page; mask digits when comparing.
     return re.sub(r"\d+", "#", line.strip().lower())
 
 
 def _edge_count(n_lines: int, edge: int) -> int:
-
+    # Short pages: only look at the very first and last line, so body text survives.
     return max(1, min(edge, n_lines // 4))
 
 
@@ -191,7 +191,7 @@ def remove_repeating_lines(pages: list[str], min_share: float = 0.5, edge: int =
     return cleaned, removed
 
 
-
+# Word/PDF "Symbol" font glyphs land in the Unicode private use area (U+F0xx).
 _SYMBOL_FONT = {
     "": "•", "": "▪", "": "•", "": "≤", "": "≥", "": "±",
     "": "×", "": "→", "": "(", "": ")", "": "−", "": "=",
@@ -199,13 +199,13 @@ _SYMBOL_FONT = {
 }
 _SYMBOL_RE = re.compile("|".join(map(re.escape, _SYMBOL_FONT)))
 _WORD = re.compile(r"[A-Za-z]+")
-_HEAD = re.compile(r"^(\W*)([A-Za-z]+)$")
-_TAIL = re.compile(r"^([a-z]+)(\W*)$")
+_HEAD = re.compile(r"^(\W*)([A-Za-z]+)$")  # "(shou" -> "(", "shou"
+_TAIL = re.compile(r"^([a-z]+)(\W*)$")  # "ld," -> "ld", ","
 
 
 def clean_text(text: str) -> str:
     text = _SYMBOL_RE.sub(lambda m: _SYMBOL_FONT[m.group()], text)
-    text = re.sub(r"(\w)-[ \t]*\n[ \t]*(\w)", r"\1\2", text)
+    text = re.sub(r"(\w)-[ \t]*\n[ \t]*(\w)", r"\1\2", text)  # join words hyphenated across lines
     return re.sub(r"\s+", " ", text).strip()
 
 
@@ -235,12 +235,12 @@ def repair_split_words(text: str, counts: Counter[str], min_joined: int = 3) -> 
         head = _HEAD.match(out[-1]) if out else None
         joined = False
         if head:
-
+            # Try 2 then 3 pieces, so a word split twice ("de fine d") is found.
             for width in (1, 2):
                 tails = [_TAIL.match(t) for t in tokens[i : i + width]]
                 if len(tails) < width or not all(tails):
                     break
-
+                # Inner pieces must be bare letters; only the last may carry punctuation.
                 if any(m.group(2) for m in tails[:-1]):
                     break
                 if should_join([head.group(2)] + [m.group(1) for m in tails]):
@@ -262,7 +262,7 @@ def chunk_words(text: str, size: int, overlap: int) -> list[str]:
     chunks = []
     for start in range(0, len(words), step):
         piece = words[start : start + size]
-        if chunks and len(piece) <= overlap:
+        if chunks and len(piece) <= overlap:  # only repeated overlap left
             break
         chunks.append(" ".join(piece))
         if start + size >= len(words):
@@ -270,9 +270,9 @@ def chunk_words(text: str, size: int, overlap: int) -> list[str]:
     return chunks
 
 
-
-
-
+# ---------------------------------------------------------------------------
+# Conversion
+# ---------------------------------------------------------------------------
 def convert(doc: SourceDoc, chunk_size: int, overlap: int) -> tuple[list[dict], ConvertReport]:
     check_no_placeholder(doc)
     report = ConvertReport(pdf=doc.pdf.name)

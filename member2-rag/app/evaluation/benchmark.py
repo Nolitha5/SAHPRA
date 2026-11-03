@@ -105,7 +105,7 @@ class RunConfig(BaseModel):
     candidate_k: int = Field(default=20, ge=1)
     final_k: int = Field(default=10, ge=1)
     relevance_level: Literal["chunk", "page"] = "chunk"
-    chunk_size: int | None = None
+    chunk_size: int | None = None  # documentation of how the collection was built
     chunk_overlap: int | None = None
     notes: str | None = None
 
@@ -194,7 +194,7 @@ def run_config(
     outcomes: list[QueryOutcome] = []
     skipped: list[str] = []
 
-
+    # Warm-up query so one-off model loading is not counted as retrieval latency.
     if items:
         service.retrieve(items[0].question, candidate_k=config.candidate_k, final_k=config.final_k,
                          use_reranker=config.use_reranker)
@@ -247,7 +247,7 @@ def run_config(
             }
             for o in outcomes
         ],
-        "_contexts": {o.question_id: o.contexts for o in outcomes},
+        "_contexts": {o.question_id: o.contexts for o in outcomes},  # used by Ragas, stripped on save
     }
 
 

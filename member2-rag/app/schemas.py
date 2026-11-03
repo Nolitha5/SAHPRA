@@ -28,15 +28,15 @@ from app.hashing import compute_content_hash, make_chunk_id
 SCHEMA_VERSION = "1.0"
 
 _CHUNK_ID_RE = re.compile(r"^[A-Za-z0-9._:\-]{1,200}$")
-
+# Matches CTD headings such as "3.2.S", "3.2.S.4", "3.2.S.4.1", "3.2.P.5", "2.3.S".
 _CTD_RE = re.compile(r"^[1-5](\.\d+)*(\.[A-Z](\.\d+)*)?$")
-
+# ISO date with optional month/day: "2009", "2009-06", "2009-06-15".
 _PARTIAL_DATE_RE = re.compile(r"^\d{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?)?$")
 
 
-
-
-
+# ---------------------------------------------------------------------------
+# Enumerations
+# ---------------------------------------------------------------------------
 class DocumentType(str, Enum):
     GUIDELINE = "guideline"
     GUIDANCE = "guidance"
@@ -47,7 +47,7 @@ class DocumentType(str, Enum):
     TEMPLATE = "template"
     Q_AND_A = "q_and_a"
     OTHER = "other"
-    SYNTHETIC_TEST = "synthetic_test"
+    SYNTHETIC_TEST = "synthetic_test"  # placeholder data only, never real evidence
 
 
 class ApplicabilityStatus(str, Enum):
@@ -76,7 +76,7 @@ class EvidenceStatus(str, Enum):
     EMPTY_KNOWLEDGE_BASE = "empty_knowledge_base"
     NO_PASSAGES_RETRIEVED = "no_passages_retrieved"
     RETRIEVED_NOT_RELEVANT = "retrieved_not_relevant"
-    NOT_APPLICABLE = "not_applicable"
+    NOT_APPLICABLE = "not_applicable"  # e.g. pure numerical comparison findings
 
 
 REQUIRED_PROVENANCE_FIELDS = (
@@ -86,9 +86,9 @@ REQUIRED_PROVENANCE_FIELDS = (
 )
 
 
-
-
-
+# ---------------------------------------------------------------------------
+# 1. Input contract with Member 3
+# ---------------------------------------------------------------------------
 class PassageMetadata(BaseModel):
     """Source/provenance metadata attached to every stored passage."""
 
@@ -156,7 +156,7 @@ class PassageMetadata(BaseModel):
             raise ValueError("content_hash must be a 64-character lowercase SHA-256 hex digest")
         return value
 
-
+    # -- provenance ---------------------------------------------------------
     def missing_provenance(self) -> list[str]:
         """Optional provenance fields that are absent for this passage."""
         missing: list[str] = []
@@ -232,9 +232,9 @@ class PassageRecord(BaseModel):
         return PassageMetadata(**data)
 
 
-
-
-
+# ---------------------------------------------------------------------------
+# 2. Retrieval contract
+# ---------------------------------------------------------------------------
 class SearchFilters(BaseModel):
     """Metadata filters applied inside ChromaDB before similarity ranking."""
 
@@ -306,9 +306,9 @@ class RetrievalResult(BaseModel):
         return self.knowledge_base_size == 0
 
 
-
-
-
+# ---------------------------------------------------------------------------
+# 3. Team finding contract
+# ---------------------------------------------------------------------------
 class SponsorEvidence(BaseModel):
     """Evidence taken from the sponsor's dossier. Treated as CONFIDENTIAL.
 
@@ -441,8 +441,8 @@ class Finding(BaseModel):
         return data
 
 
-
-
+# Metadata keys starting with this prefix hold sponsor-derived values (e.g.
+# batch results) and are removed by `Finding.model_dump_redacted()`.
 CONFIDENTIAL_METADATA_PREFIX = "confidential_"
 
 
@@ -467,9 +467,9 @@ class AgentRequest(BaseModel):
         return norm
 
 
-
-
-
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 def normalise_ctd_section(value: str | None) -> str | None:
     """Normalise and validate a CTD section string ('3.2.s.4' -> '3.2.S.4')."""
     if value is None:

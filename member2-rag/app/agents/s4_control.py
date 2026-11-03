@@ -75,7 +75,7 @@ class S4Topic(str, Enum):
     GENERAL = "general"
 
 
-
+# CTD 3.2.S.4 sub-section headings (ICH M4Q structure).
 TOPIC_SECTIONS = {
     S4Topic.SPECIFICATION: "3.2.S.4.1",
     S4Topic.ANALYTICAL_PROCEDURES: "3.2.S.4.2",
@@ -95,7 +95,7 @@ class S4ControlAgent:
         self.retrieval = retrieval
         self.settings = settings or retrieval.settings
 
-
+    # ------------------------------------------------------------------
     def retrieve_evidence(
         self,
         question: str,
@@ -141,7 +141,7 @@ class S4ControlAgent:
             },
         )
 
-
+    # ------------------------------------------------------------------
     def compare_batch_results(
         self,
         specification: list[AcceptanceCriterion],
@@ -158,7 +158,7 @@ class S4ControlAgent:
         problems = counts[Outcome.OUTSIDE_CRITERIA] + counts[Outcome.NOT_COMPARED]
         borderline = sum(r.borderline for r in rows)
 
-
+        # Numerically consistent is still only "partial": nothing here is "verified".
         qa = QAStatus.HUMAN_REVIEW if problems or borderline else QAStatus.PARTIAL
 
         conclusion = (
@@ -205,7 +205,7 @@ class S4ControlAgent:
             },
         )
 
-
+    # ------------------------------------------------------------------
     def compare_with_regulatory_limits(
         self,
         specification: list[AcceptanceCriterion],
@@ -290,7 +290,7 @@ class S4ControlAgent:
             },
         )
 
-
+    # ------------------------------------------------------------------
     def assess(
         self,
         question: str,
@@ -334,11 +334,11 @@ class S4ControlAgent:
         try:
             spec = [AcceptanceCriterion(**c) for c in params.get("specification", [])]
             batches = [BatchResult(**b) for b in params.get("batch_results", [])]
-
-
+            # Without this default, a limit listed under regulatory_limits but lacking
+            # source='regulatory' would be read as a sponsor limit and silently ignored.
             limits = [AcceptanceCriterion(**{"source": "regulatory", **c}) for c in params.get("regulatory_limits", [])]
         except ValidationError as exc:
-
+            # Do not echo values (they may be confidential); report fields only.
             fields = sorted({".".join(map(str, e["loc"])) for e in exc.errors()})
             raise ValueError(f"invalid S.4 parameters in fields: {fields}") from None
         return self.assess(

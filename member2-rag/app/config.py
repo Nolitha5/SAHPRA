@@ -16,15 +16,15 @@ from dataclasses import dataclass, field, replace
 from functools import lru_cache
 from pathlib import Path
 
-try:
+try:  # python-dotenv is optional at runtime; tests do not need it.
     from dotenv import load_dotenv
-except ImportError:
-    load_dotenv = None
+except ImportError:  # pragma: no cover
+    load_dotenv = None  # type: ignore[assignment]
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-
-
+# Official BGE v1.5 English query instruction (see the BAAI/bge-*-en-v1.5 model
+# cards). It is prepended to *queries only*, never to stored passages.
 BGE_EN_V15_QUERY_INSTRUCTION = "Represent this sentence for searching relevant passages: "
 
 
@@ -72,43 +72,43 @@ def _env_bool(name: str, default: bool) -> bool:
 class Settings:
     """All tunable parameters for the knowledge base, retrieval and agents."""
 
-
+    # --- Storage -----------------------------------------------------------
     chroma_dir: Path = field(default_factory=lambda: PROJECT_ROOT / "data" / "chroma")
     collection_name: str = "regulatory_kb"
 
-
+    # --- Embeddings --------------------------------------------------------
     embedding_model: str = "BAAI/bge-large-en-v1.5"
     embedding_query_instruction: str = BGE_EN_V15_QUERY_INSTRUCTION
-    embedding_device: str = "cpu"
+    embedding_device: str = "cpu"  # "cpu", "cuda" or "mps"
     embedding_batch_size: int = 16
 
-
+    # --- Reranking ---------------------------------------------------------
     reranker_enabled: bool = True
     reranker_model: str = "BAAI/bge-reranker-base"
     reranker_max_length: int = 512
     reranker_batch_size: int = 16
 
-
-    candidate_k: int = 20
-    final_k: int = 5
+    # --- Retrieval ---------------------------------------------------------
+    candidate_k: int = 20  # passages fetched from ChromaDB before reranking
+    final_k: int = 5  # passages returned after reranking
     max_query_chars: int = 2000
 
+    # --- Evidence sufficiency heuristics -----------------------------------
+    # These are NOT probabilities and NOT proof of regulatory correctness.
+    # They decide only whether a passage is strong enough to be *shown to an
+    # assessor as candidate evidence*. Calibrate them on the benchmark.
+    min_rerank_score: float = 0.0  # raw cross-encoder logit
+    min_retrieval_score: float = 0.55  # cosine similarity (normalised vectors)
 
-
-
-
-    min_rerank_score: float = 0.0
-    min_retrieval_score: float = 0.55
-
-
+    # --- Logging -----------------------------------------------------------
     log_level: str = "INFO"
     log_json: bool = True
 
-
-    api_host: str = "127.0.0.1"
+    # --- Web API / dashboard ----------------------------------------------
+    api_host: str = "127.0.0.1"  # localhost only by default
     api_port: int = 8000
-
-
+    # Editing (import/delete passages, edit benchmark cases) is DISABLED unless
+    # a token is set. The dashboard sends it in the X-Admin-Token header.
     admin_token: str = field(default="", repr=False)
     cors_origins: tuple[str, ...] = ("http://localhost:5173", "http://127.0.0.1:5173")
     benchmark_file: Path = field(default_factory=lambda: PROJECT_ROOT / "benchmarks" / "benchmark.jsonl")
@@ -118,7 +118,7 @@ class Settings:
 
     def with_overrides(self, **changes: object) -> Settings:
         """Return a copy with some fields changed (handy for tests/benchmarks)."""
-        return replace(self, **changes)
+        return replace(self, **changes)  # type: ignore[arg-type]
 
     def validate(self) -> Settings:
         if self.final_k > self.candidate_k:
