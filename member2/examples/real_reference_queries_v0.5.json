@@ -1,0 +1,66 @@
+{
+  "research_validation_status": "NOT_EXPERT_LABELLED",
+  "query_intent": "Per-source smoke checks for technical retrieval, NOT relevance gold labels",
+  "queries": [
+    {
+      "source_id": "ICH-Q2-R2",
+      "query": "validation of analytical procedures accuracy precision specificity"
+    },
+    {
+      "source_id": "ICH-Q14",
+      "query": "analytical procedure development analytical target profile"
+    },
+    {
+      "source_id": "ICH-Q6A",
+      "query": "test procedures acceptance criteria specifications new drug substances"
+    },
+    {
+      "source_id": "ICH-Q3A-R2",
+      "query": "impurities new drug substances reporting identification qualification"
+    },
+    {
+      "source_id": "ICH-Q3C-R9",
+      "query": "residual solvents permitted daily exposure"
+    },
+    {
+      "source_id": "SAHPRA-PEM-02-V9",
+      "query": "drug substance specification 3.2.S.4.1"
+    },
+    {
+      "source_id": "ICH-Q1A-R2",
+      "query": "stability testing long-term accelerated"
+    },
+    {
+      "source_id": "ICH-Q1B",
+      "query": "photostability light testing"
+    },
+    {
+      "source_id": "ICH-Q6B",
+      "query": "biotechnological biological specifications"
+    },
+    {
+      "source_id": "ICH-Q7",
+      "query": "good manufacturing practice active pharmaceutical ingredients"
+    },
+    {
+      "source_id": "ICH-Q8-R2",
+      "query": "pharmaceutical development design space"
+    },
+    {
+      "source_id": "ICH-Q11-QA",
+      "query": "selection of starting materials question answer"
+    },
+    {
+      "source_id": "WHO-TRS1010-A10",
+      "query": "stability testing active pharmaceutical ingredients"
+    },
+    {
+      "source_id": "ICH-M4Q-R1",
+      "query": "3.2.S.4.3 analytical validation"
+    },
+    {
+      "source_id": "ICH-Q11",
+      "query": "critical quality attributes manufacturing drug substance"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "mode": "demo",
+  "backend": "memory",
+  "index_path": "local_indexes/chroma",
+  "registry_path": "local_indexes/sources.json",
+  "embedding_model": "hash-demo-v1",
+  "embedding_dimension": 384,
+  "rerank_model": null,
+  "min_query_token_overlap": 0.20,
+  "hybrid_weight": 0.5,
+  "candidate_multiplier": 5,
+  "allow_synthetic": true,
+  "use_ollama_s4": false,
+  "ollama_base_url": "http://localhost:11434",
+  "ollama_model": "llama3.1:8b"
+}

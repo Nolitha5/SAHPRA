@@ -1,0 +1,76 @@
+{
+  "warning": "SYNTHETIC DEMO - NO REAL REGULATORY GUIDELINES, NOT VALIDATED",
+  "evidence_result": {
+    "request_id": "demo-1",
+    "status": "FOUND",
+    "evidence": [
+      {
+        "evidence_id": "e-synthetic-validation",
+        "chunk_id": "synthetic-validation",
+        "source_id": "SYNTHETIC-TEST-001",
+        "authority": "TEST_ONLY",
+        "document": "Synthetic evidence texts for integration engineering (NOT A GUIDELINE)",
+        "document_code": "FAKE-QUALITY-TEST",
+        "section": "test-analytical-validation",
+        "version": "2026-demo-v1",
+        "passage": "Synthetic analytical validation accuracy precision: test sponsors include method validation evidence describing accuracy and precision when available. THIS IS FICTIONAL TRAINING MATERIAL.",
+        "page": 1,
+        "source_url": null,
+        "source_sha256": null,
+        "effective_from": null,
+        "effective_to": null,
+        "retrieval_score": 0.9836065573770493,
+        "citation": "TEST_ONLY, FAKE-QUALITY-TEST, 2026-demo-v1, \u00a7test-analytical-validation, p.1",
+        "provenance_verified": true,
+        "is_synthetic": true,
+        "source_type": "synthetic"
+      },
+      {
+        "evidence_id": "e-synthetic-procedures",
+        "chunk_id": "synthetic-procedures",
+        "source_id": "SYNTHETIC-TEST-001",
+        "authority": "TEST_ONLY",
+        "document": "Synthetic evidence texts for integration engineering (NOT A GUIDELINE)",
+        "document_code": "FAKE-QUALITY-TEST",
+        "section": "test-analytical-procedures",
+        "version": "2026-demo-v1",
+        "passage": "Synthetic analytical procedures methods: the training documents describe how chromatographic analyses are carried out. FICTIONAL.",
+        "page": 3,
+        "source_url": null,
+        "source_sha256": null,
+        "effective_from": null,
+        "effective_to": null,
+        "retrieval_score": 0.967741935483871,
+        "citation": "TEST_ONLY, FAKE-QUALITY-TEST, 2026-demo-v1, \u00a7test-analytical-procedures, p.3",
+        "provenance_verified": true,
+        "is_synthetic": true,
+        "source_type": "synthetic"
+      }
+    ],
+    "requires_human_review": false,
+    "reason": null,
+    "index_id": "hash-demo-v1",
+    "retrieval_config": {
+      "min_query_token_overlap": 0.2,
+      "hybrid_weight": 0.5,
+      "candidate_multiplier": 5,
+      "reranker": null,
+      "store": "MemoryVectorStore"
+    }
+  },
+  "s4_statuses": {
+    "3.2.S.4.1": "REVIEW_REQUIRED",
+    "3.2.S.4.2": "REVIEW_REQUIRED",
+    "3.2.S.4.3": "REVIEW_REQUIRED",
+    "3.2.S.4.4": "REVIEW_REQUIRED",
+    "3.2.S.4.5": "REVIEW_REQUIRED"
+  },
+  "stats": {
+    "backend": "memory",
+    "embedding_model": "hash-demo-v1",
+    "source_count": 1,
+    "chunk_count": 6,
+    "mode": "demo",
+    "allow_synthetic": true
+  }
+}

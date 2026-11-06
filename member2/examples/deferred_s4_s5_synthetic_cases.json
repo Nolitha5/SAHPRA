@@ -1,0 +1,10 @@
+{
+  "label_status": "SYNTHETIC_ENGINEERING_FIXTURES",
+  "expert_label_status": "NONE",
+  "cases": [
+    {"case_id":"SYN-PARA-001","drug_substance":"Paracetamol","cas":"103-90-2","product_type":"CHEMICAL","claimed_compendium":"Ph.Int.","claimed_edition":null,"submission_date":null,"s4_fields":{"3.2.S.4.1":{"compendial_claim":"WHO International Pharmacopoeia","proposed_specification":"Sponsor summary exists; numerical criteria not expert checked"},"3.2.S.4.3":{"validation_evidence":"Sponsor validation summary placeholder"}},"s5_fields":{"reference_standard_source":"Not supplied"}},
+    {"case_id":"SYN-IBU-001","drug_substance":"Ibuprofen","cas":"15687-27-1","product_type":"CHEMICAL","claimed_compendium":"BP","claimed_edition":"Sponsor claimed edition; unverified","submission_date":"2025-02-01","s4_fields":{"3.2.S.4.4":{"batch_details":"Synthetic batch metadata only"}},"s5_fields":{}},
+    {"case_id":"SYN-AMOX-001","drug_substance":"Amoxicillin trihydrate","cas":"61336-70-7","product_type":"CHEMICAL","claimed_compendium":"Ph. Eur.","claimed_edition":null,"submission_date":null,"s4_fields":{"3.2.S.4.2":{"method_description":"Sponsor description placeholder"}},"s5_fields":{}},
+    {"case_id":"SYN-MET-001","drug_substance":"Metronidazole","cas":"443-48-1","product_type":"CHEMICAL","claimed_compendium":null,"claimed_edition":null,"submission_date":null,"s4_fields":{},"s5_fields":{}}
+  ]
+}

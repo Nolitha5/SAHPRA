@@ -1,0 +1,64 @@
+{
+  "sections": {},
+  "regulatory_chroma": {
+    "backend": "ACTUAL_CHROMADB",
+    "model": "BAAI/bge-large-en-v1.5",
+    "vector_dimension": 1024,
+    "collection": "regulatory_technical_unapproved-87028c6ff4ca",
+    "chunk_count": 554,
+    "source_count": 15,
+    "verified_source_hashes": true,
+    "verdict": "PASS"
+  },
+  "regulatory_corpus": {
+    "chunk_count": 554,
+    "source_count": 15,
+    "source_ids": [
+      "ICH-M4Q-R1",
+      "ICH-Q11",
+      "ICH-Q11-QA",
+      "ICH-Q14",
+      "ICH-Q1A-R2",
+      "ICH-Q1B",
+      "ICH-Q2-R2",
+      "ICH-Q3A-R2",
+      "ICH-Q3C-R9",
+      "ICH-Q6A",
+      "ICH-Q6B",
+      "ICH-Q7",
+      "ICH-Q8-R2",
+      "SAHPRA-PEM-02-V9",
+      "WHO-TRS1010-A10"
+    ],
+    "verdict": "PASS"
+  },
+  "dossier_chroma": {
+    "backend": "ACTUAL_CHROMADB",
+    "collection": "sponsor_dossier_unverified-87028c6ff4ca",
+    "chunk_count": 2064,
+    "source_count": 45,
+    "classification": "D_SPONSOR_DOSSIER",
+    "requires_human_review": true,
+    "verdict": "PASS"
+  },
+  "copy_manifest": {
+    "total_copies": 45,
+    "copied_verified": 45,
+    "quarantine": 5,
+    "quarantine_all_approved_false": true,
+    "verdict": "PASS"
+  },
+  "quarantine_dir": {
+    "html_count": 5,
+    "files": [
+      "amlodipine-besilate-tablets [webofpharma.com].html",
+      "amlodipine-oral-solution [webofpharma.com].html",
+      "hydrochlorothiazide-tablets.html",
+      "valsartan-capsules.html",
+      "valsartan-tablets.html"
+    ],
+    "verdict": "PASS"
+  },
+  "overall_verdict": "PARTIAL_PASS",
+  "non_passing": []
+}

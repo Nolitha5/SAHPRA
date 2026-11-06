@@ -1,0 +1,48 @@
+# Python artefacts
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+.env
+*.env
+
+# Local databases — never publish
+local_indexes/
+*.db
+*.sqlite
+*.sqlite3
+*.chroma/
+
+# BGE / HuggingFace model weights — too large and not redistributable
+models/
+models_cache/
+.cache/
+
+# Raw pharmaceutical and regulatory source PDFs — not for public redistribution
+regulatory_sources/
+pharmacopoeia/
+
+# Sponsor dossier material — confidential
+dossier/
+
+# Locally generated release ZIPs and SHA files
+releases/
+*.zip
+*.sha256
+
+# Artifacts — contain SQLite databases and chunk-text extracts
+artifacts/
+
+# Logs and large intermediates
+*.log
+*.log.*
+_github_publish/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,54 @@
+{
+  "status": "RESEARCHER_TEMPLATE_NOT_EXPERT_VALIDATED",
+  "gold_label_owner": "M5 domain specialist",
+  "cases": [
+    {
+      "substance": "Paracetamol",
+      "cas": "103-90-2",
+      "ctd_section": "3.2.S.4",
+      "query": "What identification tests and assay requirements are described for Paracetamol in the applicable WHO International Pharmacopoeia edition?",
+      "expected_source_id": "WHO-PHINT-PARACETAMOL-API",
+      "expected_page": null,
+      "expected_verbatim_excerpt": null,
+      "expert_label": null,
+      "applicable_edition_verified": false,
+      "human_approval_or_rejection": null
+    },
+    {
+      "substance": "Ibuprofen",
+      "cas": "15687-27-1",
+      "ctd_section": "3.2.S.4",
+      "query": "What identification tests and assay requirements are described for Ibuprofen in the applicable WHO International Pharmacopoeia edition?",
+      "expected_source_id": "WHO-PHINT-IBUPROFEN-API",
+      "expected_page": null,
+      "expected_verbatim_excerpt": null,
+      "expert_label": null,
+      "applicable_edition_verified": false,
+      "human_approval_or_rejection": null
+    },
+    {
+      "substance": "Amoxicillin trihydrate",
+      "cas": "61336-70-7",
+      "ctd_section": "3.2.S.4",
+      "query": "What identification tests and assay requirements are described for Amoxicillin trihydrate in the applicable WHO International Pharmacopoeia edition?",
+      "expected_source_id": "WHO-PHINT-AMOXICILLIN-TRIHYDRATE-API",
+      "expected_page": null,
+      "expected_verbatim_excerpt": null,
+      "expert_label": null,
+      "applicable_edition_verified": false,
+      "human_approval_or_rejection": null
+    },
+    {
+      "substance": "Metronidazole",
+      "cas": "443-48-1",
+      "ctd_section": "3.2.S.4",
+      "query": "What identification tests and assay requirements are described for Metronidazole in the applicable WHO International Pharmacopoeia edition?",
+      "expected_source_id": "WHO-PHINT-METRONIDAZOLE-API",
+      "expected_page": null,
+      "expected_verbatim_excerpt": null,
+      "expert_label": null,
+      "applicable_edition_verified": false,
+      "human_approval_or_rejection": null
+    }
+  ]
+}

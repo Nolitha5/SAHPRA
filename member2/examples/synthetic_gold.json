@@ -1,0 +1,30 @@
+[
+  {
+    "query_id": "gold-1",
+    "question": "analytical validation accuracy precision",
+    "relevant_chunk_ids": [
+      "synthetic-validation"
+    ]
+  },
+  {
+    "query_id": "gold-2",
+    "question": "batch analyses results specifications",
+    "relevant_chunk_ids": [
+      "synthetic-batch"
+    ]
+  },
+  {
+    "query_id": "gold-3",
+    "question": "stability storage retest time points",
+    "relevant_chunk_ids": [
+      "synthetic-stability"
+    ]
+  },
+  {
+    "query_id": "gold-4",
+    "question": "analytical procedures chromatographic methods",
+    "relevant_chunk_ids": [
+      "synthetic-procedures"
+    ]
+  }
+]

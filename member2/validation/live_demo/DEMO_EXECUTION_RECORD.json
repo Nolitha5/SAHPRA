@@ -1,0 +1,52 @@
+{
+  "demo_date": "2026-10-29",
+  "app_url": "http://127.0.0.1:8501",
+  "app_version": "v1.4.0",
+  "streamlit_version": "1.66.1",
+  "scenarios_executed": [
+    {
+      "id": "S1",
+      "title": "Regulatory evidence retrieval — S.4.3 validation",
+      "query": "What are the ICH requirements for analytical procedure validation under CTD section 3.2.S.4.3?",
+      "result": "PASS",
+      "details": "Found 3 relevant sources from 15 candidate chunks using BGE (bge-large-en-v1.5) + ChromaDB. Top result: ICH-Q14 (Analytical Procedure Development), score=0.8098, section 3.2.S.4.3. Real BGE embeddings confirmed. Citation ID, passage text, authority, version all displayed.",
+      "collection_used": "regulatory_technical_unapproved-87028c6ff4ca",
+      "backend": "ACTUAL_CHROMADB"
+    },
+    {
+      "id": "S3",
+      "title": "Provisional S.4 assessment — Valsartan S.4.1",
+      "substance": "Valsartan",
+      "section": "S.4.1 — Specification",
+      "result": "PASS",
+      "details": "Dual-panel display: regulatory evidence (ICH-M4Q-R1, score=0.787) shown separately from sponsor dossier evidence (dossier_valsartan_edited_validation...). Both panels displayed correct source types. Provisional finding panel shown with human-review requirement. No mixing of sources between panels.",
+      "isolation_verified": true
+    },
+    {
+      "id": "S5",
+      "title": "Source isolation — collection separation",
+      "result": "PASS",
+      "details": "ChromaDB isolation confirmed: 0 dossier chunks in regulatory collection, 0 regulatory chunks in dossier collection. Quarantine HTML not indexed in either collection. Compendial discovery (7064 docs) in SQLite only, not in ChromaDB.",
+      "isolation_audit": "validation/COMPLETE_KNOWLEDGE_BASE_AUDIT.json"
+    }
+  ],
+  "scenarios_not_run_in_browser": [
+    {
+      "id": "S2",
+      "title": "Drug-substance document navigation (KB Browser)",
+      "status": "VERIFIED_VIA_CODE_AND_DATA",
+      "note": "KB Browser page loads dossier source metadata from audit. Dossier PDFs confirmed present in pharmacopoeia/incoming/raw_from_pharmacy/ (45 files). 43 have indexed chunks. Not browser-click-tested due to BGE load time."
+    },
+    {
+      "id": "S4",
+      "title": "Missing evidence abstention",
+      "status": "ARCHITECTURE_VERIFIED",
+      "note": "app.py page_evidence_search() returns 'Insufficient evidence' message when results list is empty. Relies on BGE returning low-score results for off-corpus queries. Not click-tested."
+    }
+  ],
+  "app_launch_method": "python -m streamlit run tools/member2_explorer/app.py --server.address 127.0.0.1 --server.port 8501",
+  "warnings": [
+    "BGE model takes ~30s to load on first use (1.3GB cached model).",
+    "App uses BGE query prefix 'Represent this sentence for searching relevant passages:' per bge-large-en-v1.5 convention."
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "recorded_utc": "2026-10-15T09:56:55.893181+00:00",
+  "python": "3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "unit_tests": {
+    "status": "PASS",
+    "return_code": 0,
+    "last_lines": [
+      "....................................................                     [100%]",
+      "52 passed in 0.48s"
+    ]
+  },
+  "native_chromadb": {
+    "test": "NATIVE_CHROMADB_PERSISTENCE",
+    "created_at_utc": "2026-10-15T09:56:55.884747+00:00",
+    "status": "BLOCKED",
+    "reason": "chromadb package is not installed in this Python environment",
+    "tests": [],
+    "uses_real_regulatory_material": false,
+    "uses_real_embedding_model": false
+  },
+  "synthetic_team_contract_simulation": {
+    "study": "SAHPRA Agentic QA-RAG",
+    "execution_type": "SYNTHETIC_FIVE_MEMBER_CONTRACT_SIMULATION",
+    "not_a_regulatory_pilot": true,
+    "not_expert_evaluated": true,
+    "case_id": "SIMULATED-CASE-001",
+    "real_members_integrated": [
+      "M2_ONLY"
+    ],
+    "simulated_member_interfaces": [
+      "M1",
+      "M3",
+      "M4",
+      "M5"
+    ],
+    "m2_evidence_status": "FOUND",
+    "m2_evidence_is_synthetic": true,
+    "m2_s4_finding_count": 5,
+    "qa_stub_results": [
+      {
+        "finding_id": "s4-b3c46689ec3c62fd2f",
+        "qa_status": "PASS"
+      },
+      {
+        "finding_id": "s4-d0a9cb1078cbdad508",
+        "qa_status": "PASS"
+      },
+      {
+        "finding_id": "s4-cbd4e16ecedc620c8e",
+        "qa_status": "PASS"
+      },
+      {
+        "finding_id": "s4-958f697335c88e183e",
+        "qa_status": "PASS"
+      },
+      {
+        "finding_id": "s4-95cf6807efff1fe82e",
+        "qa_status": "PASS"
+      }
+    ],
+    "human_decision": "NO_AUTHORISED_HUMAN_DECISION",
+    "audit_events": 44,
+    "audit_db": "/mnt/data/SAHPRA_Member2_Advanced_Development_v0.2/artifacts/synthetic_team_simulation/synthetic_case_audit.sqlite3",
+    "pending": [
+      "M1 actual graph",
+      "M3 actual PDF extractor",
+      "M4 actual memory/evaluation",
+      "M5 actual QA/domain review",
+      "actual regulatory corpus",
+      "ethical/pilot approval and authorised assessors"
+    ]
+  },
+  "official_corpus_indexed_and_verified": false,
+  "expert_evaluation_completed": false,
+  "authorised_regulatory_pilot_completed": false,
+  "research_and_pilot_readiness": "NOT_READY_FOR_AUTHORISED_PILOT",
+  "limitations": "Offline execution cannot acquire official PDFs or install ChromaDB; assessor approvals and partner code not supplied."
+}

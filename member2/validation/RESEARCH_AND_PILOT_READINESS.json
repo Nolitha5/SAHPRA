@@ -1,0 +1,59 @@
+{
+  "status": "NOT_READY_FOR_AUTHORISED_PILOT",
+  "checks": [
+    {
+      "check": "chromadb_installed",
+      "passed": false,
+      "detail": "Native ChromaDB dependency required for persistence"
+    },
+    {
+      "check": "embedding_runtime_installed",
+      "passed": false,
+      "detail": "SentenceTransformers and target BGE models required"
+    },
+    {
+      "check": "approved_official_pdf_corpus",
+      "passed": false,
+      "detail": "0 verified source PDF(s); minimum 3 for engineering gate, coverage review still required"
+    },
+    {
+      "check": "m1_live_component_evidence",
+      "passed": false,
+      "detail": "Expected: integration_evidence/m1_live_graph_report.json"
+    },
+    {
+      "check": "m3_live_component_evidence",
+      "passed": false,
+      "detail": "Expected: integration_evidence/m3_real_dossier_extraction_report.json"
+    },
+    {
+      "check": "m4_live_component_evidence",
+      "passed": false,
+      "detail": "Expected: integration_evidence/m4_full_evaluation_report.json"
+    },
+    {
+      "check": "m5_live_component_evidence",
+      "passed": false,
+      "detail": "Expected: integration_evidence/m5_domain_qa_and_expert_signoff.json"
+    },
+    {
+      "check": "expert_labels_supplied",
+      "passed": false,
+      "detail": "Requires M5 domain sign-off; file presence does not attest expertise"
+    },
+    {
+      "check": "pilot_approval_supplied",
+      "passed": false,
+      "detail": "External ethics, data-protection, institutional and assessor approvals required"
+    },
+    {
+      "check": "human_pilot_records_supplied",
+      "passed": false,
+      "detail": "Authenticated assessor outcomes and approved controlled pilot protocol required"
+    }
+  ],
+  "passed_count": 0,
+  "required_count": 10,
+  "external_verification_required": true,
+  "warning": "No file-presence gate can certify regulatory validity or human approval."
+}

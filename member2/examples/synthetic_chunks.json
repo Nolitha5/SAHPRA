@@ -1,0 +1,62 @@
+[
+  {
+    "chunk_id": "synthetic-validation",
+    "source_id": "SYNTHETIC-TEST-001",
+    "text": "Synthetic analytical validation accuracy precision: test sponsors include method validation evidence describing accuracy and precision when available. THIS IS FICTIONAL TRAINING MATERIAL.",
+    "section": "test-analytical-validation",
+    "page": 1,
+    "chunk_kind": "text",
+    "checksum": null,
+    "metadata": {}
+  },
+  {
+    "chunk_id": "synthetic-specification",
+    "source_id": "SYNTHETIC-TEST-001",
+    "text": "Synthetic drug substance specifications acceptance criteria limits and test methods: the training case asks reviewers to compare the listed tests and acceptance criteria. FICTIONAL.",
+    "section": "test-specification",
+    "page": 2,
+    "chunk_kind": "text",
+    "checksum": null,
+    "metadata": {}
+  },
+  {
+    "chunk_id": "synthetic-procedures",
+    "source_id": "SYNTHETIC-TEST-001",
+    "text": "Synthetic analytical procedures methods: the training documents describe how chromatographic analyses are carried out. FICTIONAL.",
+    "section": "test-analytical-procedures",
+    "page": 3,
+    "chunk_kind": "text",
+    "checksum": null,
+    "metadata": {}
+  },
+  {
+    "chunk_id": "synthetic-batch",
+    "source_id": "SYNTHETIC-TEST-001",
+    "text": "Synthetic batch analyses results specifications: the training example expects reference to batch records. FICTIONAL.",
+    "section": "test-batch-analyses",
+    "page": 4,
+    "chunk_kind": "text",
+    "checksum": null,
+    "metadata": {}
+  },
+  {
+    "chunk_id": "synthetic-justification",
+    "source_id": "SYNTHETIC-TEST-001",
+    "text": "Synthetic justification of specification tests acceptance criteria limits: fictional sponsor rationale for limits. FICTIONAL.",
+    "section": "test-justification",
+    "page": 5,
+    "chunk_kind": "text",
+    "checksum": null,
+    "metadata": {}
+  },
+  {
+    "chunk_id": "synthetic-stability",
+    "source_id": "SYNTHETIC-TEST-001",
+    "text": "Synthetic stability storage retest time points: a deliberately fictitious example, not actual regulatory guidance.",
+    "section": "test-stability",
+    "page": 6,
+    "chunk_kind": "text",
+    "checksum": null,
+    "metadata": {}
+  }
+]

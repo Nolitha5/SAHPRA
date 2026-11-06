@@ -1,0 +1,18 @@
+{
+  "source_id":"WHO-PHINT-REPLACE-ME",
+  "title":"REPLACE WITH VERIFIED MONOGRAPH TITLE",
+  "substance":"REPLACE SUBSTANCE",
+  "cas":null,
+  "compendium":"Ph.Int.",
+  "edition":"REPLACE REVIEWED EDITION",
+  "official_source_url":"https://digicollections.net/phint/",
+  "pdf_sha256":"0000000000000000000000000000000000000000000000000000000000000000",
+  "submission_applicability_date":null,
+  "effective_from":null,
+  "effective_to":null,
+  "license_review_reference":"REPLACE WITH PERMISSION RECORD",
+  "reviewer_id":"M5_REPLACE",
+  "reviewer_basis":"REPLACE WITH DOCUMENTED REGULATORY REVIEW RATIONALE",
+  "applicable_product_scope":"DRUG_SUBSTANCE_CHEMICAL",
+  "approval_decision":"PENDING_EXTERNAL_CONFIRMATION"
+}

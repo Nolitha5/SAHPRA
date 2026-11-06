@@ -1,0 +1,16 @@
+{
+  "mode": "research",
+  "backend": "chroma",
+  "index_path": "local_indexes/chroma",
+  "registry_path": "local_indexes/sources.json",
+  "embedding_model": "BAAI/bge-large-en-v1.5",
+  "embedding_dimension": 1024,
+  "rerank_model": "BAAI/bge-reranker-large",
+  "min_query_token_overlap": 0.10,
+  "hybrid_weight": 0.5,
+  "candidate_multiplier": 6,
+  "allow_synthetic": false,
+  "use_ollama_s4": false,
+  "ollama_base_url": "http://localhost:11434",
+  "ollama_model": "llama3.1:8b"
+}

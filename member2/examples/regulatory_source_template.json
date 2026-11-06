@@ -1,0 +1,17 @@
+{
+  "source_id": "ICH-Q6A-INSERT-VERIFIED-EDITION",
+  "authority": "ICH",
+  "title": "ICH Q6A Specifications",
+  "document_code": "Q6A",
+  "version": "MUST_VERIFY_FROM_DOCUMENT",
+  "publication_date": null,
+  "effective_from": null,
+  "effective_to": null,
+  "url": null,
+  "license_note": "Verify permitted access, copyright and approved local indexing before ingestion",
+  "source_type": "regulatory",
+  "approved": false,
+  "sha256": null,
+  "provenance_verified": false,
+  "notes": "Unapproved placeholder. Do not set approved/provenance_verified until source and applicability are reviewed."
+}

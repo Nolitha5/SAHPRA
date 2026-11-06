@@ -1,0 +1,62 @@
+{
+  "case_id": "SYNTHETIC-CASE-001",
+  "dossier_chunks": [
+    {
+      "chunk_id": "dossier-s4-1",
+      "document_id": "synth-dossier.pdf",
+      "ctd_section": "3.2.S.4.1",
+      "text": "Specifications and acceptance criteria are listed for synthetic assay testing. Limit: 98.0% - 102.0%.",
+      "page": 3,
+      "kind": "text",
+      "table_rows": [],
+      "metadata": {},
+      "quality_flag": null
+    },
+    {
+      "chunk_id": "dossier-s4-2",
+      "document_id": "synth-dossier.pdf",
+      "ctd_section": "3.2.S.4.2",
+      "text": "Analytical procedure: HPLC method for assay of drug substance.",
+      "page": 4,
+      "kind": "text",
+      "table_rows": [],
+      "metadata": {},
+      "quality_flag": null
+    },
+    {
+      "chunk_id": "dossier-s4-3",
+      "document_id": "synth-dossier.pdf",
+      "ctd_section": "3.2.S.4.3",
+      "text": "Method validation describes precision and accuracy testing.",
+      "page": 5,
+      "kind": "text",
+      "table_rows": [],
+      "metadata": {},
+      "quality_flag": null
+    },
+    {
+      "chunk_id": "dossier-s4-4",
+      "document_id": "synth-dossier.pdf",
+      "ctd_section": "3.2.S.4.4",
+      "text": "Batch analyses for three fictional batches provide assay results.",
+      "page": 6,
+      "kind": "text",
+      "table_rows": [],
+      "metadata": {},
+      "quality_flag": null
+    },
+    {
+      "chunk_id": "dossier-s4-5",
+      "document_id": "synth-dossier.pdf",
+      "ctd_section": "3.2.S.4.5",
+      "text": "Specification justification supports fictional acceptance criteria.",
+      "page": 7,
+      "kind": "text",
+      "table_rows": [],
+      "metadata": {},
+      "quality_flag": null
+    }
+  ],
+  "as_of": null,
+  "relevant_regulatory_codes": []
+}

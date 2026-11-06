@@ -1,0 +1,85 @@
+{
+  "config": {
+    "k": 3,
+    "retrieval": {
+      "min_query_token_overlap": 0.2,
+      "hybrid_weight": 0.5,
+      "candidate_multiplier": 5,
+      "reranker": null,
+      "store": "MemoryVectorStore"
+    },
+    "label_verification": "NOT_CONFIRMED_EXPERT"
+  },
+  "evaluated_queries": 4,
+  "aggregate": {
+    "precision_at_k": 0.3333333333333333,
+    "recall_at_k": 1.0,
+    "mrr_at_k": 1.0,
+    "ndcg_at_k": 1.0
+  },
+  "per_query": [
+    {
+      "query_id": "gold-1",
+      "status": "FOUND",
+      "retrieved_chunk_ids": [
+        "synthetic-validation",
+        "synthetic-procedures"
+      ],
+      "relevant_chunk_ids": [
+        "synthetic-validation"
+      ],
+      "precision_at_k": 0.3333333333333333,
+      "recall_at_k": 1.0,
+      "mrr_at_k": 1.0,
+      "ndcg_at_k": 1.0
+    },
+    {
+      "query_id": "gold-2",
+      "status": "FOUND",
+      "retrieved_chunk_ids": [
+        "synthetic-batch",
+        "synthetic-procedures",
+        "synthetic-specification"
+      ],
+      "relevant_chunk_ids": [
+        "synthetic-batch"
+      ],
+      "precision_at_k": 0.3333333333333333,
+      "recall_at_k": 1.0,
+      "mrr_at_k": 1.0,
+      "ndcg_at_k": 1.0
+    },
+    {
+      "query_id": "gold-3",
+      "status": "FOUND",
+      "retrieved_chunk_ids": [
+        "synthetic-stability"
+      ],
+      "relevant_chunk_ids": [
+        "synthetic-stability"
+      ],
+      "precision_at_k": 0.3333333333333333,
+      "recall_at_k": 1.0,
+      "mrr_at_k": 1.0,
+      "ndcg_at_k": 1.0
+    },
+    {
+      "query_id": "gold-4",
+      "status": "FOUND",
+      "retrieved_chunk_ids": [
+        "synthetic-procedures",
+        "synthetic-specification",
+        "synthetic-validation"
+      ],
+      "relevant_chunk_ids": [
+        "synthetic-procedures"
+      ],
+      "precision_at_k": 0.3333333333333333,
+      "recall_at_k": 1.0,
+      "mrr_at_k": 1.0,
+      "ndcg_at_k": 1.0
+    }
+  ],
+  "caution": "Scores require expert-reviewed gold labels and approved real regulatory documents.",
+  "created_at_utc": "2026-10-15T09:24:48.211158+00:00"
+}

@@ -1,0 +1,74 @@
+{
+  "regulatory": {
+    "regulatory_technical_unapproved-87028c6ff4ca": {
+      "count": 554,
+      "source_ids": [
+        "ICH-M4Q-R1",
+        "ICH-Q11",
+        "ICH-Q11-QA",
+        "ICH-Q14",
+        "ICH-Q1A-R2",
+        "ICH-Q1B",
+        "ICH-Q2-R2",
+        "ICH-Q3A-R2",
+        "ICH-Q3C-R9",
+        "ICH-Q6A",
+        "ICH-Q6B",
+        "ICH-Q7",
+        "ICH-Q8-R2",
+        "SAHPRA-PEM-02-V9",
+        "WHO-TRS1010-A10"
+      ]
+    }
+  },
+  "dossier": {
+    "sponsor_dossier_unverified-87028c6ff4ca": {
+      "count": 2064,
+      "source_ids": [
+        "dossier_amlodipine_edited_batch-analyses",
+        "dossier_amlodipine_edited_container-closure-system",
+        "dossier_amlodipine_edited_justification-of-specification",
+        "dossier_amlodipine_edited_postapproval-stability",
+        "dossier_amlodipine_edited_reference-standards",
+        "dossier_amlodipine_edited_stability-data-1",
+        "dossier_amlodipine_edited_stability-data-2",
+        "dossier_amlodipine_edited_stability-summary",
+        "dossier_amlodipine_edited_validation-analyt-procedure",
+        "dossier_amlodipine_edited_validation-analyt-procedure 22102026",
+        "dossier_amlodipine_elucidation-of-structure",
+        "dossier_amlodipine_general-properties",
+        "dossier_amlodipine_nomenclature",
+        "dossier_amlodipine_structure",
+        "dossier_hydrochlorothiazide_edited_analytical-procedure",
+        "dossier_hydrochlorothiazide_edited_batch-analyses",
+        "dossier_hydrochlorothiazide_edited_container-closure-system",
+        "dossier_hydrochlorothiazide_edited_elucidation-of-structure",
+        "dossier_hydrochlorothiazide_edited_general-properties",
+        "dossier_hydrochlorothiazide_edited_impurities",
+        "dossier_hydrochlorothiazide_edited_justification-of-specification",
+        "dossier_hydrochlorothiazide_edited_nomenclature",
+        "dossier_hydrochlorothiazide_edited_postapproval-stability",
+        "dossier_hydrochlorothiazide_edited_reference-standards",
+        "dossier_hydrochlorothiazide_edited_specification",
+        "dossier_hydrochlorothiazide_edited_stability-data",
+        "dossier_hydrochlorothiazide_edited_stability-summary",
+        "dossier_hydrochlorothiazide_edited_structure",
+        "dossier_hydrochlorothiazide_edited_validation-analyt-procedure",
+        "dossier_valsartan_edited_analytical-procedure",
+        "dossier_valsartan_edited_batch-analyses",
+        "dossier_valsartan_edited_elucidation-of-structure",
+        "dossier_valsartan_edited_general-properties",
+        "dossier_valsartan_edited_impurities",
+        "dossier_valsartan_edited_justification-of-specification",
+        "dossier_valsartan_edited_nomenclature",
+        "dossier_valsartan_edited_postapproval-stability",
+        "dossier_valsartan_edited_reference-standards",
+        "dossier_valsartan_edited_specification",
+        "dossier_valsartan_edited_stability-data",
+        "dossier_valsartan_edited_stability-summary",
+        "dossier_valsartan_edited_structure",
+        "dossier_valsartan_edited_validation-analyt-procedure"
+      ]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+[
+  {
+    "query_id": "DOMAIN-REVIEW-001",
+    "question": "EXPERT-WRITTEN-REGULATORY-QUESTION",
+    "relevant": [
+      {"source_id": "EXACT-APPROVED-SOURCE-ID", "section": "EXACT-VERIFIED-SECTION", "page": null}
+    ],
+    "filters": {"authorities": [], "document_codes": [], "sections": [], "effective_on": null, "include_literature": false}
+  }
+]

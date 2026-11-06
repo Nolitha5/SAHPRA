@@ -1,0 +1,19 @@
+[
+  {
+    "source_id": "SYNTHETIC-TEST-001",
+    "authority": "TEST_ONLY",
+    "title": "Synthetic evidence texts for integration engineering (NOT A GUIDELINE)",
+    "document_code": "FAKE-QUALITY-TEST",
+    "version": "2026-demo-v1",
+    "publication_date": null,
+    "effective_from": null,
+    "effective_to": null,
+    "url": null,
+    "license_note": null,
+    "source_type": "synthetic",
+    "approved": true,
+    "sha256": null,
+    "provenance_verified": true,
+    "notes": "Purely fictional rules. Must never be used for regulatory assessment."
+  }
+]
