@@ -1,5 +1,3 @@
-// Mirrors member2-rag/app/schemas.py. Keep field names identical to the Python models.
-
 export type QAStatus = 'verified' | 'partial' | 'unsupported' | 'conflicting' | 'human-review'
 export type EvidenceStatus =
   | 'candidate_evidence_found'

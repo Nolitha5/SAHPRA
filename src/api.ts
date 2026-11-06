@@ -1,5 +1,3 @@
-// Thin client for the Member 2 Python API (member2-rag/app/api/server.py).
-// All requests go to the same origin under /api; Vite forwards them in development.
 import type {
   AgentRequest, BenchmarkCase, BenchmarkResultFile, Facets, Finding, Health,
   ImportReport, PassagePage, RetrievalResult, SearchFilters,
@@ -7,7 +5,6 @@ import type {
 
 const TOKEN_KEY = 'm2-editor-token'
 
-// The editor token lives only in this browser tab (sessionStorage), never in code or .env.
 export function getEditorToken(): string {
   try { return sessionStorage.getItem(TOKEN_KEY) ?? '' } catch { return '' }
 }
@@ -15,7 +12,9 @@ export function setEditorToken(token: string): void {
   try {
     if (token) sessionStorage.setItem(TOKEN_KEY, token)
     else sessionStorage.removeItem(TOKEN_KEY)
-  } catch { /* storage blocked: token is simply not remembered */ }
+  } catch {
+    return
+  }
 }
 
 export class ApiError extends Error {
@@ -39,17 +38,16 @@ async function request<T>(path: string, init: RequestInit = {}, edit = false): P
   try {
     res = await fetch(`/api${path}`, { ...init, headers: { ...headers, ...(init.headers as Record<string, string>) } })
   } catch {
-    throw new ApiError(0, 'Cannot reach the Member 2 server. Start it with: python -m app.api (in member2-rag).')
+    throw new ApiError(0, 'Cannot reach the server. Start it with: python -m app.api (in member2-rag).')
   }
   const text = await res.text()
   let body: { detail?: unknown } | null = null
   try {
     body = text ? JSON.parse(text) : null
   } catch {
-    // Not JSON: the dev proxy or a crashed server answered with plain text/HTML.
     if (!res.ok) {
       throw new ApiError(res.status, res.status >= 500
-        ? 'The Member 2 server is not responding. Start it with: python -m app.api (in member2-rag).'
+        ? 'The server is not responding. Start it with: python -m app.api (in member2-rag).'
         : `Request failed (HTTP ${res.status}).`)
     }
     throw new ApiError(res.status, 'The server sent a response that is not JSON.')

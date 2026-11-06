@@ -1,0 +1,43 @@
+[
+  {
+    "name": "large_w300_dense_only",
+    "collection_name": "ich_large_w300",
+    "embedding_model": "BAAI/bge-large-en-v1.5",
+    "use_reranker": false,
+    "use_section_filter": true,
+    "candidate_k": 20,
+    "final_k": 10,
+    "relevance_level": "page",
+    "chunk_size": 300,
+    "chunk_overlap": 50,
+    "notes": "Dense retrieval only, on the combined ICH + SAHPRA collection (248 passages). Used with pilot.jsonl (ICH) and pilot_sahpra.jsonl (SAHPRA)."
+  },
+  {
+    "name": "large_w300_reranked",
+    "collection_name": "ich_large_w300",
+    "embedding_model": "BAAI/bge-large-en-v1.5",
+    "use_reranker": true,
+    "reranker_model": "BAAI/bge-reranker-base",
+    "use_section_filter": true,
+    "candidate_k": 20,
+    "final_k": 10,
+    "relevance_level": "page",
+    "chunk_size": 300,
+    "chunk_overlap": 50,
+    "notes": "Main configuration on the combined ICH + SAHPRA collection."
+  },
+  {
+    "name": "large_w300_reranked_no_filter",
+    "collection_name": "ich_large_w300",
+    "embedding_model": "BAAI/bge-large-en-v1.5",
+    "use_reranker": true,
+    "reranker_model": "BAAI/bge-reranker-base",
+    "use_section_filter": false,
+    "candidate_k": 20,
+    "final_k": 10,
+    "relevance_level": "page",
+    "chunk_size": 300,
+    "chunk_overlap": 50,
+    "notes": "Main configuration without the CTD section filter, on the combined ICH + SAHPRA collection."
+  }
+]

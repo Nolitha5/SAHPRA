@@ -1,6 +1,6 @@
-# Member 2 · Retrieval & Knowledge Base
+# Retrieval & Knowledge Base
 
-Agentic QA-RAG for SAHPRA CTD Module 3.2.S (drug substance). Member 2 owns the regulatory knowledge base, the shared retrieval service, and two agents: **Evidence/RERA** and **S.4 Control**.
+Agentic QA-RAG for SAHPRA CTD Module 3.2.S (drug substance). This component owns the regulatory knowledge base, the shared retrieval service, and two agents: **Evidence/RERA** and **S.4 Control**.
 
 This is a research-support tool. Every finding is cited, carries an uncertainty statement and is marked for review. The qualified human assessor makes every regulatory decision.
 
@@ -12,7 +12,7 @@ This is a research-support tool. Every finding is cited, carries an uncertainty 
 |---|---|
 | Language | Python 3.12 / 3.13 |
 | Vector database | ChromaDB 1.5.9, persistent, cosine distance |
-| Embeddings | Configurable per collection: BAAI/bge-large-en-v1.5 is the project default; the ICH pilot collections use bge-small-en-v1.5. The status bar shows the model in use. |
+| Embeddings | BAAI/bge-large-en-v1.5 (1024 dimensions), used by the live collection `ich_large_w300`. Configurable per collection; bge-small-en-v1.5 was tested as a lighter comparison. The status bar shows the model in use. |
 | Reranker | BAAI/bge-reranker-base (cross-encoder) |
 | Model runtime | sentence-transformers 6.1.0 |
 | Data validation | Pydantic 2.13 |
@@ -40,12 +40,12 @@ There is no hosted database. Passages and their metadata live in ChromaDB on you
         │                        │       → BGE reranker → top 5
         │                        ▼
         ├── Knowledge base ◄──── ChromaDB  member2-rag/data/chroma/
-        │      import JSONL from Member 3 (validated by Pydantic)
+        │      import JSONL passages (validated by Pydantic)
         │
         └── Benchmark ─────────► benchmarks/benchmark.jsonl, results/*.json
 ```
 
-The dashboard, the command-line scripts and Member 1's Orchestrator all call the **same Python code**, so they always behave the same way.
+The dashboard and the server-side scripts all call the **same Python code**, so they behave consistently.
 
 ---
 
@@ -87,7 +87,7 @@ Interactive API documentation is at `/api/docs` while the server runs.
 | Only outdated, synthetic or suspicious sources | human-review | Regulatory evidence that requires human review |
 | Relevant, current sources | partial | Candidate regulatory evidence retrieved |
 
-Member 2's agents never output **verified**. Only Member 5's QA/Critic and the assessor can.
+The agents do not output a verified conclusion. Only the qualified assessor can decide final compliance.
 
 S.4 Control refuses to compare numbers (outcome *not compared*, which forces human review) when a limit or unit is missing, when units are not safely convertible (a bare `%` is never converted to ppm), or when a result is qualitative such as "Complies" or "ND". Values within rounding distance of a limit are flagged *borderline*.
 
@@ -106,7 +106,7 @@ S.4 Control refuses to compare numbers (outcome *not compared*, which forces hum
 
 ## Limitations
 
-* No real benchmark results exist yet. They need Member 3's processed regulatory passages and Member 5's expert-labelled questions.
+* Benchmark results so far are a pilot: 20 questions labelled at page level, not yet verified by a domain expert. With 20 questions, one question changes a score by 0.05.
 * Relevance thresholds are starting values and must be calibrated on the benchmark.
 * Conflict detection uses metadata (versions and status), not the meaning of the text.
 * The editor token is a simple shared secret suitable for a local research workspace. A deployed multi-user system would need real user accounts.

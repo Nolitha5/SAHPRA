@@ -11,7 +11,7 @@ from app.knowledge_base.indexing import index_records, parse_records
 from app.retrieval.reranker import rerank
 from app.retrieval.retrieval_service import RetrievalService, format_evidence_for_prompt
 from app.retrieval.vector_search import InvalidQueryError, build_where, detect_untrusted_instructions
-from app.schemas import SearchFilters
+from app.schemas import SearchFilters, ctd_ancestors
 from tests.conftest import FakeEmbedder, FakeReranker, make_record
 
 
@@ -60,6 +60,20 @@ def test_section_filter_includes_parents_when_asked(service):
     filters = SearchFilters(ctd_sections=["3.2.S.4.3"], include_parent_sections=True)
     result = service.retrieve("drug substance", filters=filters, final_k=10, candidate_k=10, use_reranker=False)
     assert {p.metadata.ctd_section for p in result.passages} == {"3.2.S.4.3", "3.2.S"}
+
+
+def test_ctd_ancestors_include_module_heading():
+    assert ctd_ancestors("3.2.S.4.1") == ["3.2.S.4", "3.2.S", "3.2"]
+    assert ctd_ancestors("3.2.S") == ["3.2"]
+
+
+def test_parent_filter_matches_module_level_passages():
+    def exact_sections(filters):
+        clause = next(c["ctd_section"] for c in build_where(filters)["$or"] if "ctd_section" in c)
+        return clause["$in"] if isinstance(clause, dict) else [clause]
+
+    assert "3.2" in exact_sections(SearchFilters(ctd_sections=["3.2.S.4.1"]))
+    assert exact_sections(SearchFilters(ctd_sections=["3.2.S.4.1"], include_parent_sections=False)) == ["3.2.S.4.1"]
 
 
 def test_part_level_filter_matches_whole_part(service):

@@ -96,16 +96,11 @@ export default function BenchmarkCases({ canEdit, benchmarkFile }: { canEdit: bo
         </div>
         <div className="card-body">
           {!latest ? (
-            <Empty title="No benchmark has been run yet">
-              Run it from the member2-rag folder: <code>python scripts/evaluate_retrieval.py --configs benchmarks/configs.json</code>.
-              Results appear here. No numbers are shown until a real run exists.
-            </Empty>
+            <Empty title="No benchmark run yet" />
           ) : (
             <>
               <p className="text-muted" style={{ marginBottom: 12 }}>
-                {plural(latest.num_questions, 'question')}
-                {latest.benchmark_file && <> from <code>{latest.benchmark_file}</code></>}
-                {' · '}{new Date(latest.created_at).toLocaleString()} · benchmark sha256 {latest.benchmark_sha256.slice(0, 12)}
+                {plural(latest.num_questions, 'question')} · {new Date(latest.created_at).toLocaleString()}
               </p>
               {otherQuestions && (
                 <div className="alert alert-info">
@@ -177,13 +172,12 @@ export default function BenchmarkCases({ canEdit, benchmarkFile }: { canEdit: bo
             </div>
             <div className="form-group">
               <label htmlFor="bc-notes">Expert notes</label>
-              <input id="bc-notes" value={form.expert_notes} onChange={e => setForm({ ...form, expert_notes: e.target.value })} placeholder="No confidential sponsor information" />
+              <input id="bc-notes" value={form.expert_notes} onChange={e => setForm({ ...form, expert_notes: e.target.value })} placeholder="Optional notes" />
             </div>
             <div className="form-group">
               <label htmlFor="bc-by">Labelled by</label>
               <input id="bc-by" value={form.labelled_by} onChange={e => setForm({ ...form, labelled_by: e.target.value })} />
             </div>
-            <p className="text-muted form-full">Provide chunk IDs, pages, or both. Keep benchmark questions out of the indexed documents.</p>
             <div className="form-full row-actions">
               <button className="btn btn-primary" type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save question'}</button>
               <button className="btn btn-ghost" type="button" onClick={() => setShowForm(false)}>Cancel</button>
@@ -197,10 +191,10 @@ export default function BenchmarkCases({ canEdit, benchmarkFile }: { canEdit: bo
       <div className="card">
         <div className="card-header">
           <span className="card-title">Benchmark questions ({cases.length})</span>
-          <span className="text-muted">Stored in member2-rag/benchmarks/{benchmarkFile ?? 'benchmark.jsonl'} (set by M2_BENCHMARK_FILE)</span>
+          <span className="text-muted">Stored in {benchmarkFile ?? 'benchmark.jsonl'}</span>
         </div>
         {loading ? <div className="empty"><span className="spinner" /></div> : cases.length === 0 ? (
-          <Empty title="No benchmark questions yet">Member 5 adds expert-labelled questions here or in the JSONL file.</Empty>
+          <Empty title="No benchmark questions yet" />
         ) : (
           <div className="table-wrap">
             <table className="table-stack">

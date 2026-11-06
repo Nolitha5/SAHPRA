@@ -15,22 +15,6 @@ const S4_TOPICS: { value: string; label: string; section: string }[] = [
   { value: 'justification_of_specification', label: 'Justification of specification (3.2.S.4.5)', section: '3.2.S.4.5' },
 ]
 
-// Same values as member2-rag/examples/s4_request.example.json. Example data only.
-const EXAMPLE_S4_DATA = {
-  specification: [
-    { test_name: 'Impurity X', upper_limit: '0.15', unit: '%', criterion_text: 'NMT 0.15%' },
-    { test_name: 'Assay', lower_limit: '98.0', upper_limit: '102.0', unit: '% w/w', criterion_text: '98.0 - 102.0 % w/w' },
-    { test_name: 'Residual solvent Y', upper_limit: '500', unit: 'ppm', criterion_text: 'NMT 500 ppm' },
-  ],
-  batch_results: [
-    { batch_id: 'EX-001', test_name: 'Impurity X', reported_value: '0.08', unit: '%' },
-    { batch_id: 'EX-001', test_name: 'Assay', reported_value: '99.6', unit: '% w/w' },
-    { batch_id: 'EX-001', test_name: 'Residual solvent Y', reported_value: '<50', unit: 'ppm' },
-    { batch_id: 'EX-002', test_name: 'Impurity X', reported_value: 'ND', unit: '%' },
-    { batch_id: 'EX-002', test_name: 'Assay', reported_value: '101.96', unit: '% w/w' },
-  ],
-}
-
 export default function Findings() {
   const [agent, setAgent] = useState<Agent>('evidence-rera')
   const [question, setQuestion] = useState('')
@@ -72,11 +56,6 @@ export default function Findings() {
 
   return (
     <div>
-      <div className="alert alert-info section-gap">
-        Runs the real Evidence/RERA and S.4 Control agents on the server. Findings are research support:
-        they are never marked verified here, and the qualified assessor makes the decision.
-      </div>
-
       <form className="card section-gap" onSubmit={run}>
         <div className="card-body form-grid">
           <div className="form-group form-full">
@@ -96,7 +75,7 @@ export default function Findings() {
           <div className="form-group form-full">
             <label htmlFor="agent-question">Assessment question</label>
             <textarea id="agent-question" value={question} onChange={e => setQuestion(e.target.value)}
-              placeholder="e.g. What validation characteristics are expected for the assay procedure?" />
+              placeholder="Enter an assessment question" />
           </div>
 
           {agent === 'evidence-rera' ? (
@@ -115,20 +94,9 @@ export default function Findings() {
                 </select>
               </div>
               <div className="form-group form-full">
-                <div className="row-actions" style={{ justifyContent: 'space-between' }}>
-                  <label htmlFor="agent-s4data">Structured S.4 data (optional, JSON)</label>
-                  <button type="button" className="btn btn-ghost" onClick={() => setS4Data(JSON.stringify(EXAMPLE_S4_DATA, null, 2))}>
-                    Fill with example values
-                  </button>
-                </div>
+                <label htmlFor="agent-s4data">Structured S.4 data (optional, JSON)</label>
                 <textarea id="agent-s4data" className="text-mono" value={s4Data} onChange={e => setS4Data(e.target.value)} style={{ minHeight: 140 }}
-                  placeholder='{"specification": [...], "batch_results": [...], "regulatory_limits": [...]}' />
-                <span className="text-muted">
-                  Sent only to your local server for this request. Nothing is stored or logged.
-                  To compare against a regulatory limit, add <code>"regulatory_limits"</code>: entries like the
-                  specification ones plus <code>"citation_chunk_id"</code>, the knowledge-base passage the limit comes
-                  from. The agent never extracts limits itself.
-                </span>
+                  placeholder='Paste structured S.4 data JSON here' />
               </div>
             </>
           )}

@@ -5,11 +5,6 @@ import { Empty, StatusPill, passageText, sourceLabel, versionLabel } from './sha
 
 const PAGE = 25
 
-function Stat({ value, one, many }: { value: number; one: string; many: string }) {
-  return <div className="stat"><div className="stat-value">{value}</div><div className="stat-label">{value === 1 ? one : many}</div></div>
-}
-
-// "ICH Q11 · Step 4 · p.10 · chunk 2": what an assessor scans for; the long title sits underneath.
 function shortSource(p: StoredPassage): string {
   const m = p.metadata
   const parts = [m.source_identifier]
@@ -60,17 +55,9 @@ export default function KnowledgeBase({ canEdit, onChanged }: { canEdit: boolean
   }
 
   const orgs = Object.keys(facets?.issuing_organization ?? {})
-  const incomplete = items.filter(i => !i.provenance_complete).length
 
   return (
     <div>
-      <div className="stats">
-        <Stat value={total} one="passage matching filters" many="passages matching filters" />
-        <Stat value={orgs.length} one="issuing organisation" many="issuing organisations" />
-        <Stat value={Object.keys(facets?.ctd_section ?? {}).length} one="CTD section covered" many="CTD sections covered" />
-        <Stat value={incomplete} one="on this page with incomplete provenance" many="on this page with incomplete provenance" />
-      </div>
-
       {canEdit && <ImportPanel onDone={() => { setOffset(0); load(); onChanged() }} />}
 
       <div className="card">
@@ -100,9 +87,8 @@ export default function KnowledgeBase({ canEdit, onChanged }: { canEdit: boolean
         {loading ? (
           <div className="empty"><span className="spinner" /></div>
         ) : items.length === 0 ? (
-          <Empty title={total === 0 && !filter.ctd_section && !filter.organization && !filter.document_type ? 'The knowledge base is empty' : 'No passages match these filters'}>
-            Load Member 3's processed passages with <code>python scripts/load_documents.py --input data/processed/passages.jsonl</code>
-            {canEdit ? ' or the import panel above.' : '.'}
+          <Empty title={total === 0 && !filter.ctd_section && !filter.organization && !filter.document_type ? 'No passages loaded yet' : 'No passages match these filters'}>
+            {canEdit ? 'Use the import panel above to add source material.' : 'No passages are available in the current knowledge base.'}
           </Empty>
         ) : (
           <div className="table-wrap">
@@ -202,16 +188,13 @@ function ImportPanel({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="card section-gap">
-      <div className="card-header"><span className="card-title">Import processed passages (JSONL from Member 3)</span></div>
+      <div className="card-header"><span className="card-title">Import passages</span></div>
       <div className="card-body">
         <div className="row-actions" style={{ flexWrap: 'wrap' }}>
           <input id="kb-import-file" ref={fileRef} type="file" accept=".jsonl,.ndjson" onChange={e => pick(e.target.files?.[0])} />
           <button className="btn btn-ghost" disabled={!file || busy} onClick={() => run(true)}>Check file</button>
           <button className="btn btn-primary" disabled={!file || busy} onClick={() => run(false)}>{busy ? 'Working…' : 'Import'}</button>
         </div>
-        <p className="text-muted" style={{ marginTop: 8 }}>
-          "Check file" validates every line without saving. The first real import downloads the embedding model, which can take several minutes.
-        </p>
         {error && <div className="alert alert-error" style={{ marginTop: 12 }}>{error}</div>}
         {report && (
           <div className={`alert ${report.rejected ? 'alert-error' : 'alert-success'}`} style={{ marginTop: 12 }}>

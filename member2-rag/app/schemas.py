@@ -243,7 +243,7 @@ class SearchFilters(BaseModel):
     ctd_sections: list[str] = Field(default_factory=list)
     include_parent_sections: bool = Field(
         default=True,
-        description="Also match passages tagged with a parent heading (3.2.S.4 -> 3.2.S).",
+        description="Also match passages tagged with a parent heading (3.2.S.4 -> 3.2.S, 3.2).",
     )
     document_types: list[DocumentType] = Field(default_factory=list)
     issuing_organizations: list[str] = Field(default_factory=list)
@@ -488,9 +488,14 @@ def normalise_ctd_section(value: str | None) -> str | None:
 def ctd_ancestors(section: str) -> list[str]:
     """Parent headings of a CTD section, most specific first.
 
-    '3.2.S.4.1' -> ['3.2.S.4', '3.2.S']  (stops at the module-part letter).
+    '3.2.S.4.1' -> ['3.2.S.4', '3.2.S', '3.2']  (stops at the module heading).
+
+    The module heading ('3.2') is included because some guidelines (e.g. the
+    SAHPRA Quality and Bioequivalence guideline) are organised by procedure
+    rather than by CTD section, so their general pages are tagged '3.2'.
+    Without it, a filter for any 3.2.S subsection silently excluded them.
     """
     parts = section.split(".")
     letter_idx = next((i for i, p in enumerate(parts) if p.isalpha()), None)
-    stop = (letter_idx + 1) if letter_idx is not None else 1
+    stop = letter_idx if letter_idx is not None else 1
     return [".".join(parts[:i]) for i in range(len(parts) - 1, stop - 1, -1)]

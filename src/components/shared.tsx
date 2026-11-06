@@ -28,7 +28,6 @@ export function StatusPill({ status }: { status: string }) {
   return <span className={`pill ${cls}`}>{status}</span>
 }
 
-// '1.0' -> 'v1.0'; versions that are already phrases ('Step 4') are shown as written.
 export function versionLabel(version: string): string {
   return /^\d/.test(version) ? `v${version}` : version
 }
@@ -44,7 +43,6 @@ export function plural(n: number, word: string): string {
   return `${n} ${word}${n === 1 ? '' : 's'}`
 }
 
-// Chunks never cross pages, so many start mid-sentence; an ellipsis makes that visible.
 export function passageText(text: string): string {
   return /^[a-z]/.test(text) ? `…${text}` : text
 }
