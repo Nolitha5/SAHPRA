@@ -37,6 +37,7 @@ from app.config import Settings, get_settings
 from app.evaluation.benchmark import BenchmarkItem
 from app.evaluation.case_store import BenchmarkCaseStore, CaseExistsError, CaseNotFoundError
 from app.integration import Member2Components, create_member2_components
+from app.knowledge_base.coverage import build_coverage, load_expected_sources
 from app.knowledge_base.indexing import InputFileError, index_text
 from app.knowledge_base.metadata import MetadataCorruptionError
 from app.logging_utils import get_logger, log_event
@@ -197,6 +198,13 @@ def create_app(
     @app.get("/api/passages/facets")
     def passage_facets() -> dict[str, dict[str, int]]:
         return m2.retrieval.store.facets()
+
+    @app.get("/api/coverage")
+    def coverage() -> dict[str, Any]:
+        report = build_coverage(m2.retrieval.store.all_metadata(), load_expected_sources(settings.sources_manifest))
+        report["collection"] = settings.collection_name
+        report["manifest"] = settings.sources_manifest.name
+        return report
 
     @app.post("/api/passages/import", dependencies=[Depends(require_admin)])
     def import_passages(body: ImportRequest) -> dict[str, Any]:

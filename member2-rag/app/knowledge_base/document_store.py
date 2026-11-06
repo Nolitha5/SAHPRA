@@ -199,6 +199,10 @@ class ChromaDocumentStore:
                     out[k][str(value)] = out[k].get(str(value), 0) + 1
         return {k: dict(sorted(v.items())) for k, v in out.items()}
 
+    def all_metadata(self) -> list[dict[str, Any]]:
+        """Raw stored metadata for every passage (no text, no vectors). Used for coverage reports."""
+        return [dict(m or {}) for m in self._collection.get(include=["metadatas"])["metadatas"] or []]
+
     def all_ids(self) -> list[str]:
         return list(self._collection.get(include=[])["ids"])
 

@@ -1,5 +1,5 @@
 import type {
-  AgentRequest, BenchmarkCase, BenchmarkResultFile, Facets, Finding, Health,
+  AgentRequest, BenchmarkCase, BenchmarkResultFile, Coverage, Facets, Finding, Health,
   ImportReport, PassagePage, RetrievalResult, SearchFilters,
 } from './types'
 
@@ -65,6 +65,7 @@ export const api = {
     return request<PassagePage>(`/passages?${q}`)
   },
   facets: () => request<Facets>('/passages/facets'),
+  coverage: () => request<Coverage>('/coverage'),
   importPassages: (filename: string, content: string, dry_run: boolean, strict = false) =>
     request<ImportReport>('/passages/import', { method: 'POST', body: JSON.stringify({ filename, content, dry_run, strict }) }, true),
   deletePassage: (chunkId: string) =>

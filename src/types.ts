@@ -215,3 +215,33 @@ export interface ImportReport {
   total_in_collection: number
   dry_run: boolean
 }
+
+export interface CoverageSource {
+  issuing_organization: string
+  source_identifier: string
+  source_title: string
+  document_version: string | null
+  publication_date: string | null
+  applicability_status: string
+  document_type: string
+  passages: number
+  pages: number
+  first_page: number | null
+  last_page: number | null
+  ctd_sections: Record<string, number>
+  in_manifest: boolean
+  url: string | null
+}
+
+export interface Coverage {
+  collection: string
+  manifest: string
+  total_passages: number
+  source_count: number
+  expected_count: number
+  incomplete_provenance: number
+  sources: CoverageSource[]
+  missing_sources: { issuing_organization: string; source_identifier: string; source_title: string; document_version: string | null; url: string | null }[]
+  ctd_tags: Record<string, number>
+  s_sections: { section: string; label: string; direct: number; reachable: number }[]
+}

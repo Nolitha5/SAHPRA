@@ -69,10 +69,9 @@ python -m app.api            # serves the API and the built dashboard at http://
 | Tab | Purpose |
 |---|---|
 | **Knowledge Base** | Browse and filter passages; import JSONL (dry-run or index); delete passages |
-| **Search** | Query the shared retrieval service with CTD / type / status filters, with or without reranking |
-| **Agents** | Run Evidence/RERA or S.4 Control and inspect findings, citations and uncertainty |
+| **Search** | Query the shared retrieval service with CTD / type / status filters, with or without reranking. Results can be downloaded as a Word report |
+| **Agents** | Run Evidence/RERA or S.4 Control; findings, citations and uncertainty in Word-style tables, with a red assessor-review box. Findings can be downloaded as a Word report (assessor comments in red) |
 | **Benchmark** | Manage expert benchmark questions and view `results/retrieval_benchmark_*.json` summaries |
-| **Architecture** | How the pieces fit together |
 
 ## Editing (import, delete, benchmark changes)
 
@@ -109,3 +108,9 @@ The same checks run automatically on GitHub for every push and pull request
 
 `.env`, `member2-rag/data/` (ChromaDB, processed passages, source PDFs), `member2-rag/results/`, sponsor
 dossiers, `node_modules/`, `dist/`. The `.gitignore` files block these.
+
+## Word reports
+
+Click **Download Word document** above search results or agent findings to save a `.docx` report. Nothing is
+downloaded automatically. Assessor comments saved on a finding appear in red in the report. Reports are built in
+the browser, and assessor comments are saved only in that browser (`localStorage`): neither is sent to the server.

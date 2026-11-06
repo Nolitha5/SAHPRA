@@ -100,7 +100,7 @@ member2-rag/
 │   ├── search.py                 # (added) try retrieval from the command line
 │   ├── run_agent.py              # (added) run either agent from the command line
 │   └── evaluate_retrieval.py
-├── tests/                        # 144 unit tests + 2 integration tests
+├── tests/                        # 149 unit tests + 2 integration tests
 ├── benchmarks/
 │   ├── benchmark.jsonl           # template (synthetic items - replace!)
 │   ├── pilot.jsonl               # 20 ICH pilot questions (page-level labels)
@@ -170,7 +170,7 @@ cp .env.example .env
 python -m pytest
 ```
 
-Expected: `144 passed, 2 deselected`.
+Expected: `149 passed, 2 deselected`.
 
 **Once the models are downloaded** (after the first search), set `HF_HUB_OFFLINE=1` and
 `TRANSFORMERS_OFFLINE=1` in `.env` (see `.env.example`). Otherwise every server start checks Hugging
@@ -365,7 +365,7 @@ method-validation completeness checklist, batch trend statistics.
 ## 12. Running tests
 
 ```powershell
-python -m pytest                 # 144 unit tests, no downloads, temp databases only
+python -m pytest                 # 149 unit tests, no downloads, temp databases only
 python -m pytest -m integration  # 2 tests with REAL models (downloads bge-small + bge-reranker-base)
 python -m pytest -v tests/test_s4_control.py
 python -m ruff check             # lint (pip install -r requirements-dev.txt once; config in ruff.toml)
@@ -550,13 +550,71 @@ shared_retrieval = m2.retrieval                   # .retrieve(query, filters, ca
 - [ ] Write expert benchmark questions with chunk- and page-level labels; keep them out of the indexed corpus
 - [ ] Review the default relevance thresholds after the first benchmark run
 
+## 14a. Knowledge base v2 (aziz-and-sipho source list)
+
+The knowledge base was rebuilt from the regulatory source list of the team's `aziz-and-sipho` branch
+(github.com/Nolitha5/SAHPRA): 15 public ICH, WHO and SAHPRA guidelines, downloaded from the official
+URLs, plus SAHPGL-PEM-03 (APIMF), which that list does not include. SAHPGL-PEM-02 **v9** (23 October 2025)
+replaces v8. Their sponsor dossiers (confidential) and quarantined pharmacopoeial material were not used.
+
+| | |
+|---|---|
+| Source list (committed) | `sources/kb_v2_manifest.json`: title, version, date, CTD tag and official URL of every PDF |
+| PDFs (git-ignored) | `data/raw/aziz_sipho/` + `data/raw/SAHPRA_PEM03_APIMF_v3.pdf` |
+| Passages | `data/processed/kb_v2_w300.jsonl`: 759 passages, 300-word chunks, 50-word overlap |
+| Collection | `kb_v2_large_w300` (bge-large-en-v1.5). The previous `ich_large_w300` (248 passages) is kept |
+
+Rebuild:
+
+```powershell
+# 1. Download each "url" in sources/kb_v2_manifest.json to the "pdf" path given next to it
+python scripts/pdf_to_jsonl.py --manifest sources/kb_v2_manifest.json --output data/processed/kb_v2_w300.jsonl
+python scripts/load_documents.py --input data/processed/kb_v2_w300.jsonl --collection kb_v2_large_w300
+# 2. In .env: M2_COLLECTION_NAME=kb_v2_large_w300
+```
+
+CTD tags are one per document, chosen from each guideline's scope (e.g. Q1A/Q1B/WHO TRS 1010 Annex 10 →
+3.2.S.7, Q14 → 3.2.S.4.2, Q7 → 3.2.S.2, M4Q → 3.2, Q8(R2) → 3.2.P.2). PEM-02 v9 page 18 (specification
+and stability requirements) is tagged 3.2.S.4.1, mirroring v8 page 17.
+
+**Benchmarks on v2.** Three documents are now different editions (PEM-02 v9, the EMA print of Q6A, the
+35-page Q2(R2)), so their page labels moved. `scripts/remap_benchmark_pages.py` carries each labelled page
+to the page of the new edition with the most shared 5-word phrases and writes **new** files
+(`benchmarks/pilot_kb_v2.jsonl`, `benchmarks/pilot_sahpra_kb_v2.jsonl`); the original files are unchanged.
+Every low-confidence match was checked against the text by hand (S009/S010 corrected to v9 p. 18).
+Configs: `benchmarks/configs.kb_v2.json`.
+
+Results on KB v2 (2026-11-06; 759 passages, `candidate_k=20`, `final_k=10`, same draft labels, remapped):
+
+| Benchmark · configuration | Hit@1 | Recall@5 | Recall@10 | MRR | nDCG@10 | p50 latency |
+|---|---|---|---|---|---|---|
+| ICH pilot · dense only | 0.60 | 0.83 | 0.90 | 0.71 | 0.735 | 0.12 s |
+| ICH pilot · **reranked** (main) | 0.60 | 0.75 | 0.90 | 0.70 | 0.737 | 6.2 s |
+| ICH pilot · reranked, no CTD filter | 0.50 | 0.75 | 0.93 | 0.68 | 0.713 | 6.0 s |
+| SAHPRA pilot · dense only | 0.50 | 0.81 | 0.93 | 0.64 | 0.689 | 0.13 s |
+| SAHPRA pilot · **reranked** (main) | 0.56 | 0.93 | 0.94 | 0.72 | 0.755 | 6.1 s |
+| SAHPRA pilot · reranked, no CTD filter | 0.67 | 0.98 | 1.00 | 0.80 | 0.831 | 6.0 s |
+
+* **SAHPRA** questions held up or improved with three times as many passages (main config Recall@10 0.92 → 0.94).
+* **ICH** ranking dropped (main config Hit@1 0.80 → 0.60, MRR 0.88 → 0.70). Five of the seven questions that
+  ranked lower are on Q6A. Two causes, from the per-query results: (1) the EMA print of Q6A breaks pages in
+  different places, so an answer that was on one page now often continues on the next, and the retriever
+  ranks the neighbouring page first (e.g. P012: enantiomer text on pp. 10–11, p. 11 ranked first), which the
+  single-page labels count as a miss; (2) genuinely competing new sources, mainly ICH Q6B (the biotech
+  counterpart of Q6A) and the Q11 Q&A. The labels were **not** widened after seeing these results; an
+  expert should decide which pages answer each question in the new editions.
+
+**Coverage tab.** `GET /api/coverage` (and the dashboard's Coverage tab) lists every indexed source with
+passage and page counts, flags sources in the manifest that are not indexed, and shows for each CTD 3.2.S
+heading how many passages are tagged with it and how many a filtered search can reach through parent
+headings. Metadata only; no passage text. Code: `app/knowledge_base/coverage.py`, tests: `tests/test_coverage.py`.
+
 ## 15. Limitations and future improvements
 
-* **Pilot corpus only.** The knowledge base holds 4 public ICH guidelines (Q6A, Q2(R2), Q3A(R2), Q11)
-  and 2 public SAHPRA guidelines (SAHPGL-PEM-02, SAHPGL-PEM-03), converted by the temporary PDF
-  converter. Further SAHPRA, WHO and pharmacopoeia passages should come from
-  Member 3 (respecting each source's licence; pharmacopoeias are usually not freely redistributable).
-  Image-only pages (e.g. the Q6A decision trees, pages 26–35) have no text until OCR is added.
+* **Public guidelines only.** Knowledge base v2 holds 16 public ICH, WHO and SAHPRA guidelines (section
+  14a), converted by the temporary PDF converter. Pharmacopoeial and sponsor material is not included
+  (pharmacopoeias are usually not freely redistributable; dossiers are confidential).
+  Image-only pages (e.g. the Q6A decision trees) have no text until OCR is added.
 * **Pilot labels are drafts.** The 20 pilot questions were labelled at page level by Member 2 with AI
   assistance and checked against the page text, but not by a domain expert.
 * **One CTD section per passage.** A passage carries a single `ctd_section`. A guideline tagged with one

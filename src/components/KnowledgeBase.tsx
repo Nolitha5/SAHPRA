@@ -111,16 +111,17 @@ export default function KnowledgeBase({ canEdit, onChanged }: { canEdit: boolean
                         ? <span className="pill pill-green">complete</span>
                         : <span className="pill pill-yellow" title={p.missing_provenance.join(', ')}>missing {p.missing_provenance.length}</span>}</td>
                       <td><div className="row-actions">
-                        <button className="btn btn-ghost" onClick={() => setExpanded(expanded === p.chunk_id ? null : p.chunk_id)}>
-                          {expanded === p.chunk_id ? 'Hide text' : 'Show text'}
+                        <button className="btn btn-link" aria-expanded={expanded === p.chunk_id}
+                          onClick={() => setExpanded(expanded === p.chunk_id ? null : p.chunk_id)}>
+                          {expanded === p.chunk_id ? 'Hide' : 'View'}
                         </button>
                         {canEdit && (confirmDelete === p.chunk_id ? (
                           <>
-                            <button className="btn btn-danger" onClick={() => remove(p.chunk_id)}>Confirm delete</button>
-                            <button className="btn btn-ghost" onClick={() => setConfirmDelete(null)}>Keep</button>
+                            <button className="btn btn-danger btn-sm" onClick={() => remove(p.chunk_id)}>Confirm delete</button>
+                            <button className="btn btn-link" onClick={() => setConfirmDelete(null)}>Keep</button>
                           </>
                         ) : (
-                          <button className="btn btn-ghost" onClick={() => setConfirmDelete(p.chunk_id)}>Delete</button>
+                          <button className="btn btn-link btn-link-danger" onClick={() => setConfirmDelete(p.chunk_id)}>Delete</button>
                         ))}
                       </div></td>
                     </tr>

@@ -5,16 +5,16 @@ import KnowledgeBase from './components/KnowledgeBase'
 import SearchPanel from './components/SearchPanel'
 import Findings from './components/Findings'
 import BenchmarkCases from './components/BenchmarkCases'
-import ArchitecturePage from './components/ArchitecturePage'
+import CoveragePage from './components/CoveragePage'
 
-type Tab = 'kb' | 'search' | 'agents' | 'bench' | 'arch'
+type Tab = 'kb' | 'coverage' | 'search' | 'agents' | 'bench'
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'kb', label: 'Knowledge Base' },
-  { id: 'search', label: 'Search' },
-  { id: 'agents', label: 'Agents' },
-  { id: 'bench', label: 'Benchmark' },
-  { id: 'arch', label: 'Architecture' },
+const TABS: { id: Tab; label: string; description: string }[] = [
+  { id: 'kb', label: 'Knowledge Base', description: 'Regulatory passages indexed for retrieval, with source and provenance details.' },
+  { id: 'coverage', label: 'Coverage', description: 'Which guidelines are indexed, which are missing, and how well each CTD 3.2.S heading is covered.' },
+  { id: 'search', label: 'Search', description: 'Query the shared retrieval service with CTD section and source filters.' },
+  { id: 'agents', label: 'Agents', description: 'Run the Evidence/RERA and S.4 Control agents. Every finding requires assessor review.' },
+  { id: 'bench', label: 'Benchmark', description: 'Retrieval benchmark results and the questions used to measure them.' },
 ]
 
 export default function App() {
@@ -56,16 +56,14 @@ export default function App() {
   }
 
   const canEdit = Boolean(health?.editing_enabled && token)
+  const active = TABS.find(t => t.id === tab) ?? TABS[0]
 
   return (
     <div className="app">
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <span className="badge">M2</span>
-          <div>
-            <h1>Agentic QA-RAG</h1>
-            <div className="sidebar-sub">Retrieval &amp; Knowledge Base</div>
-          </div>
+          <h1>Agentic QA-RAG</h1>
+          <div className="sidebar-sub">Retrieval &amp; Knowledge Base</div>
         </div>
 
         <nav className="sidebar-nav" role="tablist" aria-orientation="vertical" aria-label="Sections">
@@ -92,30 +90,32 @@ export default function App() {
           </div>
         </div>
 
-        <div className="sidebar-status">
-          {health ? (
-            <>
-              <span className="pill pill-green">Connected</span>
-              <div><b>{health.knowledge_base_size}</b> available in <code>{health.collection}</code></div>
-            </>
-          ) : (
-            <span className="pill pill-red">{healthError || 'Connecting…'}</span>
-          )}
-        </div>
-
         <div className="sidebar-edit">
-          {health && !health.editing_enabled && <span className="pill pill-gray">Read-only mode</span>}
+          <div className="sidebar-status">
+            {health ? (
+              <>
+                <span className="status-dot status-ok" aria-hidden="true" />
+                <span>Connected · <span className="sidebar-collection">{health.collection}</span></span>
+              </>
+            ) : (
+              <>
+                <span className="status-dot status-error" aria-hidden="true" />
+                <span>{healthError || 'Connecting…'}</span>
+              </>
+            )}
+          </div>
+          {health && !health.editing_enabled && <div className="sidebar-note">Read-only mode</div>}
           {health?.editing_enabled && (
             showToken ? (
               <form className="token-form" onSubmit={e => { e.preventDefault(); saveToken((e.currentTarget.elements.namedItem('token') as HTMLInputElement).value) }}>
                 <input id="editor-token" name="token" type="password" placeholder="Editor token" defaultValue={token} autoComplete="off" />
                 <div className="row-actions">
                   <button className="btn btn-primary" type="submit">Save</button>
-                  <button className="btn btn-ghost" type="button" onClick={() => setShowToken(false)}>Cancel</button>
+                  <button className="btn btn-sidebar" type="button" onClick={() => setShowToken(false)}>Cancel</button>
                 </div>
               </form>
             ) : (
-              <button className="btn btn-ghost btn-block" onClick={() => setShowToken(true)}>
+              <button className="btn btn-sidebar btn-block" onClick={() => setShowToken(true)}>
                 {token ? 'Editing unlocked · change token' : 'Unlock editing'}
               </button>
             )
@@ -124,12 +124,15 @@ export default function App() {
       </aside>
 
       <main className="main">
+        <header className="page-header">
+          <h2 className="page-title">{active.label}</h2>
+          <p className="page-description">{active.description}</p>
+        </header>
         {tab === 'kb' && <KnowledgeBase canEdit={canEdit} onChanged={refreshHealth} />}
+        {tab === 'coverage' && <CoveragePage />}
         {tab === 'search' && <SearchPanel />}
         {tab === 'agents' && <Findings />}
-        {tab === 'bench' && <BenchmarkCases canEdit={canEdit} benchmarkFile={health?.benchmark_file} />}
-        {tab === 'arch' && <ArchitecturePage />}
-      </main>
+        {tab === 'bench' && <BenchmarkCases canEdit={canEdit} benchmarkFile={health?.benchmark_file} />}      </main>
     </div>
   )
 }

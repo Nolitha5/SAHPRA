@@ -1,8 +1,12 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { api, CTD_SECTIONS } from '../api'
-import type { RetrievalResult } from '../types'
-import { Empty, PassageCard } from './shared'
+import type { RetrievalResult, SearchFilters } from '../types'
+import { downloadSearchReport } from '../wordExport'
+import WordToolbar from './WordToolbar'
+import { Empty, PassageCard, StatusPill, versionLabel } from './shared'
+
+const score = (v: number | null) => (v == null ? 'n/a' : v.toFixed(3))
 
 export default function SearchPanel() {
   const [query, setQuery] = useState('')
@@ -12,6 +16,7 @@ export default function SearchPanel() {
   const [rerank, setRerank] = useState(true)
   const [finalK, setFinalK] = useState(5)
   const [result, setResult] = useState<RetrievalResult | null>(null)
+  const [asked, setAsked] = useState<{ query: string; filters: SearchFilters } | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
@@ -20,12 +25,15 @@ export default function SearchPanel() {
     if (!query.trim()) { setError('Type a question to search for.'); return }
     setBusy(true)
     setError('')
+    const filters: SearchFilters = {
+      ctd_sections: section ? [section] : [],
+      include_parent_sections: parents,
+      applicability_statuses: currentOnly ? ['current'] : [],
+    }
     try {
-      setResult(await api.search(query, {
-        ctd_sections: section ? [section] : [],
-        include_parent_sections: parents,
-        applicability_statuses: currentOnly ? ['current'] : [],
-      }, finalK, rerank))
+      const r = await api.search(query, filters, finalK, rerank)
+      setResult(r)
+      setAsked({ query: query.trim(), filters })
     } catch (err) {
       setError((err as Error).message)
     } finally {
@@ -68,6 +76,10 @@ export default function SearchPanel() {
 
       {error && <div className="alert alert-error">{error}</div>}
 
+      {result && asked && (
+        <WordToolbar onDownload={() => downloadSearchReport(asked.query, asked.filters, result)} />
+      )}
+
       {result && (
         <div className="card">
           <div className="card-header">
@@ -81,7 +93,41 @@ export default function SearchPanel() {
               ? <Empty title="The knowledge base is empty">Load passages first.</Empty>
               : result.passages.length === 0
                 ? <Empty title="No passages matched">Try another section or switch off "Current sources only".</Empty>
-                : result.passages.map(p => <PassageCard key={p.chunk_id} p={p} />)}
+                : (
+                  <>
+                    <div className="table-wrap">
+                      <table className="doc-table table-stack">
+                        <thead>
+                          <tr><th className="num">#</th><th>Source</th><th className="num">Page</th><th>CTD</th><th>Status</th><th className="num">Similarity</th><th className="num">Rerank</th></tr>
+                        </thead>
+                        <tbody>
+                          {result.passages.map((p, i) => (
+                            <tr key={p.chunk_id}>
+                              <td className="num" data-label="#">{i + 1}</td>
+                              <td data-label="Source">
+                                <b>{p.metadata.issuing_organization}</b> · {p.metadata.source_title}
+                                <div className="text-muted" style={{ fontSize: 12 }}>
+                                  {p.metadata.source_identifier}{p.metadata.document_version ? ` · ${versionLabel(p.metadata.document_version)}` : ''}
+                                </div>
+                              </td>
+                              <td className="num" data-label="Page">{p.metadata.page_number ?? 'n/a'}</td>
+                              <td data-label="CTD">{p.metadata.ctd_section ?? 'n/a'}</td>
+                              <td data-label="Status"><StatusPill status={p.metadata.applicability_status} /></td>
+                              <td className="num" data-label="Similarity">{score(p.retrieval_score)}</td>
+                              <td className="num" data-label="Rerank">{score(p.rerank_score)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <details>
+                      <summary>Show the passage text</summary>
+                      <div className="stack" style={{ marginTop: 12 }}>
+                        {result.passages.map(p => <PassageCard key={p.chunk_id} p={p} />)}
+                      </div>
+                    </details>
+                  </>
+                )}
           </div>
         </div>
       )}
