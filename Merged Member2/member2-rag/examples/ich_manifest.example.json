@@ -1,0 +1,49 @@
+[
+  {
+    "_note": "Copy this file to data/raw/manifest.json and put the PDFs next to it. Replace every FILL IN with the value printed on the document's own cover page (or delete the line if the document does not state it). Check the title against the cover page too.",
+    "pdf": "ICH_Q6A.pdf",
+    "source_title": "Specifications: Test Procedures and Acceptance Criteria for New Drug Substances and New Drug Products: Chemical Substances",
+    "issuing_organization": "ICH",
+    "source_identifier": "ICH Q6A",
+    "document_version": "FILL IN from cover page",
+    "publication_date": "FILL IN as YYYY-MM-DD, YYYY-MM or YYYY",
+    "applicability_status": "current",
+    "document_type": "guideline",
+    "ctd_section": "3.2.S.4",
+    "page_sections": "",
+    "first_page": 1
+  },
+  {
+    "pdf": "ICH_Q2R2.pdf",
+    "source_title": "Validation of Analytical Procedures",
+    "issuing_organization": "ICH",
+    "source_identifier": "ICH Q2(R2)",
+    "document_version": "FILL IN from cover page",
+    "publication_date": "FILL IN as YYYY-MM-DD, YYYY-MM or YYYY",
+    "applicability_status": "current",
+    "document_type": "guideline",
+    "ctd_section": "3.2.S.4.3"
+  },
+  {
+    "pdf": "ICH_Q3A_R2.pdf",
+    "source_title": "Impurities in New Drug Substances",
+    "issuing_organization": "ICH",
+    "source_identifier": "ICH Q3A(R2)",
+    "document_version": "FILL IN from cover page",
+    "publication_date": "FILL IN as YYYY-MM-DD, YYYY-MM or YYYY",
+    "applicability_status": "current",
+    "document_type": "guideline",
+    "ctd_section": "3.2.S.3"
+  },
+  {
+    "pdf": "ICH_Q11.pdf",
+    "source_title": "Development and Manufacture of Drug Substances (Chemical Entities and Biotechnological/Biological Entities)",
+    "issuing_organization": "ICH",
+    "source_identifier": "ICH Q11",
+    "document_version": "FILL IN from cover page",
+    "publication_date": "FILL IN as YYYY-MM-DD, YYYY-MM or YYYY",
+    "applicability_status": "current",
+    "document_type": "guideline",
+    "ctd_section": "3.2.S"
+  }
+]

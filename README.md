@@ -9,6 +9,7 @@ This is the team repository for the SAHPRA Agentic QA-RAG research project — a
 | Folder | Description |
 |---|---|
 | [`member2/`](member2/README.md) | Member 2 — Regulatory Knowledge Base and Evidence Retrieval (Aziz & Sipho) |
+| [`Merged Member2/`](Merged%20Member2/README.md) | Member 2 application: React assessor dashboard (Knowledge Base, Coverage, Search, Agents, Benchmark; Word reports; assessor review) and FastAPI backend, with the knowledge base rebuilt from the `member2/` regulatory source list (16 public ICH/WHO/SAHPRA guidelines) |
 
 ## About the Project
 
