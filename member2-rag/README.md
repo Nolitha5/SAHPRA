@@ -100,7 +100,7 @@ member2-rag/
 │   ├── search.py                 # (added) try retrieval from the command line
 │   ├── run_agent.py              # (added) run either agent from the command line
 │   └── evaluate_retrieval.py
-├── tests/                        # 142 unit tests + 2 integration tests
+├── tests/                        # 144 unit tests + 2 integration tests
 ├── benchmarks/
 │   ├── benchmark.jsonl           # template (synthetic items - replace!)
 │   ├── pilot.jsonl               # 20 ICH pilot questions (page-level labels)
@@ -170,7 +170,7 @@ cp .env.example .env
 python -m pytest
 ```
 
-Expected: `142 passed, 2 deselected`.
+Expected: `144 passed, 2 deselected`.
 
 **Once the models are downloaded** (after the first search), set `HF_HUB_OFFLINE=1` and
 `TRANSFORMERS_OFFLINE=1` in `.env` (see `.env.example`). Otherwise every server start checks Hugging
@@ -265,7 +265,7 @@ for p in result.passages:
 ```
 
 **CTD filtering is hierarchical:** `3.2.S.4` matches 3.2.S.4.1–3.2.S.4.5; by default parent headings
-(e.g. a general passage tagged `3.2.S`) are also included. Use `include_parent_sections=False` to switch that off.
+(e.g. a general passage tagged `3.2.S`, or the module heading `3.2`) are also included. Use `include_parent_sections=False` to switch that off.
 
 Every passage keeps `retrieval_score` (cosine similarity) **and** `rerank_score` (cross-encoder logit) separately.
 
@@ -365,7 +365,7 @@ method-validation completeness checklist, batch trend statistics.
 ## 12. Running tests
 
 ```powershell
-python -m pytest                 # 142 unit tests, no downloads, temp databases only
+python -m pytest                 # 144 unit tests, no downloads, temp databases only
 python -m pytest -m integration  # 2 tests with REAL models (downloads bge-small + bge-reranker-base)
 python -m pytest -v tests/test_s4_control.py
 python -m ruff check             # lint (pip install -r requirements-dev.txt once; config in ruff.toml)
@@ -477,10 +477,26 @@ What this shows:
   (3.2.S.4.1) and stability (3.2.S.7) rules but carries only one tag. This is the same limitation as P008
   in the ICH pilot, and it is much larger on SAHPRA documents because they are organised by procedure
   rather than by CTD section.
-* The tags were **not** changed to improve these scores. Recommended next steps: finer per-page tagging
-  from Member 3's pipeline, allowing several sections per passage, or including parent sections
-  (`include_parent_sections`) when filtering. Until then, the filter should be used with care for SAHPRA
-  questions.
+* The tags were **not** changed to improve these scores.
+
+**Filter fix and re-run (2026-11-06).** Investigating the misses above showed a bug in the parent-section
+logic: `include_parent_sections` (on by default) added `3.2.S.4` and `3.2.S` but stopped before the module
+heading `3.2`, so the 54 passages tagged `3.2` were never reachable through a 3.2.S filter. `ctd_ancestors()`
+now includes the module heading (tests in `tests/test_retrieval.py`). No tags or questions were changed.
+Re-run with the same command, collection and settings:
+
+| Configuration | Hit@1 | Recall@5 | Recall@10 | MRR | nDCG@10 | p50 latency | Ragas ctx recall | Ragas ctx precision |
+|---|---|---|---|---|---|---|---|---|
+| bge-large, 300 words, dense only | 0.56 | 0.90 | 0.90 | 0.72 | 0.735 | 0.16 s | 0.722 | 0.661 |
+| **bge-large, 300 words, reranked** (main) | 0.67 | 0.84 | 0.92 | 0.75 | 0.767 | 6.4 s | 0.639 | 0.701 |
+| bge-large, 300 words, reranked, no CTD filter | 0.67 | 0.93 | 1.00 | 0.77 | 0.816 | 6.8 s | 0.708 | 0.717 |
+
+* With the filter, 17 of 18 SAHPRA questions now find their page in the top 10 (was 12 of 18).
+* The one remaining miss (S010, asked under 3.2.S.7) is on page 17, which covers both 3.2.S.4.1 and
+  3.2.S.7 but can carry only one tag — the "one CTD section per passage" limitation (section 15).
+* The ICH pilot was re-run with the fix: **every score was identical** to the earlier table.
+* Caveat: the fix was found by looking at these 18 questions. Confirm it on new SAHPRA questions that
+  were not used to find it before treating the improvement as final.
 
 The full per-question output is in `results/retrieval_benchmark_<UTC time>.json` (git-ignored; regenerate
 with the command above).
@@ -545,7 +561,7 @@ shared_retrieval = m2.retrieval                   # .retrieve(query, filters, ca
   assistance and checked against the page text, but not by a domain expert.
 * **One CTD section per passage.** A passage carries a single `ctd_section`. A guideline tagged with one
   section (e.g. ICH Q3A as 3.2.S.3) is hidden by a filter for another section where it is also relevant
-  (Q3A's impurity-listing rules matter for 3.2.S.4.1). The pilot shows this (question P008). Mitigations:
+  (Q3A's impurity-listing rules matter for 3.2.S.4.1). The pilots show this (questions P008 and S010). Mitigations:
   per-page tags in the converter manifest (`page_sections`), searching without the filter, or multi-section
   tags from Member 3.
 * **CPU latency.** With the reranker, a query takes several seconds on CPU (section 13). A GPU

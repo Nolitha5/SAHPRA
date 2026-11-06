@@ -10,8 +10,8 @@ Steps:
 CTD filtering is hierarchical. Asking for "3.2.S.4" matches passages tagged
 3.2.S.4 and any subsection (3.2.S.4.1 ... 3.2.S.4.5). With
 `include_parent_sections=True` (default) it also matches passages tagged with
-a parent heading such as "3.2.S", because general guidance is often mapped to
-the parent heading by the ingestion pipeline.
+a parent heading such as "3.2.S" or the module heading "3.2", because general
+guidance is often mapped to the parent heading by the ingestion pipeline.
 """
 
 from __future__ import annotations
