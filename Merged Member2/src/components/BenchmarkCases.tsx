@@ -1,6 +1,7 @@
 import type { FormEvent } from 'react'
 import { useCallback, useEffect, useState } from 'react'
-import { api, CTD_SECTIONS } from '../api'
+import { api } from '../api'
+import CtdSelect from './CtdSelect'
 import type { BenchmarkCase, BenchmarkResultFile } from '../types'
 import { Empty, plural } from './shared'
 
@@ -154,9 +155,7 @@ export default function BenchmarkCases({ canEdit, benchmarkFile }: { canEdit: bo
             </div>
             <div className="form-group">
               <label htmlFor="bc-section">CTD section</label>
-              <select id="bc-section" value={form.ctd_section} onChange={e => setForm({ ...form, ctd_section: e.target.value })}>
-                {CTD_SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
+              <CtdSelect id="bc-section" value={form.ctd_section} onChange={v => setForm({ ...form, ctd_section: v })} />
             </div>
             <div className="form-group form-full">
               <label htmlFor="bc-question">Question</label>

@@ -3,16 +3,14 @@ import { api, getEditorToken, setEditorToken } from './api'
 import type { Health } from './types'
 import KnowledgeBase from './components/KnowledgeBase'
 import SearchPanel from './components/SearchPanel'
-import Findings from './components/Findings'
 import BenchmarkCases from './components/BenchmarkCases'
 import CoveragePage from './components/CoveragePage'
 
-type Tab = 'kb' | 'search' | 'agents' | 'bench'
+type Tab = 'kb' | 'search' | 'bench'
 
 const TABS: { id: Tab; label: string; description: string }[] = [
-  { id: 'kb', label: 'Knowledge Base', description: 'The guidelines that Search and the agents use: what is indexed, what is missing, how each CTD 3.2.S heading is covered, and every passage.' },
-  { id: 'search', label: 'Search', description: 'Query the shared retrieval service with CTD section and source filters.' },
-  { id: 'agents', label: 'Agents', description: 'Run the Evidence/RERA and S.4 Control agents. Every finding requires assessor review.' },
+  { id: 'kb', label: 'Knowledge Base', description: 'The guidelines that Search uses: what is indexed, what is missing, how each CTD 3.2.S heading is covered, and every passage.' },
+  { id: 'search', label: 'Search', description: 'Ask a question: the right agent (Evidence/RERA or S.4 Control) searches the guidelines and returns a cited finding for assessor review.' },
   { id: 'bench', label: 'Benchmark', description: 'Retrieval benchmark results and the questions used to measure them.' },
 ]
 
@@ -134,9 +132,7 @@ export default function App() {
             <KnowledgeBase canEdit={canEdit} onChanged={() => { setKbVersion(v => v + 1); refreshHealth() }} />
           </div>
         )}
-        {tab === 'search' && <SearchPanel />}
-        {tab === 'agents' && <Findings />}
-        {tab === 'bench' && <BenchmarkCases canEdit={canEdit} benchmarkFile={health?.benchmark_file} />}      </main>
+        {tab === 'search' && <SearchPanel />}        {tab === 'bench' && <BenchmarkCases canEdit={canEdit} benchmarkFile={health?.benchmark_file} />}      </main>
     </div>
   )
 }

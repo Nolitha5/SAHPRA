@@ -245,3 +245,17 @@ export interface Coverage {
   ctd_tags: Record<string, number>
   s_sections: { section: string; label: string; direct: number; reachable: number }[]
 }
+
+/** How the automatic search chose the CTD section and agent (POST /api/ask). */
+export interface Route {
+  agent: 'evidence_rera' | 's4_control'
+  ctd_section: string
+  reason: string
+  votes: Record<string, number>
+  based_on: string[]
+}
+
+export interface AskResponse {
+  route: Route
+  findings: Finding[]
+}

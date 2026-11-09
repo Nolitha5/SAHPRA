@@ -56,6 +56,7 @@ from app.schemas import (
     EvidenceStatus,
     Finding,
     QAStatus,
+    RetrievalResult,
     RetrievedPassage,
     SearchFilters,
     SponsorEvidence,
@@ -103,13 +104,21 @@ class S4ControlAgent:
         sponsor_evidence: list[SponsorEvidence] | None = None,
         filters: SearchFilters | None = None,
         use_reranker: bool | None = None,
+        retrieved: RetrievalResult | None = None,
     ) -> Finding:
-        """Regulatory evidence finding for one S.4 topic."""
+        """Regulatory evidence finding for one S.4 topic.
+
+        `retrieved`: passages already found for this question (see the automatic
+        router); when given, no new search is run and `filters` is ignored.
+        """
         section = TOPIC_SECTIONS[topic]
-        effective = filters.model_copy(deep=True) if filters else SearchFilters()
-        if not effective.ctd_sections:
-            effective = effective.model_copy(update={"ctd_sections": [section]})
-        result = self.retrieval.retrieve(question, filters=effective, use_reranker=use_reranker)
+        if retrieved is not None:
+            result, effective = retrieved, retrieved.filters
+        else:
+            effective = filters.model_copy(deep=True) if filters else SearchFilters()
+            if not effective.ctd_sections:
+                effective = effective.model_copy(update={"ctd_sections": [section]})
+            result = self.retrieval.retrieve(question, filters=effective, use_reranker=use_reranker)
         assessment = assess_evidence(result, self.settings)
         return Finding(
             agent_name=self.name,
@@ -301,10 +310,11 @@ class S4ControlAgent:
         regulatory_limits: list[AcceptanceCriterion] | None = None,
         filters: SearchFilters | None = None,
         use_reranker: bool | None = None,
+        retrieved: RetrievalResult | None = None,
     ) -> list[Finding]:
         """Full S.4 workflow: evidence finding + any comparisons that have data."""
         topic = S4Topic(topic)
-        findings = [self.retrieve_evidence(question, topic, sponsor_evidence, filters, use_reranker)]
+        findings = [self.retrieve_evidence(question, topic, sponsor_evidence, filters, use_reranker, retrieved)]
         if batch_results:
             findings.append(self.compare_batch_results(specification or [], batch_results, sponsor_evidence))
         if regulatory_limits:

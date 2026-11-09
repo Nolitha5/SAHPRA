@@ -1,5 +1,5 @@
 import type {
-  AgentRequest, BenchmarkCase, BenchmarkResultFile, Coverage, Facets, Finding, Health,
+  AgentRequest, AskResponse, BenchmarkCase, BenchmarkResultFile, Coverage, Facets, Finding, Health,
   ImportReport, PassagePage, RetrievalResult, SearchFilters,
 } from './types'
 
@@ -76,6 +76,9 @@ export const api = {
 
   runAgent: (agent: 'evidence-rera' | 's4-control', req: AgentRequest) =>
     request<Finding[]>(`/agents/${agent}`, { method: 'POST', body: JSON.stringify(req) }),
+  // Just a question: the server searches everything, picks the CTD section and the agent.
+  ask: (question: string, current_only: boolean, use_reranker: boolean) =>
+    request<AskResponse>('/ask', { method: 'POST', body: JSON.stringify({ question, current_only, use_reranker }) }),
 
   cases: () => request<BenchmarkCase[]>('/benchmark/cases'),
   addCase: (c: BenchmarkCase) => request<BenchmarkCase>('/benchmark/cases', { method: 'POST', body: JSON.stringify(c) }, true),
@@ -83,12 +86,8 @@ export const api = {
   results: () => request<BenchmarkResultFile[]>('/benchmark/results'),
 }
 
-// Every CTD tag used in the knowledge base must be listed here, or it cannot be filtered on.
-// 3.2 = general Module 3 guidance (e.g. ICH M4Q, SAHPRA PEM-02); 3.2.P.2 = ICH Q8(R2).
-export const CTD_SECTIONS = [
-  '3.2', '3.2.S', '3.2.S.1', '3.2.S.2', '3.2.S.3', '3.2.S.4', '3.2.S.4.1', '3.2.S.4.2',
-  '3.2.S.4.3', '3.2.S.4.4', '3.2.S.4.5', '3.2.S.5', '3.2.S.6', '3.2.S.7', '3.2.P.2',
-]
+// The CTD headings (with names) live in ./ctd.ts; re-exported for existing imports.
+export { CTD_SECTIONS } from './ctd'
 export const DOCUMENT_TYPES = [
   'guideline', 'guidance', 'regulation', 'act', 'monograph', 'general_chapter',
   'template', 'q_and_a', 'other', 'synthetic_test',

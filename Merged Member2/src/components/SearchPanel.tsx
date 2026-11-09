@@ -1,41 +1,57 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
-import { api, CTD_SECTIONS } from '../api'
-import type { RetrievalResult, SearchFilters } from '../types'
-import { downloadSearchReport } from '../wordExport'
+import { api } from '../api'
+import { ctdTitle } from '../ctd'
+import { AGENT_LABEL, buildRequest, isS4, routeAgent } from '../searchRouting'
+import type { AgentChoice } from '../searchRouting'
+import type { Finding, Route, SearchFilters } from '../types'
+import { downloadFindingsReport } from '../wordExport'
+import CtdSelect from './CtdSelect'
+import { FindingCard } from './Findings'
+import SectionScope from './SectionScope'
 import WordToolbar from './WordToolbar'
-import { Empty, PassageCard, StatusPill, versionLabel } from './shared'
 
-const score = (v: number | null) => (v == null ? 'n/a' : v.toFixed(3))
+const ROUTE_AGENT_LABEL: Record<Route['agent'], string> = { evidence_rera: 'Evidence/RERA', s4_control: 'S.4 Control' }
+
+/** How the result was produced: chosen automatically (with the reason) or set by hand. */
+interface Answered { auto: boolean; agent: string; section: string; route?: Route }
 
 export default function SearchPanel() {
-  const [query, setQuery] = useState('')
+  const [question, setQuestion] = useState('')
+  // Advanced options: leave them alone and the app chooses the CTD section and agent itself.
   const [section, setSection] = useState('')
+  const [choice, setChoice] = useState<AgentChoice>('auto')
   const [parents, setParents] = useState(true)
   const [currentOnly, setCurrentOnly] = useState(false)
   const [rerank, setRerank] = useState(true)
-  const [finalK, setFinalK] = useState(5)
-  const [result, setResult] = useState<RetrievalResult | null>(null)
-  const [asked, setAsked] = useState<{ query: string; filters: SearchFilters } | null>(null)
+  const [findings, setFindings] = useState<Finding[] | null>(null)
+  const [answered, setAnswered] = useState<Answered | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
+  const automatic = section === '' && choice === 'auto'
+  const manualAgent = routeAgent(choice, section)
+
   async function run(e: FormEvent) {
     e.preventDefault()
-    if (!query.trim()) { setError('Type a question to search for.'); return }
+    if (!question.trim()) { setError('Type a question.'); return }
     setBusy(true)
     setError('')
-    const filters: SearchFilters = {
-      ctd_sections: section ? [section] : [],
-      include_parent_sections: parents,
-      applicability_statuses: currentOnly ? ['current'] : [],
-    }
     try {
-      const r = await api.search(query, filters, finalK, rerank)
-      setResult(r)
-      setAsked({ query: query.trim(), filters })
+      if (automatic) {
+        const res = await api.ask(question.trim(), currentOnly, rerank)
+        setFindings(res.findings)
+        setAnswered({ auto: true, agent: ROUTE_AGENT_LABEL[res.route.agent], section: res.route.ctd_section, route: res.route })
+      } else {
+        const filters: SearchFilters = { include_parent_sections: parents, applicability_statuses: currentOnly ? ['current'] : [] }
+        const res = await api.runAgent(manualAgent, buildRequest(manualAgent, question.trim(), section, filters, rerank))
+        setFindings(res)
+        setAnswered({ auto: false, agent: AGENT_LABEL[manualAgent], section: res[0]?.ctd_section ?? section })
+      }
     } catch (err) {
       setError((err as Error).message)
+      setFindings(null)
+      setAnswered(null)
     } finally {
       setBusy(false)
     }
@@ -47,89 +63,80 @@ export default function SearchPanel() {
         <div className="card-body form-grid">
           <div className="form-group form-full">
             <label htmlFor="search-query">Question</label>
-            <textarea id="search-query" value={query} onChange={e => setQuery(e.target.value)}
-              placeholder="Ask a question about the knowledge base" />
+            <textarea id="search-query" value={question} onChange={e => setQuestion(e.target.value)}
+              placeholder="Ask in your own words, e.g. What are the long-term storage conditions for a drug substance stability study?" />
           </div>
-          <div className="form-group">
-            <label htmlFor="search-section">CTD section</label>
-            <select id="search-section" value={section} onChange={e => setSection(e.target.value)}>
-              <option value="">Any section</option>
-              {CTD_SECTIONS.map(s => <option key={s} value={s}>{s} and subsections</option>)}
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="search-k">Passages to return</label>
-            <select id="search-k" value={finalK} onChange={e => setFinalK(Number(e.target.value))}>
-              {[3, 5, 10].map(k => <option key={k} value={k}>{k}</option>)}
-            </select>
-          </div>
-          <div className="checks form-full">
-            <label className="check"><input id="search-parents" type="checkbox" checked={parents} onChange={e => setParents(e.target.checked)} /> Include parent headings</label>
-            <label className="check"><input id="search-current" type="checkbox" checked={currentOnly} onChange={e => setCurrentOnly(e.target.checked)} /> Current sources only</label>
-            <label className="check"><input id="search-rerank" type="checkbox" checked={rerank} onChange={e => setRerank(e.target.checked)} /> Rerank results</label>
-          </div>
+
           <div className="form-full row-actions">
             <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? 'Searching…' : 'Search'}</button>
+            <span className="text-muted" style={{ fontSize: 12.5 }}>
+              {automatic
+                ? 'The app searches all guidelines and picks the CTD section and agent for you.'
+                : `Using your choice: ${AGENT_LABEL[manualAgent]}${section ? ` · ${section}` : ' · any section'}`}
+            </span>
           </div>
+
+          <details className="form-full advanced" open={!automatic}>
+            <summary>Advanced options (choose the CTD section or agent yourself)</summary>
+            <div className="form-grid" style={{ marginTop: 12 }}>
+              <div className="form-group">
+                <label htmlFor="search-section">CTD section</label>
+                <CtdSelect id="search-section" value={section} onChange={setSection} emptyLabel="Automatic (search all guidelines)" />
+              </div>
+              <div className="form-group">
+                <label htmlFor="search-agent">Agent</label>
+                <select id="search-agent" value={choice} onChange={e => setChoice(e.target.value as AgentChoice)}>
+                  <option value="auto">Automatic</option>
+                  <option value="evidence-rera">Evidence/RERA · find and cite</option>
+                  <option value="s4-control">S.4 Control · specifications and batches</option>
+                </select>
+              </div>
+              {section && <div className="form-full"><SectionScope section={section} parents={parents} /></div>}
+              <div className="checks form-full">
+                {!automatic && (
+                  <label className="check"><input id="search-parents" type="checkbox" checked={parents} onChange={e => setParents(e.target.checked)} /> Include parent headings</label>
+                )}
+                <label className="check"><input id="search-current" type="checkbox" checked={currentOnly} onChange={e => setCurrentOnly(e.target.checked)} /> Current sources only</label>
+                <label className="check"><input id="search-rerank" type="checkbox" checked={rerank} onChange={e => setRerank(e.target.checked)} /> Rerank results</label>
+              </div>
+              {!automatic && (
+                <div className="form-full">
+                  <button className="btn btn-link" type="button" onClick={() => { setSection(''); setChoice('auto') }}>
+                    Back to automatic
+                  </button>
+                  {manualAgent === 's4-control' && !isS4(section) && (
+                    <span className="text-muted" style={{ fontSize: 12.5 }}> S.4 Control will use the general 3.2.S.4 topic.</span>
+                  )}
+                </div>
+              )}
+            </div>
+          </details>
         </div>
       </form>
 
       {error && <div className="alert alert-error">{error}</div>}
 
-      {result && asked && (
-        <WordToolbar onDownload={() => downloadSearchReport(asked.query, asked.filters, result)} />
-      )}
-
-      {result && (
-        <div className="card">
-          <div className="card-header">
-            <span className="card-title">{result.passages.length} passage(s)</span>
-            <span className="text-muted">
-              {result.candidates_considered} candidates · {result.reranked ? `reranked with ${result.reranker_model}` : 'not reranked'} · {result.latency_ms.toFixed(0)} ms
-            </span>
-          </div>
-          <div className="card-body stack">
-            {result.knowledge_base_size === 0
-              ? <Empty title="The knowledge base is empty">Load passages first.</Empty>
-              : result.passages.length === 0
-                ? <Empty title="No passages matched">Try another section or switch off "Current sources only".</Empty>
-                : (
-                  <>
-                    <div className="table-wrap">
-                      <table className="doc-table table-stack">
-                        <thead>
-                          <tr><th className="num">#</th><th>Source</th><th className="num">Page</th><th>CTD</th><th>Status</th><th className="num">Similarity</th><th className="num">Rerank</th></tr>
-                        </thead>
-                        <tbody>
-                          {result.passages.map((p, i) => (
-                            <tr key={p.chunk_id}>
-                              <td className="num" data-label="#">{i + 1}</td>
-                              <td data-label="Source">
-                                <b>{p.metadata.issuing_organization}</b> · {p.metadata.source_title}
-                                <div className="text-muted" style={{ fontSize: 12 }}>
-                                  {p.metadata.source_identifier}{p.metadata.document_version ? ` · ${versionLabel(p.metadata.document_version)}` : ''}
-                                </div>
-                              </td>
-                              <td className="num" data-label="Page">{p.metadata.page_number ?? 'n/a'}</td>
-                              <td data-label="CTD">{p.metadata.ctd_section ?? 'n/a'}</td>
-                              <td data-label="Status"><StatusPill status={p.metadata.applicability_status} /></td>
-                              <td className="num" data-label="Similarity">{score(p.retrieval_score)}</td>
-                              <td className="num" data-label="Rerank">{score(p.rerank_score)}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    <details>
-                      <summary>Show the passage text</summary>
-                      <div className="stack" style={{ marginTop: 12 }}>
-                        {result.passages.map(p => <PassageCard key={p.chunk_id} p={p} />)}
-                      </div>
-                    </details>
-                  </>
+      {findings && findings.length > 0 && answered && (
+        <>
+          <div className="route-card">
+            <div>
+              <b>Answered by {answered.agent}</b> · CTD {answered.section}
+              {ctdTitle(answered.section) ? ` ${ctdTitle(answered.section)}` : ''}
+              <span className="pill pill-gray" style={{ marginLeft: 8 }}>{answered.auto ? 'chosen automatically' : 'chosen by you'}</span>
+            </div>
+            {answered.route && (
+              <>
+                <div className="route-reason">{answered.route.reason}</div>
+                {answered.route.based_on.length > 0 && (
+                  <div className="route-reason">Best matches: {answered.route.based_on.join(' · ')}</div>
                 )}
+              </>
+            )}
           </div>
-        </div>
+          <WordToolbar onDownload={() => downloadFindingsReport(findings)}
+            note="Saved assessor comments are included in red." />
+          {findings.map(f => <FindingCard key={f.finding_id} f={f} />)}
+        </>
       )}
     </div>
   )

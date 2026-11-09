@@ -42,6 +42,7 @@ from app.knowledge_base.indexing import InputFileError, index_text
 from app.knowledge_base.metadata import MetadataCorruptionError
 from app.logging_utils import get_logger, log_event
 from app.retrieval.vector_search import InvalidQueryError, build_where
+from app.routing import ask
 from app.schemas import AgentRequest, SearchFilters
 
 logger = get_logger("api")
@@ -58,6 +59,14 @@ class SearchRequest(BaseModel):
     filters: SearchFilters | None = None
     candidate_k: int | None = Field(default=None, ge=1, le=200)
     final_k: int | None = Field(default=None, ge=1, le=50)
+    use_reranker: bool | None = None
+
+
+class AskRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    question: str = Field(min_length=1, max_length=2000)
+    current_only: bool = False
     use_reranker: bool | None = None
 
 
@@ -253,6 +262,13 @@ def create_app(
     @app.post("/api/agents/s4-control")
     def s4_control(request: AgentRequest) -> list[dict[str, Any]]:
         return _run_agent(S4ControlAgent.name, request)
+
+    @app.post("/api/ask")
+    def ask_question(body: AskRequest) -> dict[str, Any]:
+        """Just a question: search everything, pick the CTD section and agent, return the findings."""
+        route, findings = run_model(ask, m2, body.question, current_only=body.current_only,
+                                    use_reranker=body.use_reranker)
+        return {"route": route.as_dict(), "findings": [f.model_dump(mode="json") for f in findings]}
 
     # -- benchmark --------------------------------------------------------
     @app.get("/api/benchmark/cases")

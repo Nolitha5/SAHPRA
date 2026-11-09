@@ -100,7 +100,7 @@ member2-rag/
 │   ├── search.py                 # (added) try retrieval from the command line
 │   ├── run_agent.py              # (added) run either agent from the command line
 │   └── evaluate_retrieval.py
-├── tests/                        # 153 unit tests + 2 integration tests
+├── tests/                        # 160 unit tests + 2 integration tests
 ├── benchmarks/
 │   ├── benchmark.jsonl           # template (synthetic items - replace!)
 │   ├── pilot.jsonl               # 20 ICH pilot questions (page-level labels)
@@ -174,7 +174,7 @@ python -m pytest
 python scripts/build_knowledge_base.py      # download, convert and index the 16 guidelines
 ```
 
-Expected: `153 passed, 2 deselected`.
+Expected: `160 passed, 2 deselected`.
 
 **Once the models are downloaded** (after the first search), set `HF_HUB_OFFLINE=1` and
 `TRANSFORMERS_OFFLINE=1` in `.env` (see `.env.example`). Otherwise every server start checks Hugging
@@ -369,7 +369,7 @@ method-validation completeness checklist, batch trend statistics.
 ## 12. Running tests
 
 ```powershell
-python -m pytest                 # 153 unit tests, no downloads, temp databases only
+python -m pytest                 # 160 unit tests, no downloads, temp databases only
 python -m pytest -m integration  # 2 tests with REAL models (downloads bge-small + bge-reranker-base)
 python -m pytest -v tests/test_s4_control.py
 python -m ruff check             # lint (pip install -r requirements-dev.txt once; config in ruff.toml)
@@ -671,6 +671,7 @@ python -m app.api        # http://127.0.0.1:8000, interactive docs at /api/docs
 | POST | `/api/search` | Shared retrieval service | no |
 | POST | `/api/agents/evidence-rera` | Evidence/RERA (`AgentRequest` → `Finding[]`) | no |
 | POST | `/api/agents/s4-control` | S.4 Control (`AgentRequest` → `Finding[]`) | no |
+| POST | `/api/ask` | Just a question: searches everything once, picks the CTD section and agent from the best passages (`app/routing.py`), returns `{route, findings}` | no |
 | GET/POST | `/api/benchmark/cases` | List / add benchmark questions | POST: **yes** |
 | DELETE | `/api/benchmark/cases/{id}` | Remove a benchmark question | **yes** |
 | GET | `/api/benchmark/results` | Summaries of `results/retrieval_benchmark_*.json` | no |
