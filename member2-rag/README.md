@@ -100,7 +100,7 @@ member2-rag/
 │   ├── search.py                 # (added) try retrieval from the command line
 │   ├── run_agent.py              # (added) run either agent from the command line
 │   └── evaluate_retrieval.py
-├── tests/                        # 149 unit tests + 2 integration tests
+├── tests/                        # 153 unit tests + 2 integration tests
 ├── benchmarks/
 │   ├── benchmark.jsonl           # template (synthetic items - replace!)
 │   ├── pilot.jsonl               # 20 ICH pilot questions (page-level labels)
@@ -109,7 +109,7 @@ member2-rag/
 │   └── configs.minimal.json
 ├── docs/PRESENTING.md            # how to explain and defend this component (added)
 ├── results/                      # benchmark outputs (git-ignored)
-├── requirements.txt, requirements-eval.txt, pytest.ini
+├── requirements.txt, requirements-dev.txt, requirements-eval.txt, pytest.ini
 ├── .env.example, .gitignore
 └── README.md
 ```
@@ -152,8 +152,10 @@ python -m pip install --upgrade pip
 pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu   # CPU-only, smaller
 pip install -r requirements.txt
 pip install -r requirements-eval.txt       # optional, only for --ragas
+pip install -r requirements-dev.txt        # tests and lint
 copy .env.example .env
 python -m pytest
+python scripts/build_knowledge_base.py      # download, convert and index the 16 guidelines
 ```
 
 ### macOS / Linux
@@ -166,11 +168,13 @@ pip install --upgrade pip
 pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu   # skip on macOS / if you have CUDA
 pip install -r requirements.txt
 pip install -r requirements-eval.txt       # optional
+pip install -r requirements-dev.txt        # tests and lint
 cp .env.example .env
 python -m pytest
+python scripts/build_knowledge_base.py      # download, convert and index the 16 guidelines
 ```
 
-Expected: `149 passed, 2 deselected`.
+Expected: `153 passed, 2 deselected`.
 
 **Once the models are downloaded** (after the first search), set `HF_HUB_OFFLINE=1` and
 `TRANSFORMERS_OFFLINE=1` in `.env` (see `.env.example`). Otherwise every server start checks Hugging
@@ -365,7 +369,7 @@ method-validation completeness checklist, batch trend statistics.
 ## 12. Running tests
 
 ```powershell
-python -m pytest                 # 149 unit tests, no downloads, temp databases only
+python -m pytest                 # 153 unit tests, no downloads, temp databases only
 python -m pytest -m integration  # 2 tests with REAL models (downloads bge-small + bge-reranker-base)
 python -m pytest -v tests/test_s4_control.py
 python -m ruff check             # lint (pip install -r requirements-dev.txt once; config in ruff.toml)
@@ -555,47 +559,58 @@ shared_retrieval = m2.retrieval                   # .retrieve(query, filters, ca
 The knowledge base was rebuilt from the regulatory source list of the team's `aziz-and-sipho` branch
 (github.com/Nolitha5/SAHPRA): 15 public ICH, WHO and SAHPRA guidelines, downloaded from the official
 URLs, plus SAHPGL-PEM-03 (APIMF), which that list does not include. SAHPGL-PEM-02 **v9** (23 October 2025)
-replaces v8. Their sponsor dossiers (confidential) and quarantined pharmacopoeial material were not used.
+replaces v8, and SAHPGL-PEM-03 **v4** (17 July 2024) replaces v3, which SAHPRA now marks "archived (do not
+use)". Their sponsor dossiers (confidential) and quarantined pharmacopoeial material were not used.
 
 | | |
 |---|---|
 | Source list (committed) | `sources/kb_v2_manifest.json`: title, version, date, CTD tag and official URL of every PDF |
-| PDFs (git-ignored) | `data/raw/aziz_sipho/` + `data/raw/SAHPRA_PEM03_APIMF_v3.pdf` |
-| Passages | `data/processed/kb_v2_w300.jsonl`: 759 passages, 300-word chunks, 50-word overlap |
-| Collection | `kb_v2_large_w300` (bge-large-en-v1.5). The previous `ich_large_w300` (248 passages) is kept |
+| PDFs (git-ignored) | `data/raw/kb_v2/` (downloaded by the build script) |
+| Passages | `data/processed/kb_v2_w300.jsonl`: 761 passages, 300-word chunks, 50-word overlap |
+| Collection | `kb_v2_large_w300` (bge-large-en-v1.5), the only knowledge base; the earlier pilot collections were removed |
 
-Rebuild:
+Build (or rebuild) in one command; it downloads any missing PDF from its official URL, converts and
+indexes them into the collection named in `.env` (`M2_COLLECTION_NAME=kb_v2_large_w300`):
 
 ```powershell
-# 1. Download each "url" in sources/kb_v2_manifest.json to the "pdf" path given next to it
-python scripts/pdf_to_jsonl.py --manifest sources/kb_v2_manifest.json --output data/processed/kb_v2_w300.jsonl
-python scripts/load_documents.py --input data/processed/kb_v2_w300.jsonl --collection kb_v2_large_w300
-# 2. In .env: M2_COLLECTION_NAME=kb_v2_large_w300
+python scripts/build_knowledge_base.py                  # download + convert + index
+python scripts/build_knowledge_base.py --download-only  # just fetch the PDFs
 ```
+
+To add or replace a guideline, edit `sources/kb_v2_manifest.json` (copy the title, version and date from
+the document itself) and run the script again.
 
 CTD tags are one per document, chosen from each guideline's scope (e.g. Q1A/Q1B/WHO TRS 1010 Annex 10 →
 3.2.S.7, Q14 → 3.2.S.4.2, Q7 → 3.2.S.2, M4Q → 3.2, Q8(R2) → 3.2.P.2). PEM-02 v9 page 18 (specification
 and stability requirements) is tagged 3.2.S.4.1, mirroring v8 page 17.
 
-**Benchmarks on v2.** Three documents are now different editions (PEM-02 v9, the EMA print of Q6A, the
-35-page Q2(R2)), so their page labels moved. `scripts/remap_benchmark_pages.py` carries each labelled page
-to the page of the new edition with the most shared 5-word phrases and writes **new** files
+**Benchmarks on v2.** Four documents are now different editions (PEM-02 v9, PEM-03 v4, the EMA print of
+Q6A, the 35-page Q2(R2)), so their page labels moved. `scripts/remap_benchmark_pages.py` carries each
+labelled page to the page of the new edition with the most shared 5-word phrases and writes **new** files
 (`benchmarks/pilot_kb_v2.jsonl`, `benchmarks/pilot_sahpra_kb_v2.jsonl`); the original files are unchanged.
-Every low-confidence match was checked against the text by hand (S009/S010 corrected to v9 p. 18).
-Configs: `benchmarks/configs.kb_v2.json`.
+Every low-confidence match was checked against the text by hand (S009/S010 corrected to v9 p. 18). PEM-03 v4
+is largely rewritten, so all eight PEM-03 questions (S001–S008) were relabelled by reading the v4 text.
+One rule changed: v3 required the APIMF to reach SAHPRA not more than one month before and not later than
+one week after the application; v4 (§3.1.2) only says it must be submitted *before* the application (S004).
+Which files are current is explained in `benchmarks/README.md`. Configs: `benchmarks/configs.kb_v2.json`.
 
-Results on KB v2 (2026-11-06; 759 passages, `candidate_k=20`, `final_k=10`, same draft labels, remapped):
+Results on KB v2 (2026-11-09; 761 passages incl. PEM-03 v4, `candidate_k=20`, `final_k=10`, same draft
+labels, remapped and checked):
 
 | Benchmark · configuration | Hit@1 | Recall@5 | Recall@10 | MRR | nDCG@10 | p50 latency |
 |---|---|---|---|---|---|---|
-| ICH pilot · dense only | 0.60 | 0.83 | 0.90 | 0.71 | 0.735 | 0.12 s |
-| ICH pilot · **reranked** (main) | 0.60 | 0.75 | 0.90 | 0.70 | 0.737 | 6.2 s |
-| ICH pilot · reranked, no CTD filter | 0.50 | 0.75 | 0.93 | 0.68 | 0.713 | 6.0 s |
-| SAHPRA pilot · dense only | 0.50 | 0.81 | 0.93 | 0.64 | 0.689 | 0.13 s |
-| SAHPRA pilot · **reranked** (main) | 0.56 | 0.93 | 0.94 | 0.72 | 0.755 | 6.1 s |
-| SAHPRA pilot · reranked, no CTD filter | 0.67 | 0.98 | 1.00 | 0.80 | 0.831 | 6.0 s |
+| ICH pilot · dense only | 0.60 | 0.83 | 0.90 | 0.71 | 0.735 | 0.2 s |
+| ICH pilot · **reranked** (main) | 0.60 | 0.75 | 0.90 | 0.70 | 0.737 | 6.7 s |
+| ICH pilot · reranked, no CTD filter | 0.50 | 0.75 | 0.93 | 0.68 | 0.713 | 6.5 s |
+| SAHPRA pilot · dense only | 0.33 | 0.68 | 0.90 | 0.53 | 0.593 | 0.2 s |
+| SAHPRA pilot · **reranked** (main) | 0.56 | 0.91 | 0.94 | 0.72 | 0.752 | 5.6 s |
+| SAHPRA pilot · reranked, no CTD filter | 0.61 | 0.94 | 1.00 | 0.78 | 0.815 | 5.5 s |
 
-* **SAHPRA** questions held up or improved with three times as many passages (main config Recall@10 0.92 → 0.94).
+* **SAHPRA** questions held up with three times as many passages (main config Recall@10 0.92 → 0.94). With
+  PEM-03 v4 the reranker matters more for SAHPRA: without it, the first relevant page ranks lower
+  (dense-only Hit@1 0.33). The per-query results show the competition is inside PEM-03 v4 itself: v4 repeats
+  near-identical document lists for new registrations, existing records and variations (pp. 11, 12, 15), so
+  a neighbouring PEM-03 page is often ranked first (S003, S004, S005, S008).
 * **ICH** ranking dropped (main config Hit@1 0.80 → 0.60, MRR 0.88 → 0.70). Five of the seven questions that
   ranked lower are on Q6A. Two causes, from the per-query results: (1) the EMA print of Q6A breaks pages in
   different places, so an answer that was on one page now often continues on the next, and the retriever
@@ -604,7 +619,7 @@ Results on KB v2 (2026-11-06; 759 passages, `candidate_k=20`, `final_k=10`, same
   counterpart of Q6A) and the Q11 Q&A. The labels were **not** widened after seeing these results; an
   expert should decide which pages answer each question in the new editions.
 
-**Coverage tab.** `GET /api/coverage` (and the dashboard's Coverage tab) lists every indexed source with
+**Coverage overview.** `GET /api/coverage` (shown at the top of the dashboard's Knowledge Base tab) lists every indexed source with
 passage and page counts, flags sources in the manifest that are not indexed, and shows for each CTD 3.2.S
 heading how many passages are tagged with it and how many a filtered search can reach through parent
 headings. Metadata only; no passage text. Code: `app/knowledge_base/coverage.py`, tests: `tests/test_coverage.py`.

@@ -1,6 +1,6 @@
 [
   {
-    "pdf": "../data/raw/aziz_sipho/ICH_M4Q_R1.pdf",
+    "pdf": "../data/raw/kb_v2/ICH_M4Q_R1.pdf",
     "url": "https://database.ich.org/sites/default/files/M4Q_R1_Guideline.pdf",
     "source_title": "The Common Technical Document for the Registration of Pharmaceuticals for Human Use: Quality",
     "issuing_organization": "ICH",
@@ -12,7 +12,7 @@
     "ctd_section": "3.2"
   },
   {
-    "pdf": "../data/raw/aziz_sipho/ICH_Q11.pdf",
+    "pdf": "../data/raw/kb_v2/ICH_Q11.pdf",
     "url": "https://database.ich.org/sites/default/files/Q11_Guideline.pdf",
     "source_title": "Development and Manufacture of Drug Substances (Chemical Entities and Biotechnological/Biological Entities)",
     "issuing_organization": "ICH",
@@ -24,7 +24,7 @@
     "ctd_section": "3.2.S"
   },
   {
-    "pdf": "../data/raw/aziz_sipho/ICH_Q11_QA.pdf",
+    "pdf": "../data/raw/kb_v2/ICH_Q11_QA.pdf",
     "url": "https://database.ich.org/sites/default/files/Q11_Q%26As_Q%26As.pdf",
     "source_title": "ICH Q11 Development and Manufacture of Drug Substances: Questions and Answers",
     "issuing_organization": "ICH",
@@ -36,7 +36,7 @@
     "ctd_section": "3.2.S"
   },
   {
-    "pdf": "../data/raw/aziz_sipho/ICH_Q14.pdf",
+    "pdf": "../data/raw/kb_v2/ICH_Q14.pdf",
     "url": "https://database.ich.org/sites/default/files/ICH_Q14_Guideline_2023_1116_1.pdf",
     "source_title": "Analytical Procedure Development",
     "issuing_organization": "ICH",
@@ -48,7 +48,7 @@
     "ctd_section": "3.2.S.4.2"
   },
   {
-    "pdf": "../data/raw/aziz_sipho/ICH_Q1A_R2.pdf",
+    "pdf": "../data/raw/kb_v2/ICH_Q1A_R2.pdf",
     "url": "https://database.ich.org/sites/default/files/Q1A%28R2%29%20Step4.pdf",
     "source_title": "Stability Testing of New Drug Substances and Products",
     "issuing_organization": "ICH",
@@ -60,7 +60,7 @@
     "ctd_section": "3.2.S.7"
   },
   {
-    "pdf": "../data/raw/aziz_sipho/ICH_Q1B.pdf",
+    "pdf": "../data/raw/kb_v2/ICH_Q1B.pdf",
     "url": "https://database.ich.org/sites/default/files/Q1B_Guideline.pdf",
     "source_title": "Stability Testing: Photostability Testing of New Drug Substances and Products",
     "issuing_organization": "ICH",
@@ -72,7 +72,7 @@
     "ctd_section": "3.2.S.7"
   },
   {
-    "pdf": "../data/raw/aziz_sipho/ICH_Q2_R2.pdf",
+    "pdf": "../data/raw/kb_v2/ICH_Q2_R2.pdf",
     "url": "https://database.ich.org/sites/default/files/ICH_Q2%28R2%29_Guideline_2023_1130_ErrorCorrection_2025.pdf",
     "source_title": "Validation of Analytical Procedures",
     "issuing_organization": "ICH",
@@ -84,7 +84,7 @@
     "ctd_section": "3.2.S.4.3"
   },
   {
-    "pdf": "../data/raw/aziz_sipho/ICH_Q3A_R2.pdf",
+    "pdf": "../data/raw/kb_v2/ICH_Q3A_R2.pdf",
     "url": "https://database.ich.org/sites/default/files/Q3A_R2__Guideline.pdf",
     "source_title": "Impurities in New Drug Substances",
     "issuing_organization": "ICH",
@@ -96,7 +96,7 @@
     "ctd_section": "3.2.S.3"
   },
   {
-    "pdf": "../data/raw/aziz_sipho/ICH_Q3C_R9.pdf",
+    "pdf": "../data/raw/kb_v2/ICH_Q3C_R9.pdf",
     "url": "https://database.ich.org/sites/default/files/ICH_Q3C%28R9%29_Guideline_MinorRevision_2024_2024_Approved.pdf",
     "source_title": "Impurities: Guideline for Residual Solvents",
     "issuing_organization": "ICH",
@@ -108,7 +108,7 @@
     "ctd_section": "3.2.S.3"
   },
   {
-    "pdf": "../data/raw/aziz_sipho/ICH_Q6A_EMA.pdf",
+    "pdf": "../data/raw/kb_v2/ICH_Q6A_EMA.pdf",
     "url": "https://www.ema.europa.eu/en/documents/scientific-guideline/ich-q-6-test-procedures-and-acceptance-criteria-new-drug-substances-and-new-drug-products-chemical-substances-step-5_en.pdf",
     "source_title": "Specifications: Test Procedures and Acceptance Criteria for New Drug Substances and New Drug Products: Chemical Substances",
     "issuing_organization": "ICH",
@@ -120,7 +120,7 @@
     "ctd_section": "3.2.S.4"
   },
   {
-    "pdf": "../data/raw/aziz_sipho/ICH_Q6B.pdf",
+    "pdf": "../data/raw/kb_v2/ICH_Q6B.pdf",
     "url": "https://database.ich.org/sites/default/files/Q6B_Guideline.pdf",
     "source_title": "Specifications: Test Procedures and Acceptance Criteria for Biotechnological/Biological Products",
     "issuing_organization": "ICH",
@@ -132,7 +132,7 @@
     "ctd_section": "3.2.S.4"
   },
   {
-    "pdf": "../data/raw/aziz_sipho/ICH_Q7.pdf",
+    "pdf": "../data/raw/kb_v2/ICH_Q7.pdf",
     "url": "https://database.ich.org/sites/default/files/Q7%20Guideline.pdf",
     "source_title": "Good Manufacturing Practice Guide for Active Pharmaceutical Ingredients",
     "issuing_organization": "ICH",
@@ -144,7 +144,7 @@
     "ctd_section": "3.2.S.2"
   },
   {
-    "pdf": "../data/raw/aziz_sipho/ICH_Q8_R2.pdf",
+    "pdf": "../data/raw/kb_v2/ICH_Q8_R2.pdf",
     "url": "https://database.ich.org/sites/default/files/Q8_R2_Guideline.pdf",
     "source_title": "Pharmaceutical Development",
     "issuing_organization": "ICH",
@@ -156,7 +156,7 @@
     "ctd_section": "3.2.P.2"
   },
   {
-    "pdf": "../data/raw/aziz_sipho/WHO_TRS1010_A10.pdf",
+    "pdf": "../data/raw/kb_v2/WHO_TRS1010_A10.pdf",
     "url": "https://cdn.who.int/media/docs/default-source/medicines/norms-and-standards/guidelines/regulatory-standards/trs1010-annex10-who-stability-testing-of-active-pharmaceutical-ingredients.pdf",
     "source_title": "Stability Testing of Active Pharmaceutical Ingredients and Finished Pharmaceutical Products (TRS 1010, Annex 10)",
     "issuing_organization": "WHO",
@@ -168,7 +168,7 @@
     "ctd_section": "3.2.S.7"
   },
   {
-    "pdf": "../data/raw/aziz_sipho/SAHPRA_PEM02_v9.pdf",
+    "pdf": "../data/raw/kb_v2/SAHPRA_PEM02_v9.pdf",
     "url": "https://www.sahpra.org.za/wp-content/uploads/2022/01/SAHPGL-PEM-02_v9_Quality-and-Bioequivalence-Guideline.pdf",
     "source_title": "Quality and Bioequivalence Guideline",
     "issuing_organization": "SAHPRA",
@@ -182,12 +182,13 @@
     "first_page": 7
   },
   {
-    "pdf": "../data/raw/SAHPRA_PEM03_APIMF_v3.pdf",
+    "pdf": "../data/raw/kb_v2/SAHPRA_PEM03_v4.pdf",
+    "url": "https://www.sahpra.org.za/wp-content/uploads/2024/07/SAHPGL-PEM-03_v4-Guideline-for-The-API-Master-File-APIMF-Procedure.pdf",
     "source_title": "Guideline for the API Master File (APIMF) Procedure",
     "issuing_organization": "SAHPRA",
     "source_identifier": "SAHPGL-PEM-03",
-    "document_version": "v3",
-    "publication_date": "2022-11",
+    "document_version": "v4",
+    "publication_date": "2024-07-17",
     "applicability_status": "current",
     "document_type": "guideline",
     "ctd_section": "3.2.S",

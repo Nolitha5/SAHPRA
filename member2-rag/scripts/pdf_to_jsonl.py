@@ -346,7 +346,7 @@ def doc_from_dict(d: dict, base: Path) -> SourceDoc:
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--manifest", type=Path, help="JSON list of documents (see data/raw/manifest.example.json)")
+    p.add_argument("--manifest", type=Path, help="JSON list of documents (see sources/kb_v2_manifest.json)")
     p.add_argument("--pdf", type=Path, help="a single PDF (instead of --manifest)")
     p.add_argument("--title")
     p.add_argument("--org")

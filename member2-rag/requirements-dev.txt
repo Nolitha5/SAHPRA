@@ -1,4 +1,7 @@
-# Development tools (not needed to run the service).
+# Development and testing tools (not needed to run the service).
 #   pip install -r requirements-dev.txt
 #   python -m ruff check          # lint (config: ruff.toml)
 ruff==0.17.1
+pytest==9.1.1
+reportlab==5.0.1      # builds small PDFs for the converter tests
+httpx==0.28.1         # FastAPI TestClient

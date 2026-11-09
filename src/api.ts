@@ -83,9 +83,11 @@ export const api = {
   results: () => request<BenchmarkResultFile[]>('/benchmark/results'),
 }
 
+// Every CTD tag used in the knowledge base must be listed here, or it cannot be filtered on.
+// 3.2 = general Module 3 guidance (e.g. ICH M4Q, SAHPRA PEM-02); 3.2.P.2 = ICH Q8(R2).
 export const CTD_SECTIONS = [
-  '3.2.S', '3.2.S.1', '3.2.S.2', '3.2.S.3', '3.2.S.4', '3.2.S.4.1', '3.2.S.4.2',
-  '3.2.S.4.3', '3.2.S.4.4', '3.2.S.4.5', '3.2.S.5', '3.2.S.6', '3.2.S.7',
+  '3.2', '3.2.S', '3.2.S.1', '3.2.S.2', '3.2.S.3', '3.2.S.4', '3.2.S.4.1', '3.2.S.4.2',
+  '3.2.S.4.3', '3.2.S.4.4', '3.2.S.4.5', '3.2.S.5', '3.2.S.6', '3.2.S.7', '3.2.P.2',
 ]
 export const DOCUMENT_TYPES = [
   'guideline', 'guidance', 'regulation', 'act', 'monograph', 'general_chapter',
