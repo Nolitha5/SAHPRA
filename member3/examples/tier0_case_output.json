@@ -1,0 +1,77 @@
+{
+  "case_id": "TIER0-CASE-001",
+  "dossier_chunks": [
+    {
+      "chunk_id": "m3-f0c04171126c",
+      "document_id": "sample_dossier.pdf",
+      "ctd_section": "3.2.S.1.1",
+      "text": "INN: Synthamol (fictional)",
+      "page": 1,
+      "kind": "text",
+      "table_rows": [],
+      "metadata": {
+        "section_confidence": 1.0,
+        "pii_redactions": []
+      },
+      "quality_flag": null
+    },
+    {
+      "chunk_id": "m3-f2f501ff9928",
+      "document_id": "sample_dossier.pdf",
+      "ctd_section": "3.2.S.2.2",
+      "text": "Synthesis proceeds via a three-step route from starting material A.",
+      "page": 2,
+      "kind": "text",
+      "table_rows": [],
+      "metadata": {
+        "section_confidence": 1.0,
+        "pii_redactions": []
+      },
+      "quality_flag": null
+    },
+    {
+      "chunk_id": "m3-e7579e8fc6b0",
+      "document_id": "sample_dossier.pdf",
+      "ctd_section": "3.2.S.3.2",
+      "text": "Impurity A observed at 0.08% in batch testing.",
+      "page": 3,
+      "kind": "text",
+      "table_rows": [],
+      "metadata": {
+        "section_confidence": 1.0,
+        "pii_redactions": []
+      },
+      "quality_flag": null
+    },
+    {
+      "chunk_id": "m3-ee645eda2ad5",
+      "document_id": "sample_dossier.pdf",
+      "ctd_section": "3.2.S.4.1",
+      "text": "Assay (HPLC): 98.0% - 102.0%",
+      "page": 4,
+      "kind": "text",
+      "table_rows": [],
+      "metadata": {
+        "section_confidence": 1.0,
+        "pii_redactions": []
+      },
+      "quality_flag": null
+    },
+    {
+      "chunk_id": "m3-637ce8892060",
+      "document_id": "sample_dossier.pdf",
+      "ctd_section": "3.2.S.7",
+      "text": "12-month long-term stability data at 25C/60%RH shows no significant trend.",
+      "page": 5,
+      "kind": "text",
+      "table_rows": [],
+      "metadata": {
+        "section_confidence": 1.0,
+        "pii_redactions": []
+      },
+      "quality_flag": null
+    }
+  ],
+  "as_of": null,
+  "relevant_regulatory_codes": []
+}
