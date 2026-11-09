@@ -7,11 +7,10 @@ import Findings from './components/Findings'
 import BenchmarkCases from './components/BenchmarkCases'
 import CoveragePage from './components/CoveragePage'
 
-type Tab = 'kb' | 'coverage' | 'search' | 'agents' | 'bench'
+type Tab = 'kb' | 'search' | 'agents' | 'bench'
 
 const TABS: { id: Tab; label: string; description: string }[] = [
-  { id: 'kb', label: 'Knowledge Base', description: 'Regulatory passages indexed for retrieval, with source and provenance details.' },
-  { id: 'coverage', label: 'Coverage', description: 'Which guidelines are indexed, which are missing, and how well each CTD 3.2.S heading is covered.' },
+  { id: 'kb', label: 'Knowledge Base', description: 'The guidelines that Search and the agents use: what is indexed, what is missing, how each CTD 3.2.S heading is covered, and every passage.' },
   { id: 'search', label: 'Search', description: 'Query the shared retrieval service with CTD section and source filters.' },
   { id: 'agents', label: 'Agents', description: 'Run the Evidence/RERA and S.4 Control agents. Every finding requires assessor review.' },
   { id: 'bench', label: 'Benchmark', description: 'Retrieval benchmark results and the questions used to measure them.' },
@@ -19,6 +18,7 @@ const TABS: { id: Tab; label: string; description: string }[] = [
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('kb')
+  const [kbVersion, setKbVersion] = useState(0) // bumped after imports/deletes so the overview reloads
   const [health, setHealth] = useState<Health | null>(null)
   const [healthError, setHealthError] = useState('')
   const [token, setToken] = useState(getEditorToken())
@@ -128,8 +128,12 @@ export default function App() {
           <h2 className="page-title">{active.label}</h2>
           <p className="page-description">{active.description}</p>
         </header>
-        {tab === 'kb' && <KnowledgeBase canEdit={canEdit} onChanged={refreshHealth} />}
-        {tab === 'coverage' && <CoveragePage />}
+        {tab === 'kb' && (
+          <div className="stack">
+            <CoveragePage version={kbVersion} />
+            <KnowledgeBase canEdit={canEdit} onChanged={() => { setKbVersion(v => v + 1); refreshHealth() }} />
+          </div>
+        )}
         {tab === 'search' && <SearchPanel />}
         {tab === 'agents' && <Findings />}
         {tab === 'bench' && <BenchmarkCases canEdit={canEdit} benchmarkFile={health?.benchmark_file} />}      </main>

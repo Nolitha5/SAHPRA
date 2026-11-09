@@ -140,9 +140,6 @@ function FindingCard({ f }: { f: Finding }) {
           <div className="finding-kicker">{agentLabel} · CTD {f.ctd_section}</div>
           <h3 className="finding-question">{f.assessment_question}</h3>
         </div>
-        <div className="finding-status">
-          <QaPill status={f.qa_status} />
-        </div>
       </header>
 
       <div className="card-body stack">

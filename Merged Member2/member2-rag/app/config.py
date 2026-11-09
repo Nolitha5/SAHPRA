@@ -74,7 +74,7 @@ class Settings:
 
     # --- Storage -----------------------------------------------------------
     chroma_dir: Path = field(default_factory=lambda: PROJECT_ROOT / "data" / "chroma")
-    collection_name: str = "regulatory_kb"
+    collection_name: str = "kb_v2_large_w300"
 
     # --- Embeddings --------------------------------------------------------
     embedding_model: str = "BAAI/bge-large-en-v1.5"
@@ -146,7 +146,7 @@ def load_settings(env_file: Path | None = None) -> Settings:
 
     settings = Settings(
         chroma_dir=chroma_dir,
-        collection_name=_env_str("M2_COLLECTION_NAME", "regulatory_kb"),
+        collection_name=_env_str("M2_COLLECTION_NAME", "kb_v2_large_w300"),
         embedding_model=_env_str("M2_EMBEDDING_MODEL", "BAAI/bge-large-en-v1.5"),
         embedding_query_instruction=os.getenv(
             "M2_EMBEDDING_QUERY_INSTRUCTION", BGE_EN_V15_QUERY_INSTRUCTION

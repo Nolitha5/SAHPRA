@@ -34,8 +34,8 @@ from app.retrieval.retrieval_service import RetrievalService
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--benchmark", type=Path, default=Path("benchmarks/benchmark.jsonl"))
-    parser.add_argument("--configs", type=Path, default=Path("benchmarks/configs.json"))
+    parser.add_argument("--benchmark", type=Path, default=Path("benchmarks/pilot_kb_v2.jsonl"))
+    parser.add_argument("--configs", type=Path, default=Path("benchmarks/configs.kb_v2.json"))
     parser.add_argument("--output-dir", type=Path, default=Path("results"))
     parser.add_argument("--ks", type=int, nargs="+", default=[1, 3, 5, 10])
     parser.add_argument("--ragas", action="store_true", help="add Ragas non-LLM context metrics")

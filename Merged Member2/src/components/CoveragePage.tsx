@@ -8,17 +8,24 @@ function pageRange(first: number | null, last: number | null): string {
   return first === last ? `p. ${first}` : `pp. ${first}–${last}`
 }
 
-export default function CoveragePage() {
+/** Overview of the knowledge base: sources, gaps and CTD coverage. `version` changes after imports/deletes. */
+export default function CoveragePage({ version = 0 }: { version?: number }) {
   const [data, setData] = useState<Coverage | null>(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    api.coverage().then(setData).catch(e => setError((e as Error).message))
-  }, [])
+    api.coverage().then(d => { setData(d); setError('') }).catch(e => setError((e as Error).message))
+  }, [version])
 
   if (error) return <div className="alert alert-error">{error}</div>
   if (!data) return <div className="empty"><span className="spinner" /></div>
-  if (data.total_passages === 0) return <Empty title="The knowledge base is empty">Load passages to see coverage.</Empty>
+  if (data.total_passages === 0) {
+    return (
+      <Empty title="The knowledge base is empty">
+        Build it with <code>python scripts/build_knowledge_base.py</code> in the member2-rag folder.
+      </Empty>
+    )
+  }
 
   const maxReach = Math.max(1, ...data.s_sections.map(s => s.reachable))
   const gaps = data.s_sections.filter(s => s.direct === 0).map(s => s.section)

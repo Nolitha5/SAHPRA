@@ -10,7 +10,7 @@
     "relevance_level": "page",
     "chunk_size": 300,
     "chunk_overlap": 50,
-    "notes": "Dense retrieval only, on the KB v2 collection (16 guidelines from the aziz-and-sipho source list + SAHPRA PEM-03; 759 passages)."
+    "notes": "Dense retrieval only, on the KB v2 collection (16 guidelines from the aziz-and-sipho source list + SAHPRA PEM-03 v4; 761 passages)."
   },
   {
     "name": "kbv2_large_w300_reranked",
@@ -24,7 +24,7 @@
     "relevance_level": "page",
     "chunk_size": 300,
     "chunk_overlap": 50,
-    "notes": "Main configuration on the KB v2 collection (16 guidelines from the aziz-and-sipho source list + SAHPRA PEM-03; 759 passages)."
+    "notes": "Main configuration on the KB v2 collection (16 guidelines from the aziz-and-sipho source list + SAHPRA PEM-03 v4; 761 passages)."
   },
   {
     "name": "kbv2_large_w300_reranked_no_filter",
@@ -38,6 +38,6 @@
     "relevance_level": "page",
     "chunk_size": 300,
     "chunk_overlap": 50,
-    "notes": "Main configuration without the CTD section filter, on the KB v2 collection (16 guidelines from the aziz-and-sipho source list + SAHPRA PEM-03; 759 passages)."
+    "notes": "Main configuration without the CTD section filter, on the KB v2 collection (16 guidelines from the aziz-and-sipho source list + SAHPRA PEM-03 v4; 761 passages)."
   }
 ]

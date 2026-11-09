@@ -1,5 +1,10 @@
 # Pilot on public ICH guidelines (before Member 3's data)
 
+> **Historical guide.** This describes the October 2026 pilot (4 ICH guidelines, collection
+> `ich_large_w300`). To set up the current knowledge base (16 guidelines), run
+> `python scripts/build_knowledge_base.py`; see `../README.md` §14a. The steps below still explain how the
+> converter works.
+
 `scripts/pdf_to_jsonl.py` is a **temporary stand-in** for Member 3's ingestion pipeline. It turns text-based PDFs into passages in the same JSONL format Member 3 will deliver, so you can test retrieval and run a first benchmark on real regulatory text.
 
 It does **not** do OCR, table extraction or automatic CTD mapping. Those stay with Member 3. When their data arrives, load it the same way and stop using this script.

@@ -21,7 +21,7 @@ security — is in **[`member2-rag/README.md`](member2-rag/README.md)**. The ICH
 
 You need **Python 3.12 or 3.13** and **Node.js 18+**.
 
-### 1. Backend (first time)
+### 1. Install (first time)
 
 ```powershell
 cd member2-rag
@@ -30,14 +30,28 @@ py -3.12 -m venv .venv
 pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt
 copy .env.example .env
-python -m pytest            # optional: unit tests, no model downloads
+cd ..
+npm install
 ```
 
-The first search downloads the embedding and reranker models from Hugging Face (~2.4 GB by default;
-see `member2-rag/README.md` §5 for smaller options). Once that has worked, uncomment `HF_HUB_OFFLINE=1`
-and `TRANSFORMERS_OFFLINE=1` in `member2-rag/.env`; otherwise a slow connection can make searches hang.
+### 2. Build the knowledge base (first time)
 
-### 2. Run (development)
+The guideline PDFs and the vector database are not in the repository. One command downloads the 16
+public ICH, WHO and SAHPRA guidelines from their official sites (listed in
+`member2-rag/sources/kb_v2_manifest.json`), converts them and indexes them:
+
+```powershell
+cd member2-rag
+.\.venv\Scripts\Activate.ps1
+python scripts/build_knowledge_base.py
+```
+
+This takes about 10–20 minutes on a CPU. The first run also downloads the embedding and reranker models
+from Hugging Face (~2.4 GB; see `member2-rag/README.md` §5 for smaller options). Running it again only
+fetches what is missing. Once it has worked, uncomment `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1`
+in `member2-rag/.env`; otherwise a slow connection can make searches hang.
+
+### 3. Run (development)
 
 Two terminals:
 
@@ -50,13 +64,14 @@ python -m app.api
 
 ```powershell
 # Terminal 2 — dashboard on http://localhost:5173
-npm install      # first time only
 npm run dev
 ```
 
 Vite forwards `/api` requests to the Python server, so the browser never needs the API address or any key.
+If port 8000 is already taken on your computer (for example by Docker), set `M2_API_PORT=8010` in
+`member2-rag/.env`; `npm run dev` picks up the same port automatically.
 
-### 3. Run (single server)
+### 4. Run (single server)
 
 ```powershell
 npm run build                # typecheck + build into dist/
@@ -68,7 +83,7 @@ python -m app.api            # serves the API and the built dashboard at http://
 
 | Tab | Purpose |
 |---|---|
-| **Knowledge Base** | Browse and filter passages; import JSONL (dry-run or index); delete passages |
+| **Knowledge Base** | The one knowledge base that Search and the agents use: which guidelines are indexed or missing, passages and pages per source, coverage of each CTD 3.2.S heading; then browse and filter every passage, import JSONL (dry-run or index), delete passages |
 | **Search** | Query the shared retrieval service with CTD / type / status filters, with or without reranking. Results can be downloaded as a Word report |
 | **Agents** | Run Evidence/RERA or S.4 Control; findings, citations and uncertainty in Word-style tables, with a red assessor-review box. Findings can be downloaded as a Word report (assessor comments in red) |
 | **Benchmark** | Manage expert benchmark questions and view `results/retrieval_benchmark_*.json` summaries |
