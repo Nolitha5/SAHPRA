@@ -63,12 +63,16 @@ class UpsertReport:
     added: list[str] = field(default_factory=list)
     updated: list[str] = field(default_factory=list)
     unchanged: list[str] = field(default_factory=list)
+    # Same text (same vector) but different metadata, e.g. a corrected page label:
+    # the metadata is replaced without re-embedding.
+    metadata_updated: list[str] = field(default_factory=list)
 
     def as_dict(self) -> dict[str, int]:
         return {
             "added": len(self.added),
             "updated": len(self.updated),
             "unchanged": len(self.unchanged),
+            "metadata_updated": len(self.metadata_updated),
         }
 
 
@@ -122,28 +126,38 @@ class ChromaDocumentStore:
     def count(self) -> int:
         return int(self._collection.count())
 
-    def existing_hashes(self, chunk_ids: Sequence[str]) -> dict[str, str]:
-        """Map chunk_id -> stored content_hash for IDs already in the store."""
-        if not chunk_ids:
-            return {}
-        result = self._collection.get(ids=list(chunk_ids), include=["metadatas"])
-        return {
-            cid: (meta or {}).get("content_hash", "")
-            for cid, meta in zip(result["ids"], result["metadatas"] or [], strict=True)
-        }
-
     def plan_upsert(self, items: Sequence[tuple[PassageMetadata, str]]) -> UpsertReport:
-        """Classify items into added/updated/unchanged without writing."""
+        """Classify items into added / updated (new text) / metadata_updated / unchanged."""
         report = UpsertReport()
-        existing = self.existing_hashes([meta.chunk_id for meta, _ in items])
+        ids = [meta.chunk_id for meta, _ in items]
+        result = self._collection.get(ids=ids, include=["metadatas"]) if ids else {"ids": [], "metadatas": []}
+        existing = {cid: dict(m or {}) for cid, m in zip(result["ids"], result["metadatas"] or [], strict=True)}
         for meta, _ in items:
-            if meta.chunk_id not in existing:
+            stored = existing.get(meta.chunk_id)
+            if stored is None:
                 report.added.append(meta.chunk_id)
-            elif existing[meta.chunk_id] == meta.content_hash:
-                report.unchanged.append(meta.chunk_id)
-            else:
+            elif stored.get("content_hash") != meta.content_hash:
                 report.updated.append(meta.chunk_id)
+            elif stored != to_chroma_metadata(meta, self.embedding_model_name):
+                report.metadata_updated.append(meta.chunk_id)
+            else:
+                report.unchanged.append(meta.chunk_id)
         return report
+
+    def replace_metadata(self, items: Sequence[tuple[PassageMetadata, str]]) -> None:
+        """Replace stored metadata, reusing the stored vectors (the text is unchanged)."""
+        if not items:
+            return
+        ids = [meta.chunk_id for meta, _ in items]
+        stored = self._collection.get(ids=ids, include=["embeddings"])
+        vectors = {cid: list(map(float, vec)) for cid, vec in zip(stored["ids"], stored["embeddings"], strict=True)}
+        self._collection.upsert(
+            ids=ids,
+            embeddings=[vectors[cid] for cid in ids],
+            documents=[text for _, text in items],
+            metadatas=[to_chroma_metadata(meta, self.embedding_model_name) for meta, _ in items],
+        )
+        log_event(logger, 20, "passage_metadata_replaced", collection=self.collection_name, count=len(ids))
 
     def upsert(
         self,

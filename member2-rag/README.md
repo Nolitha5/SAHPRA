@@ -100,7 +100,7 @@ member2-rag/
 │   ├── search.py                 # (added) try retrieval from the command line
 │   ├── run_agent.py              # (added) run either agent from the command line
 │   └── evaluate_retrieval.py
-├── tests/                        # 160 unit tests + 2 integration tests
+├── tests/                        # 168 unit tests + 2 integration tests
 ├── benchmarks/
 │   ├── benchmark.jsonl           # template (synthetic items - replace!)
 │   ├── pilot.jsonl               # 20 ICH pilot questions (page-level labels)
@@ -174,7 +174,7 @@ python -m pytest
 python scripts/build_knowledge_base.py      # download, convert and index the 16 guidelines
 ```
 
-Expected: `160 passed, 2 deselected`.
+Expected: `168 passed, 2 deselected`.
 
 **Once the models are downloaded** (after the first search), set `HF_HUB_OFFLINE=1` and
 `TRANSFORMERS_OFFLINE=1` in `.env` (see `.env.example`). Otherwise every server start checks Hugging
@@ -369,7 +369,7 @@ method-validation completeness checklist, batch trend statistics.
 ## 12. Running tests
 
 ```powershell
-python -m pytest                 # 160 unit tests, no downloads, temp databases only
+python -m pytest                 # 168 unit tests, no downloads, temp databases only
 python -m pytest -m integration  # 2 tests with REAL models (downloads bge-small + bge-reranker-base)
 python -m pytest -v tests/test_s4_control.py
 python -m ruff check             # lint (pip install -r requirements-dev.txt once; config in ruff.toml)
@@ -579,6 +579,15 @@ python scripts/build_knowledge_base.py --download-only  # just fetch the PDFs
 
 To add or replace a guideline, edit `sources/kb_v2_manifest.json` (copy the title, version and date from
 the document itself) and run the script again.
+
+**Page numbers.** Every passage keeps two page numbers: `page_number`, the PDF page (its position in the
+file, what a PDF viewer jumps to and what benchmark labels use), and `page_label`, the number printed on the
+page ("3", "iv", "317"). They differ for most ICH guidelines (unnumbered cover and contents pages) and for
+WHO TRS 1010 Annex 10 (printed as pp. 309-352 of the report). Citations show both when they differ:
+"p.3 (PDF p.7)". The converter reads the printed number per page and accepts only numbers that follow one
+consistent offset through the document, so footnote or list numbers are ignored; covers and image-only pages
+get no label (455 of 488 pages are labelled). Re-running the build with only metadata changes updates the
+stored details without re-embedding.
 
 CTD tags are one per document, chosen from each guideline's scope (e.g. Q1A/Q1B/WHO TRS 1010 Annex 10 →
 3.2.S.7, Q14 → 3.2.S.4.2, Q7 → 3.2.S.2, M4Q → 3.2, Q8(R2) → 3.2.P.2). PEM-02 v9 page 18 (specification

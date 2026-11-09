@@ -87,11 +87,49 @@ def test_convert_pdf_end_to_end(tmp_path):
     assert {r["page_number"] for r in rows} == {1, 2, 4}
     assert {r["ctd_section"] for r in rows if r["page_number"] == 4} == {"3.2.S.4.3"}
     assert rows[0]["chunk_id"] == "ich-qtest-1-p1-c0-w20"
+    assert {(r["page_number"], r["page_label"]) for r in rows} == {(1, "1"), (2, "2"), (4, "4")}  # "Page n of 4"
 
     out = tmp_path / "out.jsonl"
     out.write_text("\n".join(json.dumps(r) for r in rows), encoding="utf-8")
     loaded = load_jsonl(out)
     assert not loaded.errors and len(loaded.records) == len(rows)
+
+
+def _pages(*footers: str) -> list[str]:
+    """Fake page texts: some body text plus the given footer line ('' = no footer)."""
+    return [f"Body text of page {i}.\nMore text.\n{f}" for i, f in enumerate(footers, start=1)]
+
+
+def test_page_labels_ich_style_cover_roman_then_offset_arabic():
+    # cover, history (no number), contents i, ii, then body pages printed 1..5 (PDF 5..9)
+    labels = conv.detect_page_labels(_pages("", "", "i", "ii", "1", "2", "3", "4", "5"))
+    assert labels == [None, None, "i", "ii", "1", "2", "3", "4", "5"]
+
+
+def test_page_labels_ignore_stray_numbers_and_fill_gaps():
+    pages = _pages("", "1", "2", "3", "", "5", "6")
+    pages[3] += "\n7\n42"  # a table footnote and a list number on PDF page 4 ("3" is its page number)
+    labels = conv.detect_page_labels(pages)
+    assert labels[3] == "3"  # the number that fits the offset wins
+    assert labels[4] == "4"  # inside the numbered run, number not extracted: filled in
+    assert labels[0] is None  # before the run: not guessed
+
+
+def test_page_labels_book_annex_and_page_x_of_y():
+    assert conv.detect_page_labels(_pages("309", "310", "311", "312")) == ["309", "310", "311", "312"]
+    assert conv.detect_page_labels(_pages(*(f"Page {i} of 4" for i in range(1, 5)))) == ["1", "2", "3", "4"]
+
+
+def test_page_labels_running_header_fallback_and_no_numbers():
+    header = [f"© EMEA 2006  {i}" for i in range(1, 6)]
+    assert conv.detect_page_labels(_pages(*header)) == ["1", "2", "3", "4", "5"]
+    assert conv.detect_page_labels(_pages("", "", "")) == [None, None, None]
+
+
+def test_page_labels_ignore_a_stray_roman_letter_on_the_cover():
+    pages = _pages("", "ii", "iii", "4", "5", "6")
+    pages[0] += "\nV\nersion: 2017"  # "V ersion" split on the cover
+    assert conv.detect_page_labels(pages)[:3] == [None, "ii", "iii"]
 
 
 def test_main_with_manifest(tmp_path, capsys):

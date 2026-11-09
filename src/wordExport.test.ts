@@ -12,7 +12,7 @@ const passage: RetrievedPassage = {
   metadata: {
     chunk_id: 'ich-q2-p7-c0', source_title: 'Validation of Analytical Procedures', issuing_organization: 'ICH',
     source_identifier: 'ICH Q2(R2)', document_version: 'Final Version (Step 4)', publication_date: '2023-11-01',
-    effective_date: null, page_number: 7, ctd_section: '3.2.S.4.3', document_type: 'guideline',
+    effective_date: null, page_number: 7, page_label: '3', ctd_section: '3.2.S.4.3', document_type: 'guideline',
     applicability_status: 'current', content_hash: 'abc', provenance_complete: true,
   } as unknown as RetrievedPassage['metadata'],
   retrieval_method: 'vector_search', retrieval_score: 0.81234, retrieval_rank: 1, rerank_score: 2.5, rerank_rank: 1,
@@ -69,5 +69,6 @@ describe('Word export', () => {
     expect(xml).toContain('Similarity')
     expect(xml).toContain('0.812') // retrieval score of the cited passage
     expect(xml).toContain('2.500') // rerank score
+    expect(xml).toContain('3 (PDF 7)') // printed page with the PDF page
   })
 })

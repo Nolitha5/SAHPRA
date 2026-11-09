@@ -1,4 +1,5 @@
 import type { Citation, ComparisonRow, Finding } from '../types'
+import { pageText } from '../pages'
 import AssessorReview from './AssessorReview'
 import { PassageCard, QaPill, StatusPill, plural, versionLabel } from './shared'
 
@@ -109,7 +110,7 @@ export function FindingCard({ f }: { f: Finding }) {
                       <td data-label="Source"><b>{c.issuing_organization}</b> · {c.source_title}</td>
                       <td data-label="Document">{c.source_identifier}</td>
                       <td data-label="Version">{citationDetails(c)}</td>
-                      <td className="num" data-label="Page">{c.page_number ?? 'n/a'}</td>
+                      <td className="num" data-label="Page">{pageText(c.page_number, c.page_label, true)}</td>
                       <td data-label="CTD">{c.ctd_section ?? 'n/a'}</td>
                       <td data-label="Status">
                         <StatusPill status={c.applicability_status} />

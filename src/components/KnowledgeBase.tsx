@@ -1,5 +1,6 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { api, DOCUMENT_TYPES } from '../api'
+import { pageText } from '../pages'
 import CtdSelect from './CtdSelect'
 import type { Facets, ImportReport, StoredPassage } from '../types'
 import { Empty, StatusPill, passageText, sourceLabel, versionLabel } from './shared'
@@ -10,7 +11,7 @@ function shortSource(p: StoredPassage): string {
   const m = p.metadata
   const parts = [m.source_identifier]
   if (m.document_version) parts.push(versionLabel(m.document_version))
-  if (m.page_number != null) parts.push(`p.${m.page_number}`)
+  if (m.page_number != null) parts.push(pageText(m.page_number, m.page_label))
   if (m.chunk_index != null) parts.push(`chunk ${m.chunk_index + 1}`)
   return parts.join(' · ')
 }

@@ -84,3 +84,17 @@ def test_ask_endpoint(settings, populated_store, embedder, tmp_path):
     assert body["findings"][0]["agent_name"] == "s4_control"
     assert client.post("/api/ask", json={"question": ""}).status_code == 422
     assert client.post("/api/ask", json={"question": "x", "unknown": 1}).status_code == 422
+
+
+def test_rationale_and_citations_show_printed_pages():
+    from app.agents.common import source_summary
+    from app.schemas import Citation, page_text
+
+    result = _result([("3.2.S.4.3", 3.0), ("3.2.S.4.3", 2.0)])
+    a, b = result.passages
+    a.metadata = a.metadata.model_copy(update={"page_label": "iv", "source_identifier": "DOC", "page_number": 4})
+    b.metadata = b.metadata.model_copy(update={"page_label": "3", "source_identifier": "DOC", "page_number": 7})
+    assert "pp. iv (PDF 4), 3 (PDF 7)" in source_summary([a, b])
+    assert Citation.from_metadata(b.metadata).page_label == "3"
+    assert page_text(7, "3") == "p.3 (PDF p.7)"
+    assert page_text(30, "30") == page_text(30, None) == "p.30"
