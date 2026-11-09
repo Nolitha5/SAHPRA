@@ -84,8 +84,7 @@ python -m app.api            # serves the API and the built dashboard at http://
 | Tab | Purpose |
 |---|---|
 | **Knowledge Base** | The one knowledge base that Search and the agents use: which guidelines are indexed or missing, passages and pages per source, coverage of each CTD 3.2.S heading; then browse and filter every passage, import JSONL (dry-run or index), delete passages |
-| **Search** | Query the shared retrieval service with CTD / type / status filters, with or without reranking. Results can be downloaded as a Word report |
-| **Agents** | Run Evidence/RERA or S.4 Control; findings, citations and uncertainty in Word-style tables, with a red assessor-review box. Findings can be downloaded as a Word report (assessor comments in red) |
+| **Search** | Just type a question. The app searches all 16 guidelines, works out the CTD section from where the best-matching passages come from, and sends the question to the right agent: 3.2.S.4 topics to **S.4 Control**, everything else to **Evidence/RERA**. It shows which agent and section it chose and why. The result is a cited finding in Word-style tables (QA status, conclusion, citations with page numbers and search scores, supporting passages) with a red assessor-review box, downloadable as a Word report. *Advanced options* let you pick the CTD section (structured ICH M4Q headings) or agent yourself |
 | **Benchmark** | Manage expert benchmark questions and view `results/retrieval_benchmark_*.json` summaries |
 
 ## Editing (import, delete, benchmark changes)
@@ -126,6 +125,6 @@ dossiers, `node_modules/`, `dist/`. The `.gitignore` files block these.
 
 ## Word reports
 
-Click **Download Word document** above search results or agent findings to save a `.docx` report. Nothing is
+Click **Download Word document** above the search results to save a `.docx` report. Nothing is
 downloaded automatically. Assessor comments saved on a finding appear in red in the report. Reports are built in
 the browser, and assessor comments are saved only in that browser (`localStorage`): neither is sent to the server.

@@ -3,7 +3,7 @@
  * Nothing is sent to the server: questions, sponsor data and assessor comments stay local.
  * The `docx` library is loaded only when a document is first created, to keep the page light.
  */
-import type { ComparisonRow, Finding, RetrievalResult, RetrievedPassage, SearchFilters } from './types'
+import type { ComparisonRow, Finding, RetrievedPassage } from './types'
 import { loadComment } from './reviewStore'
 
 type Docx = typeof import('docx')
@@ -194,45 +194,6 @@ async function save(doc: InstanceType<Docx["Document"]>, filename: string) {
 }
 
 // ---------------------------------------------------------------------------
-export async function buildSearchReport(query: string, filters: SearchFilters, result: RetrievalResult) {
-  const d = await import('docx')
-  const k = kit(d)
-  const section = filters.ctd_sections?.length ? filters.ctd_sections.join(', ') : 'Any section'
-
-  const resultWidths = [500, 3838, 800, 1200, 1100, 1100, 1100] // = 9638
-  const rows = result.passages.map((p, i) => [
-    String(i + 1),
-    `${p.metadata.issuing_organization} · ${p.metadata.source_title} (${p.metadata.source_identifier}, ${versionText(p.metadata.document_version)})`,
-    p.metadata.page_number != null ? String(p.metadata.page_number) : 'n/a',
-    p.metadata.ctd_section ?? 'n/a',
-    p.metadata.applicability_status,
-    fmtScore(p.retrieval_score),
-    fmtScore(p.rerank_score),
-  ])
-
-  const doc = documentShell(d, 'Regulatory Search Report', [
-    k.heading('Search', 1),
-    k.details([
-      ['Question', query],
-      ['CTD section filter', section],
-      ['Include parent headings', filters.include_parent_sections === false ? 'No' : 'Yes'],
-      ['Current sources only', filters.applicability_statuses?.includes('current') ? 'Yes' : 'No'],
-      ['Reranked', result.reranked ? `Yes (${result.reranker_model})` : 'No'],
-      ['Embedding model', result.embedding_model],
-      ['Knowledge base size', `${result.knowledge_base_size} passages`],
-      ['Candidates considered', String(result.candidates_considered)],
-      ['Latency', `${result.latency_ms.toFixed(0)} ms`],
-    ]),
-    k.heading(`Results (${result.passages.length})`, 1),
-    result.passages.length
-      ? k.grid(['#', 'Source', 'Page', 'CTD', 'Status', 'Similarity', 'Rerank'], rows, resultWidths)
-      : new d.Paragraph({ children: [k.run('No passages matched this search.', { italics: true })] }),
-    ...(result.passages.length ? [k.heading('Passage text', 1), ...result.passages.flatMap((p, i) => passageBlock(k, p, i + 1))] : []),
-  ])
-  return doc
-}
-
-// ---------------------------------------------------------------------------
 export async function buildFindingsReport(findings: Finding[]) {
   const d = await import('docx')
   const k = kit(d)
@@ -272,14 +233,16 @@ export async function buildFindingsReport(findings: Finding[]) {
 
     children.push(k.heading(`Citations (${f.citations.length})`, 2))
     if (f.citations.length) {
+      const scored = new Map(f.regulatory_evidence.map(p => [p.chunk_id, p]))
       children.push(k.grid(
-        ['#', 'Source', 'Document', 'Version', 'Page', 'CTD', 'Status'],
+        ['#', 'Source', 'Document', 'Version', 'Page', 'CTD', 'Status', 'Similarity', 'Rerank'],
         f.citations.map((c, i) => [
           String(i + 1), `${c.issuing_organization} · ${c.source_title}`, c.source_identifier,
           versionText(c.document_version), c.page_number != null ? String(c.page_number) : 'n/a',
           c.ctd_section ?? 'n/a', c.applicability_status + (c.provenance_complete ? '' : ' (incomplete provenance)'),
+          fmtScore(scored.get(c.chunk_id)?.retrieval_score ?? null), fmtScore(scored.get(c.chunk_id)?.rerank_score ?? null),
         ]),
-        [500, 3138, 1300, 1600, 700, 1200, 1200],
+        [450, 2388, 1100, 1300, 600, 1000, 1000, 900, 900], // = 9638
       ))
     } else {
       children.push(new d.Paragraph({ children: [k.run('No citations: no passage met the evidence threshold.', { italics: true })] }))
@@ -319,10 +282,6 @@ export async function buildFindingsReport(findings: Finding[]) {
 
   const doc = documentShell(d, 'Regulatory Evidence Findings', children)
   return doc
-}
-
-export async function downloadSearchReport(query: string, filters: SearchFilters, result: RetrievalResult): Promise<void> {
-  await save(await buildSearchReport(query, filters, result), `search-report-${stamp()}.docx`)
 }
 
 export async function downloadFindingsReport(findings: Finding[]): Promise<void> {

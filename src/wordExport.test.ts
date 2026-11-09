@@ -3,8 +3,8 @@ import { join } from 'node:path'
 import { Packer } from 'docx'
 import { strFromU8, unzipSync } from 'fflate'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import type { Finding, RetrievalResult, RetrievedPassage } from './types'
-import { buildFindingsReport, buildSearchReport } from './wordExport'
+import type { Finding, RetrievedPassage } from './types'
+import { buildFindingsReport } from './wordExport'
 
 const passage: RetrievedPassage = {
   chunk_id: 'ich-q2-p7-c0',
@@ -64,16 +64,10 @@ describe('Word export', () => {
     expect(xml).not.toContain('robustness')
   })
 
-  it('builds a search report with a results table', async () => {
-    const result: RetrievalResult = {
-      query_fingerprint: 'x', filters: {}, knowledge_base_size: 248, candidates_considered: 10, reranked: true,
-      embedding_model: 'BAAI/bge-large-en-v1.5', reranker_model: 'BAAI/bge-reranker-base', passages: [passage], latency_ms: 812,
-    }
-    const xml = await documentXml(
-      await buildSearchReport('What is validated?', { ctd_sections: ['3.2.S.4.3'], include_parent_sections: true }, result),
-      'search-sample.docx')
-    expect(xml).toContain('What is validated?')
-    expect(xml).toContain('0.812') // similarity score in the table
-    expect((xml.match(/<w:tbl>/g) ?? []).length).toBe(2) // search details, results
+  it('shows the search scores of each cited passage', async () => {
+    const xml = await documentXml(await buildFindingsReport([finding]), 'findings-scores.docx')
+    expect(xml).toContain('Similarity')
+    expect(xml).toContain('0.812') // retrieval score of the cited passage
+    expect(xml).toContain('2.500') // rerank score
   })
 })

@@ -30,6 +30,7 @@ from app.schemas import (
     AgentRequest,
     Finding,
     QAStatus,
+    RetrievalResult,
     SearchFilters,
     SponsorEvidence,
     normalise_ctd_section,
@@ -55,8 +56,13 @@ class EvidenceReraAgent:
         filters: SearchFilters | None = None,
         use_section_filter: bool = True,
         use_reranker: bool | None = None,
+        retrieved: RetrievalResult | None = None,
     ) -> Finding:
         """Retrieve and attribute regulatory evidence for one question.
+
+        `retrieved`: passages already found for this question (the automatic router
+        searches once and hands the same result to the chosen agent); when given,
+        no new search is run and `filters` / `use_section_filter` are ignored.
 
         Raises InvalidQueryError for an empty/oversized question and ValueError
         for an invalid CTD section.
@@ -65,11 +71,14 @@ class EvidenceReraAgent:
         if section is None:
             raise ValueError("ctd_section is required")
 
-        effective_filters = filters.model_copy(deep=True) if filters else SearchFilters()
-        if use_section_filter and not effective_filters.ctd_sections:
-            effective_filters = effective_filters.model_copy(update={"ctd_sections": [section]})
-
-        result = self.retrieval.retrieve(question, filters=effective_filters, use_reranker=use_reranker)
+        if retrieved is not None:
+            result = retrieved
+            effective_filters = retrieved.filters
+        else:
+            effective_filters = filters.model_copy(deep=True) if filters else SearchFilters()
+            if use_section_filter and not effective_filters.ctd_sections:
+                effective_filters = effective_filters.model_copy(update={"ctd_sections": [section]})
+            result = self.retrieval.retrieve(question, filters=effective_filters, use_reranker=use_reranker)
         assessment = assess_evidence(result, self.settings)
 
         finding = Finding(

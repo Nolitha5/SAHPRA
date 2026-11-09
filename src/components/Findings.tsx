@@ -1,107 +1,9 @@
-import type { FormEvent } from 'react'
-import { useState } from 'react'
-import { api, CTD_SECTIONS } from '../api'
-import type { AgentRequest, Citation, ComparisonRow, Finding } from '../types'
-import { downloadFindingsReport } from '../wordExport'
+import type { Citation, ComparisonRow, Finding } from '../types'
 import AssessorReview from './AssessorReview'
-import WordToolbar from './WordToolbar'
 import { PassageCard, QaPill, StatusPill, plural, versionLabel } from './shared'
 
-type Agent = 'evidence-rera' | 's4-control'
-
-const S4_TOPICS: { value: string; label: string; section: string }[] = [
-  { value: 'general', label: 'General (3.2.S.4)', section: '3.2.S.4' },
-  { value: 'specification', label: 'Specification (3.2.S.4.1)', section: '3.2.S.4.1' },
-  { value: 'analytical_procedures', label: 'Analytical procedures (3.2.S.4.2)', section: '3.2.S.4.2' },
-  { value: 'method_validation', label: 'Method validation (3.2.S.4.3)', section: '3.2.S.4.3' },
-  { value: 'batch_analyses', label: 'Batch analyses (3.2.S.4.4)', section: '3.2.S.4.4' },
-  { value: 'justification_of_specification', label: 'Justification of specification (3.2.S.4.5)', section: '3.2.S.4.5' },
-]
-
-export default function Findings() {
-  const [agent, setAgent] = useState<Agent>('evidence-rera')
-  const [question, setQuestion] = useState('')
-  const [section, setSection] = useState('3.2.S.4')
-  const [topic, setTopic] = useState('general')
-  const [findings, setFindings] = useState<Finding[] | null>(null)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-
-  async function run(e: FormEvent) {
-    e.preventDefault()
-    setError('')
-    if (!question.trim()) { setError('Enter an assessment question.'); return }
-    const req: AgentRequest = { ctd_section: section, assessment_question: question.trim() }
-    if (agent === 's4-control') {
-      req.ctd_section = S4_TOPICS.find(t => t.value === topic)?.section ?? '3.2.S.4'
-      req.parameters = { topic }
-    }
-    setBusy(true)
-    try {
-      setFindings(await api.runAgent(agent, req))
-    } catch (err) {
-      setError((err as Error).message)
-      setFindings(null)
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return (
-    <div>
-      <form className="card section-gap" onSubmit={run}>
-        <div className="card-body form-grid">
-          <div className="form-group form-full">
-            <span className="field-label">Agent</span>
-            <div className="segmented" role="radiogroup" aria-label="Agent">
-              <button type="button" role="radio" aria-checked={agent === 'evidence-rera'}
-                className={`btn ${agent === 'evidence-rera' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setAgent('evidence-rera')}>
-                Evidence/RERA · find and cite
-              </button>
-              <button type="button" role="radio" aria-checked={agent === 's4-control'}
-                className={`btn ${agent === 's4-control' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setAgent('s4-control')}>
-                S.4 Control · specs and batches
-              </button>
-            </div>
-          </div>
-
-          <div className="form-group form-full">
-            <label htmlFor="agent-question">Assessment question</label>
-            <textarea id="agent-question" value={question} onChange={e => setQuestion(e.target.value)}
-              placeholder="Enter an assessment question" />
-          </div>
-
-          {agent === 'evidence-rera' ? (
-            <div className="form-group">
-              <label htmlFor="agent-section">CTD section</label>
-              <select id="agent-section" value={section} onChange={e => setSection(e.target.value)}>
-                {CTD_SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-          ) : (
-            <div className="form-group">
-              <label htmlFor="agent-topic">S.4 topic</label>
-              <select id="agent-topic" value={topic} onChange={e => setTopic(e.target.value)}>
-                {S4_TOPICS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
-            </div>
-          )}
-
-          <div className="form-full row-actions">
-            <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? 'Running…' : 'Run agent'}</button>
-          </div>
-        </div>
-      </form>
-
-      {error && <div className="alert alert-error">{error}</div>}
-      {findings && findings.length > 0 && (
-        <WordToolbar onDownload={() => downloadFindingsReport(findings)}
-          note="Saved assessor comments are included in red." />
-      )}
-      {findings?.map(f => <FindingCard key={f.finding_id} f={f} />)}
-    </div>
-  )
-}
+// One agent finding, shown as Word-style tables, with the red assessor-review box.
+// Used by the Search tab, which sends every question to an agent.
 
 const FLAG_TEXT: Record<string, string> = {
   knowledge_base_empty: 'Knowledge base is empty',
@@ -128,11 +30,16 @@ function citationDetails(c: Citation): string {
   return [c.document_version ? versionLabel(c.document_version) : null, c.publication_date].filter(Boolean).join(' · ') || 'n/a'
 }
 
-function FindingCard({ f }: { f: Finding }) {
+const score = (v: number | null | undefined) => (v == null ? 'n/a' : v.toFixed(3))
+
+export function FindingCard({ f }: { f: Finding }) {
   const rows = f.metadata.confidential_comparison_rows ?? []
   const flags = f.metadata.flags ?? []
   const weaker = f.metadata.below_threshold_candidates ?? []
   const agentLabel = f.agent_name === 'evidence_rera' ? 'Evidence/RERA' : 'S.4 Control'
+  // Search scores for each cited passage (citations and evidence share chunk_id).
+  const scores = new Map(f.regulatory_evidence.map(p => [p.chunk_id, p]))
+  const retrieval = f.metadata.retrieval
   return (
     <article className="card section-gap finding">
       <header className="finding-head">
@@ -194,7 +101,7 @@ function FindingCard({ f }: { f: Finding }) {
           {f.citations.length > 0 ? (
             <div className="table-wrap">
               <table className="doc-table table-stack">
-                <thead><tr><th className="num">#</th><th>Source</th><th>Document</th><th>Version · date</th><th className="num">Page</th><th>CTD</th><th>Status</th></tr></thead>
+                <thead><tr><th className="num">#</th><th>Source</th><th>Document</th><th>Version · date</th><th className="num">Page</th><th>CTD</th><th>Status</th><th className="num">Similarity</th><th className="num">Rerank</th></tr></thead>
                 <tbody>
                   {f.citations.map((c, i) => (
                     <tr key={c.chunk_id}>
@@ -208,12 +115,20 @@ function FindingCard({ f }: { f: Finding }) {
                         <StatusPill status={c.applicability_status} />
                         {!c.provenance_complete && <> <span className="pill pill-yellow" title={c.missing_provenance.join(', ')}>incomplete</span></>}
                       </td>
+                      <td className="num" data-label="Similarity">{score(scores.get(c.chunk_id)?.retrieval_score)}</td>
+                      <td className="num" data-label="Rerank">{score(scores.get(c.chunk_id)?.rerank_score)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           ) : <p className="text-muted">No citations: no passage met the evidence threshold.</p>}
+          {retrieval && (
+            <p className="text-muted" style={{ fontSize: 12 }}>
+              Searched {retrieval.knowledge_base_size} passages · {retrieval.candidates_considered} candidates ·{' '}
+              {retrieval.reranked ? 'reranked' : 'not reranked'} · {Math.round(retrieval.latency_ms)} ms
+            </p>
+          )}
         </div>
 
         {f.regulatory_evidence.length > 0 && (

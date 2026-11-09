@@ -1,5 +1,6 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
-import { api, CTD_SECTIONS, DOCUMENT_TYPES } from '../api'
+import { api, DOCUMENT_TYPES } from '../api'
+import CtdSelect from './CtdSelect'
 import type { Facets, ImportReport, StoredPassage } from '../types'
 import { Empty, StatusPill, passageText, sourceLabel, versionLabel } from './shared'
 
@@ -65,10 +66,8 @@ export default function KnowledgeBase({ canEdit, onChanged }: { canEdit: boolean
           <span className="card-title">Stored passages</span>
           <div className="row-actions filters">
             <label className="sr-only" htmlFor="kb-ctd">CTD section</label>
-            <select id="kb-ctd" value={filter.ctd_section} onChange={e => { setOffset(0); setFilter({ ...filter, ctd_section: e.target.value }) }}>
-              <option value="">All CTD sections</option>
-              {CTD_SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
+            <CtdSelect id="kb-ctd" value={filter.ctd_section} emptyLabel="All CTD sections"
+              onChange={v => { setOffset(0); setFilter({ ...filter, ctd_section: v }) }} />
             <label className="sr-only" htmlFor="kb-org">Organisation</label>
             <select id="kb-org" value={filter.organization} onChange={e => { setOffset(0); setFilter({ ...filter, organization: e.target.value }) }}>
               <option value="">All organisations</option>
