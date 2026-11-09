@@ -191,6 +191,117 @@ def remove_repeating_lines(pages: list[str], min_share: float = 0.5, edge: int =
     return cleaned, removed
 
 
+# ---------------------------------------------------------------------------
+# Printed page numbers ("page labels")
+# ---------------------------------------------------------------------------
+_PAGE_OF = re.compile(r"(?i)\bpage\s+(\d{1,4})\s+of\s+\d{1,4}\b")
+_NUMBER_LINE = re.compile(r"^\s*[-–—]?\s*(\d{1,4})\s*[-–—]?\s*$")
+_ROMAN_LINE = re.compile(r"^\s*([ivxlc]{1,7})\s*$", re.IGNORECASE)
+# Fallback for prints that put the number at the end of a short running header,
+# e.g. "© EMEA 2006  12". Used only when no standalone numbers give a consistent offset.
+_TRAILING_NUMBER = re.compile(r"^(?=.{3,40}$).*\D\s(\d{1,4})\s*$")
+_ROMAN_VALUES = {"i": 1, "v": 5, "x": 10, "l": 50, "c": 100}
+_ROMAN_STEPS = ((100, "c"), (90, "xc"), (50, "l"), (40, "xl"), (10, "x"), (9, "ix"), (5, "v"), (4, "iv"), (1, "i"))
+
+
+def extract_plain_pages(pdf: Path) -> list[str]:
+    """Plain-mode page texts, used only to find printed page numbers: layout mode
+    can drop a number that sits in a running header (e.g. "© EMEA 2006  12")."""
+    from pypdf import PdfReader
+
+    pages = []
+    for page in PdfReader(str(pdf)).pages:
+        try:
+            pages.append(page.extract_text() or "")
+        except Exception:  # a single broken page should not stop the document
+            pages.append("")
+    return pages
+
+
+def _roman_ok(token: str) -> bool:
+    """True for a well-formed lower-case-able roman numeral up to 100 (i, iv, xii ...)."""
+    t = token.lower()
+    total = _roman_value(t)
+    canonical = ""
+    n = total
+    for value, sym in _ROMAN_STEPS:
+        while n >= value:
+            canonical += sym
+            n -= value
+    return 0 < total <= 100 and canonical == t
+
+
+def detect_page_labels(raw_pages: list[str], min_share: float = 0.4) -> list[str | None]:
+    """The page number PRINTED on each page (e.g. "3", "iv", "317"), or None.
+
+    Within one document the printed number follows the PDF page with a fixed offset
+    (cover and contents pages unnumbered, or an annex printed as pp. 309-352 of a
+    book). The offset that most pages agree on decides which number on a page is
+    its page number, so stray numbers (table footnotes, list items) are ignored.
+    Pages between two numbered pages whose number was not extracted get the
+    expected number; roman numerals are kept for front matter. Nothing is guessed
+    outside the numbered run.
+    """
+    n = len(raw_pages)
+    pages_with_text = sum(1 for t in raw_pages if t.strip())
+    standalone: list[set[int]] = []
+    trailing: list[set[int]] = []
+    romans: list[list[str]] = []
+    for text in raw_pages:
+        lines = [line for line in text.splitlines() if line.strip()]
+        found = {int(m.group(1)) for m in _PAGE_OF.finditer(text)}
+        found |= {int(m.group(1)) for line in lines if (m := _NUMBER_LINE.match(line))}
+        standalone.append(found)
+        trailing.append({int(m.group(1)) for line in lines if (m := _TRAILING_NUMBER.match(line))})
+        romans.append([m.group(1).lower() for line in lines
+                       if (m := _ROMAN_LINE.match(line)) and _roman_ok(m.group(1))])
+
+    def consensus(candidates: list[set[int]]) -> int | None:
+        offsets: Counter[int] = Counter()
+        for page_no, found in enumerate(candidates, start=1):
+            offsets.update({page_no - value for value in found})
+        if not offsets:
+            return None
+        offset, support = offsets.most_common(1)[0]
+        return offset if support >= max(3, min_share * pages_with_text) else None
+
+    numbers, offset = standalone, consensus(standalone)
+    if offset is None:
+        numbers, offset = trailing, consensus(trailing)
+
+    labels: list[str | None] = [None] * n
+    first_numbered = n + 1
+    if offset is not None:
+        matched = [p for p in range(1, n + 1) if p - offset in numbers[p - 1]]
+        first_numbered, last_numbered = min(matched), max(matched)
+        for p in range(1, n + 1):
+            value = p - offset
+            if value in numbers[p - 1] or (first_numbered < p < last_numbered and value >= 1):
+                labels[p - 1] = str(value)
+    # Front matter before the numbered run: roman numerals, but only those that follow the
+    # same sequence (i, ii, iii on consecutive pages), so a stray "V" on a cover is ignored.
+    front = range(1, min(first_numbered, n + 1))
+    roman_offsets: Counter[int] = Counter()
+    for p in front:
+        roman_offsets.update({p - _roman_value(r) for r in romans[p - 1]})
+    if roman_offsets:
+        roman_offset = roman_offsets.most_common(1)[0][0]
+        for p in front:
+            fitting = [r for r in romans[p - 1] if p - _roman_value(r) == roman_offset]
+            if labels[p - 1] is None and fitting:
+                labels[p - 1] = fitting[-1]
+    return labels
+
+
+def _roman_value(token: str) -> int:
+    total, prev = 0, 0
+    for ch in reversed(token.lower()):
+        v = _ROMAN_VALUES[ch]
+        total = total - v if v < prev else total + v
+        prev = max(prev, v)
+    return total
+
+
 # Word/PDF "Symbol" font glyphs land in the Unicode private use area (U+F0xx).
 _SYMBOL_FONT = {
     "": "•", "": "▪", "": "•", "": "≤", "": "≥", "": "±",
@@ -278,6 +389,7 @@ def convert(doc: SourceDoc, chunk_size: int, overlap: int) -> tuple[list[dict], 
     report = ConvertReport(pdf=doc.pdf.name)
     raw_pages = extract_pages(doc.pdf)
     report.pages_total = len(raw_pages)
+    page_labels = detect_page_labels(extract_plain_pages(doc.pdf))
     pages, report.header_footer_lines_removed = remove_repeating_lines(raw_pages)
 
     last = doc.last_page or len(pages)
@@ -303,6 +415,7 @@ def convert(doc: SourceDoc, chunk_size: int, overlap: int) -> tuple[list[dict], 
                 "publication_date": doc.publication_date,
                 "effective_date": doc.effective_date,
                 "page_number": page_no,
+                "page_label": page_labels[page_no - 1],
                 "ctd_section": section,
                 "document_type": doc.document_type,
                 "applicability_status": doc.applicability_status,

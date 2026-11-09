@@ -4,6 +4,7 @@
  * The `docx` library is loaded only when a document is first created, to keep the page light.
  */
 import type { ComparisonRow, Finding, RetrievedPassage } from './types'
+import { pageText } from './pages'
 import { loadComment } from './reviewStore'
 
 type Docx = typeof import('docx')
@@ -172,7 +173,7 @@ function documentShell(d: Docx, title: string, children: (InstanceType<Docx['Par
 
 function passageBlock(k: ReturnType<typeof kit>, p: RetrievedPassage, n: number) {
   const m = p.metadata
-  const head = `${n}. ${m.issuing_organization} · ${m.source_title} · ${versionText(m.document_version)} · p. ${m.page_number ?? 'n/a'}`
+  const head = `${n}. ${m.issuing_organization} · ${m.source_title} · ${versionText(m.document_version)} · ${pageText(m.page_number, m.page_label) || 'page n/a'}`
   return [
     ...k.paras(head, { bold: true }),
     ...k.paras(p.text, { size: 19 }),
@@ -238,7 +239,7 @@ export async function buildFindingsReport(findings: Finding[]) {
         ['#', 'Source', 'Document', 'Version', 'Page', 'CTD', 'Status', 'Similarity', 'Rerank'],
         f.citations.map((c, i) => [
           String(i + 1), `${c.issuing_organization} · ${c.source_title}`, c.source_identifier,
-          versionText(c.document_version), c.page_number != null ? String(c.page_number) : 'n/a',
+          versionText(c.document_version), pageText(c.page_number, c.page_label, true),
           c.ctd_section ?? 'n/a', c.applicability_status + (c.provenance_complete ? '' : ' (incomplete provenance)'),
           fmtScore(scored.get(c.chunk_id)?.retrieval_score ?? null), fmtScore(scored.get(c.chunk_id)?.rerank_score ?? null),
         ]),

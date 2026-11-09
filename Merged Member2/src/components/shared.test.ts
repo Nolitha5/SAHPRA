@@ -22,6 +22,9 @@ describe('sourceLabel', () => {
   it('joins organisation, title, version and page', () => {
     expect(sourceLabel(meta())).toBe('ICH · Validation of Analytical Procedures · Final Version (Step 4) · p.7')
   })
+  it('shows the printed page number with the PDF page', () => {
+    expect(sourceLabel(meta({ page_label: '3' }))).toBe('ICH · Validation of Analytical Procedures · Final Version (Step 4) · p.3 (PDF p.7)')
+  })
   it('leaves out missing version and page', () => {
     expect(sourceLabel(meta({ document_version: null, page_number: null }))).toBe('ICH · Validation of Analytical Procedures')
   })

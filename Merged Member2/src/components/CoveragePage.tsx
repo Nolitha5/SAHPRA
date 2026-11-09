@@ -55,7 +55,7 @@ export default function CoveragePage({ version = 0 }: { version?: number }) {
           <div className="table-wrap">
             <table className="doc-table table-stack">
               <thead>
-                <tr><th>Source</th><th>Version · date</th><th>Status</th><th className="num">Passages</th><th>Pages</th><th>CTD tags</th><th>Official PDF</th></tr>
+                <tr><th>Source</th><th>Version · date</th><th>Status</th><th className="num">Passages</th><th>PDF pages</th><th>CTD tags</th><th>Official PDF</th></tr>
               </thead>
               <tbody>
                 {data.sources.map(s => (

@@ -106,6 +106,11 @@ class PassageMetadata(BaseModel):
     publication_date: str | None = None
     effective_date: str | None = None
     page_number: int | None = Field(default=None, ge=1)
+    page_label: str | None = Field(
+        default=None,
+        pattern=r"^[A-Za-z0-9.\-]{1,20}$",
+        description="Page number PRINTED on the page (e.g. '3', 'iv', '317'); page_number is the PDF page.",
+    )
     ctd_section: str | None = None
     document_type: DocumentType
     content_hash: str
@@ -194,6 +199,7 @@ class PassageRecord(BaseModel):
     publication_date: str | None = None
     effective_date: str | None = None
     page_number: int | None = None
+    page_label: str | None = None
     ctd_section: str | None = None
     document_type: DocumentType
     content_hash: str | None = None
@@ -349,6 +355,7 @@ class Citation(BaseModel):
     content_hash: str
     provenance_complete: bool
     missing_provenance: list[str]
+    page_label: str | None = None  # printed page number; page_number is the PDF page
 
     @classmethod
     def from_metadata(cls, meta: PassageMetadata) -> Citation:
@@ -361,6 +368,7 @@ class Citation(BaseModel):
             publication_date=meta.publication_date,
             effective_date=meta.effective_date,
             page_number=meta.page_number,
+            page_label=meta.page_label,
             ctd_section=meta.ctd_section,
             document_type=meta.document_type,
             applicability_status=meta.applicability_status,
@@ -374,8 +382,17 @@ class Citation(BaseModel):
         if self.document_version:
             parts.append(version_label(self.document_version))
         if self.page_number is not None:
-            parts.append(f"p.{self.page_number}")
+            parts.append(page_text(self.page_number, self.page_label))
         return ", ".join(parts)
+
+
+def page_text(page_number: int | None, page_label: str | None) -> str:
+    """'p.3 (PDF p.7)' when the printed page differs from the PDF page, else 'p.7'."""
+    if page_number is None:
+        return "p.n/a"
+    if page_label and page_label != str(page_number):
+        return f"p.{page_label} (PDF p.{page_number})"
+    return f"p.{page_number}"
 
 
 def version_label(version: str) -> str:

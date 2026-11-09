@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { pageText } from '../pages'
 import type { Citation, PassageMetadata, QAStatus, RetrievedPassage } from '../types'
 
 const QA_PILL: Record<QAStatus, string> = {
@@ -35,7 +36,7 @@ export function versionLabel(version: string): string {
 export function sourceLabel(m: PassageMetadata | Citation): string {
   const parts = [m.issuing_organization, m.source_title]
   if (m.document_version) parts.push(versionLabel(m.document_version))
-  if (m.page_number != null) parts.push(`p.${m.page_number}`)
+  if (m.page_number != null) parts.push(pageText(m.page_number, m.page_label))
   return parts.join(' · ')
 }
 

@@ -169,8 +169,11 @@ def index_records(
         if to_write:
             vectors = embedder.embed_documents([text for _, text in to_write])
             store.upsert(to_write, vectors)
+        # Same text, new details (e.g. a page label): no re-embedding needed.
+        metadata_only = set(plan.metadata_updated)
+        store.replace_metadata([item for item in batch if item[0].chunk_id in metadata_only])
         added += len(plan.added)
-        updated += len(plan.updated)
+        updated += len(plan.updated) + len(plan.metadata_updated)
         unchanged += len(plan.unchanged)
     return added, updated, unchanged
 

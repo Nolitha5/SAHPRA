@@ -185,18 +185,23 @@ def source_summary(passages: Sequence[RetrievedPassage]) -> str:
     The full per-passage list is already in `citations`; repeating it here
     would only make the rationale harder to read.
     """
-    docs: dict[tuple[str, str, str | None], list[int]] = {}
+    # Pages are shown as printed in the document, with the PDF page in brackets when it
+    # differs (e.g. "pp. 3 (PDF 7), 6 (PDF 10)").
+    docs: dict[tuple[str, str, str | None], dict[int, str | None]] = {}
     for p in passages:
         m = p.metadata
-        pages = docs.setdefault((m.issuing_organization, m.source_title, m.document_version), [])
-        if m.page_number is not None and m.page_number not in pages:
-            pages.append(m.page_number)
+        pages = docs.setdefault((m.issuing_organization, m.source_title, m.document_version), {})
+        if m.page_number is not None:
+            pages.setdefault(m.page_number, m.page_label)
     entries = []
     for (org, title, version), pages in docs.items():
         parts = [org, title] + ([version_label(version)] if version else [])
         if pages:
-            pages.sort()
-            parts.append(("p. " if len(pages) == 1 else "pp. ") + ", ".join(map(str, pages)))
+            shown = [
+                f"{label} (PDF {pdf})" if label and label != str(pdf) else str(pdf)
+                for pdf, label in sorted(pages.items())
+            ]
+            parts.append(("p. " if len(shown) == 1 else "pp. ") + ", ".join(shown))
         entries.append(", ".join(parts))
     return "; ".join(entries)
 

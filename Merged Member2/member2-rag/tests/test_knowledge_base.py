@@ -164,6 +164,27 @@ def test_index_add_unchanged_update(tmp_path, store, embedder):
     assert store.count() == 2
 
 
+def test_metadata_only_change_is_stored_without_re_embedding(tmp_path, store, embedder):
+    path = write_jsonl(tmp_path / "p.jsonl", [make_record(chunk_id="a", page_number=7)])
+    index_jsonl(path, store, embedder)
+    calls = embedder.document_calls
+
+    # Same text, new detail (the printed page number): stored, but not re-embedded.
+    write_jsonl(path, [make_record(chunk_id="a", page_number=7, page_label="3")])
+    report = index_jsonl(path, store, embedder)
+    assert (report.added, report.updated, report.unchanged) == (0, 1, 0)
+    assert embedder.document_calls == calls
+    assert store.get(["a"])[0].metadata.page_label == "3"
+
+    again = index_jsonl(path, store, embedder)
+    assert (again.updated, again.unchanged) == (0, 1)
+
+
+def test_page_label_is_validated(tmp_path):
+    loaded = load_jsonl(write_jsonl(tmp_path / "p.jsonl", [make_record(page_label="3; DROP TABLE")]))
+    assert loaded.errors and "page_label" in loaded.errors[0].message
+
+
 def test_dry_run_writes_nothing(tmp_path, store, embedder):
     path = write_jsonl(tmp_path / "p.jsonl", [make_record()])
     report = index_jsonl(path, store, embedder, dry_run=True)

@@ -15,6 +15,7 @@ export interface PassageMetadata {
   publication_date: string | null
   effective_date: string | null
   page_number: number | null
+  page_label?: string | null // page number printed on the page; page_number is the PDF page
   ctd_section: string | null
   document_type: string
   content_hash: string
@@ -86,6 +87,7 @@ export interface Citation {
   publication_date: string | null
   effective_date: string | null
   page_number: number | null
+  page_label?: string | null // page number printed on the page; page_number is the PDF page
   ctd_section: string | null
   document_type: string
   applicability_status: string
