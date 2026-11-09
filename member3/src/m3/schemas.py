@@ -50,3 +50,61 @@ class S5Claim(StrictModel):
     edition_claimed: str  # e.g. "BP 2019"
     test_method: Optional[str] = None
     submission_date: date
+
+
+# ── Shared structured-finding contract ───────────────────────────────
+#
+# These mirror member2/src/m2/schemas.py (aziz-and-sipho branch) field for
+# field so that findings from M3's S.2/S.3 agents are interoperable with
+# M2's S.4 agent and consumable by M1 (Orchestrator), M4 (memory/consistency)
+# and M5 (QA/Critic) without any translation. The S.2/S.3 agents are
+# siblings of M2's S4_CONTROL agent and MUST speak the same Finding object.
+#
+# NOTE on regulatory_evidence: M2 types this as list[EvidencePassage] (their
+# own retrieval type). Until M3's agents are wired to M2's Evidence/RERA
+# service, they produce findings with regulatory_evidence=[] (empty), which
+# serialises identically. When retrieval is wired, the list holds the
+# EvidencePassage dicts returned by M2 — so it is typed here as list[dict]
+# to stay decoupled from M2's package while remaining wire-compatible.
+
+from enum import Enum  # noqa: E402
+from datetime import datetime, timezone  # noqa: E402
+
+
+class QAStatus(str, Enum):
+    PENDING = "PENDING"
+    PASS = "PASS"
+    FLAG = "FLAG"
+    ESCALATE = "ESCALATE"
+
+
+class FindingStatus(str, Enum):
+    REVIEW_REQUIRED = "REVIEW_REQUIRED"
+    POTENTIAL_GAP = "POTENTIAL_GAP"
+    MISSING_INFORMATION = "MISSING_INFORMATION"
+    INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE"
+
+
+class SponsorEvidence(StrictModel):
+    document_id: str
+    chunk_id: str
+    ctd_section: str
+    passage: str
+    page: Optional[int] = None
+
+
+class Finding(StrictModel):
+    finding_id: str
+    case_id: str
+    agent_id: str  # e.g. "S2_MANUFACTURE", "S3_CHARACTERISATION"
+    ctd_section: str
+    issue_type: str
+    status: FindingStatus
+    sponsor_evidence: list[SponsorEvidence] = Field(default_factory=list)
+    regulatory_evidence: list[dict[str, Any]] = Field(default_factory=list)
+    rationale: str
+    uncertainty: float = Field(ge=0.0, le=1.0)
+    qa_status: QAStatus = QAStatus.PENDING  # M5's QA/Critic sets this later
+    requires_human_review: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    attributes: dict[str, Any] = Field(default_factory=dict)

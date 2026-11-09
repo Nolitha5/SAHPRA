@@ -25,8 +25,12 @@ the next layer on top of this proven thread — not required for it to work.
 | **PII / confidentiality filter** | `src/m3/pii_filter.py` | Regex first pass (email, SA ID, phone); swap-in point for Presidio once approved |
 | **Pipeline orchestration** | `src/m3/pipeline.py` | `ingest_dossier()` — ties extraction → section tagging → chunking → PII redaction → quality flagging into one call |
 | **M2-shaped export** | `src/m3/export.py` | Writes the case JSON in the exact shape of M2's `S4ReviewRequest` / `examples/synthetic_s4_case.json` |
+| **S.2 Manufacture agent** | `src/m3/s2_manufacture.py` | Completeness/consistency review of 3.2.S.2 (subsections S.2.1–S.2.6 present, manufacturer address, flow-diagram cue, starting-material forward-links); emits `Finding` objects |
+| **S.3 Characterisation agent** | `src/m3/s3_characterisation.py` | Structure-elucidation technique check (IR/UV/NMR/MS/elemental) + impurity extraction with cross-section links to S.4/S.2/S.7 |
+| **Shared Finding schema** | `src/m3/schemas.py` | `Finding`/`SponsorEvidence`/`FindingStatus`/`QAStatus`, mirroring M2's `member2/src/m2/schemas.py::Finding` exactly |
+| **Agent runner** | `src/m3/run_agents.py` | `python -m m3.run_agents dossier.pdf` — ingest + run both agents, emit findings JSON |
 | **CLI** | `src/m3/cli.py` | `python -m m3.cli dossier.pdf --case-id ... --out ...` |
-| **Tests** | `tests/` | 23 tests, stdlib `unittest`, no pytest dependency — covers section mapping, chunk boundaries, PII redaction, schema contract, and one full synthetic-dossier end-to-end run |
+| **Tests** | `tests/` | 39 tests, stdlib `unittest`, no pytest dependency — covers section mapping, chunk boundaries, PII redaction, schema contract, and one full synthetic-dossier end-to-end run |
 
 ---
 
@@ -39,8 +43,9 @@ the next layer on top of this proven thread — not required for it to work.
 
 ```bash
 cd member3
-python -m unittest discover -s tests -v     # 23 tests, should all pass
+python -m unittest discover -s tests -v     # 39 tests, should all pass
 python -m m3.cli path/to/dossier.pdf --case-id CASE-001 --out examples/out.json
+python -m m3.run_agents path/to/dossier.pdf --case-id CASE-001 --out examples/findings.json
 ```
 
 A worked example is already committed at `examples/tier0_case_output.json`,
@@ -101,8 +106,6 @@ dropped or silently kept.
 |---|---|
 | Table/figure extraction (spec & stability tables as structured rows) | Docling integration — `table_rows` field exists in the schema, currently always empty |
 | Docling / Unstructured / Marker as primary extractor | Currently PyMuPDF only; Docling is the stated workhorse per the spec, swap-in point is `extraction.py` |
-| S.2 Manufacture agent | Not started — reads the chunks this pipeline produces |
-| S.3 Characterisation agent | Not started — same |
 | Presidio-grade PII detection | Current filter is regex-only (email/phone/SA ID); Presidio is the documented upgrade path |
 | De-duplication across documents | Not implemented — current pipeline is single-PDF |
 | Language detection | Not implemented |
