@@ -4,6 +4,7 @@
  * The `docx` library is loaded only when a document is first created, to keep the page light.
  */
 import type { ComparisonRow, Finding, RetrievedPassage } from './types'
+import { findingTables } from './findingTables'
 import { pageText } from './pages'
 import { loadComment } from './reviewStore'
 
@@ -195,6 +196,10 @@ async function save(doc: InstanceType<Docx["Document"]>, filename: string) {
 }
 
 // ---------------------------------------------------------------------------
+// The report shows tables as Word tables only; the original images stay on screen in the app.
+const WORD_TABLE_NOTE =
+  'Tables read automatically from the PDF. Check the cited page of the source PDF for exact values, footnote markers and merged cells.'
+
 export async function buildFindingsReport(findings: Finding[]) {
   const d = await import('docx')
   const k = kit(d)
@@ -243,13 +248,37 @@ export async function buildFindingsReport(findings: Finding[]) {
           c.ctd_section ?? 'n/a', c.applicability_status + (c.provenance_complete ? '' : ' (incomplete provenance)'),
           fmtScore(scored.get(c.chunk_id)?.retrieval_score ?? null), fmtScore(scored.get(c.chunk_id)?.rerank_score ?? null),
         ]),
-        [450, 2388, 1100, 1300, 600, 1000, 1000, 900, 900], // = 9638
+        [450, 2088, 1100, 1300, 900, 1000, 1000, 900, 900], // = 9638
       ))
     } else {
       children.push(new d.Paragraph({ children: [k.run('No citations: no passage met the evidence threshold.', { italics: true })] }))
     }
 
-    // Assessor review in red: the saved comment, or an empty box to write in after printing.
+    // Tables on the cited pages, as Word tables built from the PDF's cells (no images in the report).
+    const tables = findingTables(f)
+    if (tables.length) {
+      children.push(k.heading(`Tables on the cited pages (${tables.length})`, 2))
+      children.push(new d.Paragraph({ keepNext: true, children: [k.run(WORD_TABLE_NOTE, { italics: true, size: 18, color: '555555' })] }))
+      for (const t of tables) {
+        children.push(new d.Paragraph({
+          keepNext: true, spacing: { before: 160, after: 60 },
+          children: [k.run(`${t.source_identifier} · ${pageText(t.page_number, t.page_label)} · table ${t.index_on_page}`, { bold: true })],
+        }))
+        const cols = Math.max(...t.rows.map(r => r.length))
+        const w = Math.floor(CONTENT_WIDTH / cols)
+        const widths = Array.from({ length: cols }, (_, i) => (i === cols - 1 ? CONTENT_WIDTH - w * (cols - 1) : w))
+        const padded = t.rows.map(r => Array.from({ length: cols }, (_, i) => r[i] ?? ''))
+        children.push(k.grid(padded[0], padded.slice(1), widths))
+      }
+    }
+
+    if (f.regulatory_evidence.length) {
+      children.push(k.heading('Supporting passages', 2))
+      f.regulatory_evidence.forEach((p, i) => children.push(...passageBlock(k, p, i + 1)))
+    }
+
+    // Assessor review in red, always LAST in each finding: the saved comment, or an empty box
+    // to write in after printing.
     children.push(k.heading('Assessor review', 2))
     const comment = loadComment(f.finding_id)
     const reviewWidths = [2400, CONTENT_WIDTH - 2400]
@@ -274,11 +303,6 @@ export async function buildFindingsReport(findings: Finding[]) {
         ] }),
       ],
     }))
-
-    if (f.regulatory_evidence.length) {
-      children.push(k.heading('Supporting passages', 2))
-      f.regulatory_evidence.forEach((p, i) => children.push(...passageBlock(k, p, i + 1)))
-    }
   })
 
   const doc = documentShell(d, 'Regulatory Evidence Findings', children)

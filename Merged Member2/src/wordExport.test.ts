@@ -30,13 +30,35 @@ const finding = {
 } as unknown as Finding
 
 async function documentXml(doc: Awaited<ReturnType<typeof buildFindingsReport>>, name: string): Promise<string> {
+  return (await documentFiles(doc, name))['word/document.xml']
+}
+
+async function documentFiles(doc: Awaited<ReturnType<typeof buildFindingsReport>>, name: string) {
   const buf = await Packer.toBuffer(doc)
   // Optional: WORD_OUT=<dir> writes the files so they can be opened in Word.
   if (process.env.WORD_OUT) writeFileSync(join(process.env.WORD_OUT, name), buf)
-  return strFromU8(unzipSync(new Uint8Array(buf))['word/document.xml'])
+  const files = unzipSync(new Uint8Array(buf))
+  return Object.fromEntries(Object.entries(files).map(([k, v]) => [k, k.endsWith('.xml') ? strFromU8(v) : `${v.length} bytes`]))
+}
+
+const table = {
+  table_id: 'ich-q3a-r2-step-4-p12-t1', source_identifier: 'ICH Q3A(R2)', page_number: 12, page_label: '8', index_on_page: 1,
+  rows: [['Maximum Daily Dose', 'Reporting Threshold'], ['≤ 2g/day', '0.05%'], ['> 2g/day', '0.03%']],
+  width: 948, height: 225, image_url: '/api/tables/ich-q3a-r2-step-4-p12-t1/image',
 }
 
 describe('Word export', () => {
+  it('adds the tables of the cited pages as Word tables, without the original images', async () => {
+    const withTable = { ...finding, page_tables: { [passage.chunk_id]: [table] } } as Finding
+    const files = await documentFiles(await buildFindingsReport([withTable]), 'findings-table.docx')
+    const xml = files['word/document.xml']
+    expect(xml).toContain('Tables on the cited pages (1)')
+    expect(xml).toContain('ICH Q3A(R2) · p.8 (PDF p.12) · table 1')
+    expect(xml).toContain('0.05%')
+    expect(xml).toContain('Check the cited page of the source PDF')
+    expect(Object.keys(files).some(f => f.startsWith('word/media/'))).toBe(false) // no images in the report
+  })
+
   const store = new Map<string, string>()
   beforeEach(() => {
     store.clear()
@@ -56,6 +78,15 @@ describe('Word export', () => {
     expect(xml).toMatch(/<w:color w:val="C81E1E"\/>[\s\S]*Evidence adequate/)
     expect((xml.match(/<w:tbl>/g) ?? []).length).toBe(3) // details, citations, assessor review
     expect(xml).not.toMatch(/\n<\/w:t>/) // no raw newlines inside text runs
+  })
+
+  it('puts the assessor review last, after the supporting passages', async () => {
+    const withTable = { ...finding, page_tables: { [passage.chunk_id]: [table] } } as Finding
+    const xml = await documentXml(await buildFindingsReport([withTable]), 'findings-order.docx')
+    const order = ['Citations', 'Tables on the cited pages', 'Supporting passages', 'Assessor review'].map(h => xml.indexOf(h))
+    expect(order.every(i => i >= 0)).toBe(true)
+    expect([...order].sort((a, b) => a - b)).toEqual(order)
+    expect(xml.lastIndexOf('Assessor comment')).toBeGreaterThan(xml.lastIndexOf('Synthetic passage text'))
   })
 
   it('leaves an empty red review box when there is no comment', async () => {

@@ -145,6 +145,8 @@ export interface Finding {
     [key: string]: unknown
   }
   created_at: string
+  /** Tables on the pages of the supporting passages (chunk_id -> tables); added by the API. */
+  page_tables?: Record<string, PageTable[]>
 }
 
 export interface AgentRequest {
@@ -260,4 +262,17 @@ export interface Route {
 export interface AskResponse {
   route: Route
   findings: Finding[]
+}
+
+/** A table found in a source PDF, on the page of a cited passage (added by the API to findings). */
+export interface PageTable {
+  table_id: string
+  source_identifier: string
+  page_number: number
+  page_label: string | null
+  index_on_page: number
+  rows: string[][]
+  width: number
+  height: number
+  image_url: string
 }
