@@ -4,7 +4,7 @@
  * The `docx` library is loaded only when a document is first created, to keep the page light.
  */
 import type { ComparisonRow, Finding, RetrievedPassage } from './types'
-import { findingTables, TABLE_NOTE } from './findingTables'
+import { findingTables } from './findingTables'
 import { pageText } from './pages'
 import { loadComment } from './reviewStore'
 
@@ -196,10 +196,11 @@ async function save(doc: InstanceType<Docx["Document"]>, filename: string) {
 }
 
 // ---------------------------------------------------------------------------
-/** PNG bytes of original table images, by table_id (fetched by downloadFindingsReport). */
-export type TableImages = Record<string, Uint8Array>
+// The report shows tables as Word tables only; the original images stay on screen in the app.
+const WORD_TABLE_NOTE =
+  'Tables read automatically from the PDF. Check the cited page of the source PDF for exact values, footnote markers and merged cells.'
 
-export async function buildFindingsReport(findings: Finding[], images: TableImages = {}) {
+export async function buildFindingsReport(findings: Finding[]) {
   const d = await import('docx')
   const k = kit(d)
   const children: (InstanceType<Docx['Paragraph']> | InstanceType<Docx['Table']>)[] = []
@@ -253,11 +254,11 @@ export async function buildFindingsReport(findings: Finding[], images: TableImag
       children.push(new d.Paragraph({ children: [k.run('No citations: no passage met the evidence threshold.', { italics: true })] }))
     }
 
-    // Tables on the cited pages: a Word table from the PDF's cells, then the original image.
+    // Tables on the cited pages, as Word tables built from the PDF's cells (no images in the report).
     const tables = findingTables(f)
     if (tables.length) {
       children.push(k.heading(`Tables on the cited pages (${tables.length})`, 2))
-      children.push(new d.Paragraph({ keepNext: true, children: [k.run(TABLE_NOTE, { italics: true, size: 18, color: '555555' })] }))
+      children.push(new d.Paragraph({ keepNext: true, children: [k.run(WORD_TABLE_NOTE, { italics: true, size: 18, color: '555555' })] }))
       for (const t of tables) {
         children.push(new d.Paragraph({
           keepNext: true, spacing: { before: 160, after: 60 },
@@ -268,17 +269,6 @@ export async function buildFindingsReport(findings: Finding[], images: TableImag
         const widths = Array.from({ length: cols }, (_, i) => (i === cols - 1 ? CONTENT_WIDTH - w * (cols - 1) : w))
         const padded = t.rows.map(r => Array.from({ length: cols }, (_, i) => r[i] ?? ''))
         children.push(k.grid(padded[0], padded.slice(1), widths))
-        const img = images[t.table_id]
-        if (img) {
-          const scale = Math.min(1, 600 / t.width) // fit the page width (600 px is about 6.25 in)
-          children.push(new d.Paragraph({
-            spacing: { before: 80, after: 160 },
-            children: [new d.ImageRun({ type: 'png', data: img,
-              transformation: { width: Math.round(t.width * scale), height: Math.round(t.height * scale) } })],
-          }))
-        } else {
-          children.push(new d.Paragraph({ children: [k.run('(Original table image not available.)', { italics: true, size: 18 })] }))
-        }
       }
     }
 
@@ -320,16 +310,5 @@ export async function buildFindingsReport(findings: Finding[], images: TableImag
 }
 
 export async function downloadFindingsReport(findings: Finding[]): Promise<void> {
-  // Fetch the original table images first; a missing image is noted in the report, not fatal.
-  const images: TableImages = {}
-  const tables = findings.flatMap(findingTables)
-  await Promise.all(tables.map(async t => {
-    try {
-      const res = await fetch(t.image_url)
-      if (res.ok) images[t.table_id] = new Uint8Array(await res.arrayBuffer())
-    } catch {
-      // leave it out
-    }
-  }))
-  await save(await buildFindingsReport(findings, images), `findings-report-${stamp()}.docx`)
+  await save(await buildFindingsReport(findings), `findings-report-${stamp()}.docx`)
 }

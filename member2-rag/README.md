@@ -587,7 +587,7 @@ plus an image of the original table cut from the PDF. They are written next to t
 (`data/processed/kb_v2_w300_tables.json`, images in `data/tables/`, both git-ignored) and **do not change the
 passages or search**. Findings returned by the API carry `page_tables` (the tables on the pages of their supporting
 passages; the `Finding` contract itself is unchanged), images are served by `GET /api/tables/{id}/image`, and the
-dashboard and Word report show each table as a real table followed by the original image. Tables drawn without
+dashboard shows each table as a real table with the original image under "Show the original table from the PDF"; the Word report shows the tables only (no images). Tables drawn without
 lines may not be found; their text stays in the passages as before. Always check values against the image.
 
 **Page numbers.** Every passage keeps two page numbers: `page_number`, the PDF page (its position in the
