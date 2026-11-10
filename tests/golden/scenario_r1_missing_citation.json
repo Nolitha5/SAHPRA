@@ -1,0 +1,37 @@
+{
+  "_meta": {
+    "scenario": "r1_missing_citation",
+    "rule_under_test": "R1 — citation must be non-empty",
+    "direction": "NEGATIVE (should FLAG)",
+    "description": "A 3.2.S.4 finding is submitted with an empty citation string. R1 must fire and set qa_status to FLAG. With only one finding in the section, the flag count stays below 2 so it does NOT escalate.",
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-010",
+        "ctd_section": "3.2.S.4",
+        "rationale": "The in-process controls for particle size are within specification limits. D90 value of 45 µm meets the stated acceptance criterion.",
+        "evidence_snippet": "Particle size distribution: D90 = 45 µm (spec: NMT 60 µm). Compliant.",
+        "citation": "",
+        "uncertainty_score": 15,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-010",
+        "qa_status": "FLAG",
+        "flag_code": "missing_citation",
+        "note": "R1 fires: citation field is empty. Single flag in section 3.2.S.4 — stays at FLAG, not promoted to ESCALATE."
+      }
+    ],
+    "section_escalations": []
+  }
+}

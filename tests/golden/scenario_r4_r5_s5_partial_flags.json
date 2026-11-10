@@ -1,0 +1,54 @@
+{
+  "_meta": {
+    "scenario": "r4_r5_s5_partial_flags",
+    "rule_under_test": "R4 (lot number absent) + R5 (CoA not referenced)",
+    "direction": "NEGATIVE (should FLAG — 2 flags in same section → ESCALATE)",
+    "description": "Two S.5 findings for the same submission. F-030 has a rationale that mentions the working standard and source but omits lot number (R4 fires) and CoA (R5 fires) — two FLAGs on ONE finding. F-031 is a clean PASS. Because F-030 carries 2 flags and they are both in 3.2.S.5, R4+R5 do NOT individually exceed the section-escalation threshold (threshold counts findings, not flags per finding). However F-030 has 2 flag REASONS, so its status is FLAG; with only 1 flagged finding in the section, it stays FLAG and is NOT escalated by the section rule. This scenario demonstrates that the section escalation counts distinct FLAGGED FINDINGS, not the number of flag reasons on a single finding.",
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-030",
+        "ctd_section": "3.2.S.5",
+        "rationale": "Sponsor claims USP 47 for Metformin HCl. Working standard WS-MET-001 was qualified against the primary USP reference standard. Source of standards: purchased from United States Pharmacopeia.",
+        "evidence_snippet": "Working standard traceability confirmed. Source documented as USP.",
+        "citation": "Metformin Hydrochloride, USP 47, p. 4521",
+        "uncertainty_score": 35,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      },
+      {
+        "finding_id": "F-031",
+        "ctd_section": "3.2.S.5",
+        "rationale": "Sponsor claims BP 2024 for Paracetamol. Lot number BP-PCT-2024-011. Certificate of analysis (CoA) submitted. Working standard WS-PCT-LAB-003 qualified against BP primary standard. Source: British Pharmacopoeia Commission.",
+        "evidence_snippet": "CoA submitted. Lot no. BP-PCT-2024-011 confirmed. Working standard traceability documented.",
+        "citation": "Paracetamol, BP 2024, p. 1623",
+        "uncertainty_score": 10,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-030",
+        "qa_status": "FLAG",
+        "flag_codes": ["s5_missing_lot_number", "s5_coa_not_referenced"],
+        "note": "R4: no lot/batch number referenced. R5: no CoA referenced. Both fire on a single finding. Only 1 finding is FLAGGED in section 3.2.S.5 — section escalation threshold (≥2 flagged findings) is NOT met. Status stays FLAG."
+      },
+      {
+        "finding_id": "F-031",
+        "qa_status": "PASS",
+        "note": "All keywords present: lot, CoA, working standard, source. R1–R6 all pass."
+      }
+    ],
+    "section_escalations": []
+  }
+}

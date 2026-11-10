@@ -1,0 +1,55 @@
+{
+  "_meta": {
+    "scenario": "r6_working_std_missing_escalates",
+    "rule_under_test": "R6 (working standard not referenced) × 2 findings → section ESCALATE",
+    "direction": "NEGATIVE (two S.5 findings both FLAG via R6 → both ESCALATE)",
+    "description": "Two S.5 findings for a fixed-dose combination product (Amlodipine + Valsartan). Both findings mention lot number, CoA, and source, but neither mentions any form of working standard or secondary standard — the phrases are simply absent from the rationale and evidence. R6 fires on both. Two FLAGs in section 3.2.S.5 triggers the section escalation rule — both promoted to ESCALATE. NOTE: R6 is a keyword-presence check; a rationale that says 'no working standard provided' would still mention the keyword and would NOT trigger R6 — it would instead trigger the upstream S5 completeness check in s5_standards.py.",
+    "version": "1.1",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-040",
+        "ctd_section": "3.2.S.5",
+        "rationale": "Amlodipine Besylate: USP lot R09060 cited as primary reference standard. Certificate of analysis (CoA) submitted with overlaid IR spectra. Source of reference standards: United States Pharmacopeia. USP 47 edition claimed.",
+        "evidence_snippet": "CoA submitted. Lot no. R09060. Source: USP. Edition USP 47 current at submission date.",
+        "citation": "Amlodipine Besylate, USP 47, p. 518",
+        "uncertainty_score": 40,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      },
+      {
+        "finding_id": "F-041",
+        "ctd_section": "3.2.S.5",
+        "rationale": "Valsartan: BP lot BP-VAL-2024-003 cited as primary reference standard. Certificate of analysis (CoA) submitted. Source: British Pharmacopoeia Commission. BP 2024 claimed.",
+        "evidence_snippet": "CoA submitted. Lot no. BP-VAL-2024-003. Source: BP Commission. Edition BP 2024 current.",
+        "citation": "Valsartan, BP 2024, p. 2214",
+        "uncertainty_score": 38,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-040",
+        "qa_status": "ESCALATE",
+        "flag_code": "s5_working_std_not_referenced",
+        "note": "R6 fires: neither 'working standard', 'secondary standard', nor 'ws' appear anywhere in rationale or evidence. Promoted from FLAG to ESCALATE — 2 FLAGs exist in section 3.2.S.5."
+      },
+      {
+        "finding_id": "F-041",
+        "qa_status": "ESCALATE",
+        "flag_code": "s5_working_std_not_referenced",
+        "note": "R6 fires for the same reason on the second drug substance. Section rule promotes both to ESCALATE."
+      }
+    ],
+    "section_escalations": ["3.2.S.5"]
+  }
+}

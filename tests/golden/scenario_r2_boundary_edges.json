@@ -1,0 +1,89 @@
+{
+  "_meta": {
+    "scenario": "r2_boundary_edges",
+    "rule_under_test": "R2 — uncertainty_score boundary: 0 and 100 are both valid; 101+ and negative trigger FLAG",
+    "direction": "POSITIVE + NEGATIVE — boundary conditions",
+    "description": "Four findings that probe the exact edges of R2. F-100 (score=0) and F-101 (score=100) must both PASS — they are at the inclusive boundary. F-102 (score=101) must FLAG — one step above the limit. F-103 (score=-1) must FLAG — one step below the floor. F-102 and F-103 share section 3.2.S.6, so both reach the ≥2 threshold and are promoted to ESCALATE. F-100 and F-101 share section 3.2.S.2 and both PASS, confirming no false positives at the boundary.",
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-100",
+        "ctd_section": "3.2.S.2",
+        "rationale": "The synthesis step uses palladium catalyst within ICH Q3D permitted daily exposure limits for oral route.",
+        "evidence_snippet": "Pd residual: 8 ppm (PDE oral: 100 µg/day). Compliant with ICH Q3D.",
+        "citation": "ICH Q3D(R1) Guideline for Elemental Impurities, Table A.2.1",
+        "uncertainty_score": 0,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      },
+      {
+        "finding_id": "F-101",
+        "ctd_section": "3.2.S.2",
+        "rationale": "The recrystallisation step uses ethyl acetate as the final wash solvent. Residual level is within ICH Q3C Class 3 limits.",
+        "evidence_snippet": "Ethyl acetate residual: 480 ppm (Class 3 limit: 5000 ppm). Within specification.",
+        "citation": "ICH Q3C(R8) Residual Solvents, Table 3",
+        "uncertainty_score": 100,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      },
+      {
+        "finding_id": "F-102",
+        "ctd_section": "3.2.S.6",
+        "rationale": "Stability data at 40°C/75% RH for 6 months shows the drug substance is within specification.",
+        "evidence_snippet": "All stability parameters within limits at 6-month accelerated conditions.",
+        "citation": "ICH Q1A(R2) Stability Testing of New Drug Substances and Products",
+        "uncertainty_score": 101,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      },
+      {
+        "finding_id": "F-103",
+        "ctd_section": "3.2.S.6",
+        "rationale": "Long-term stability data at 25°C/60% RH shows no significant degradation over 24 months.",
+        "evidence_snippet": "Assay values remain above 98.5% (limit NLT 98.0%) at 24 months. Compliant.",
+        "citation": "ICH Q1A(R2) Stability Testing of New Drug Substances and Products, Section 2.2",
+        "uncertainty_score": -1,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-100",
+        "qa_status": "PASS",
+        "note": "R2: score=0 is at the inclusive lower boundary — valid. No flags. Boundary must PASS."
+      },
+      {
+        "finding_id": "F-101",
+        "qa_status": "PASS",
+        "note": "R2: score=100 is at the inclusive upper boundary — valid. No flags. Boundary must PASS."
+      },
+      {
+        "finding_id": "F-102",
+        "qa_status": "ESCALATE",
+        "flag_code": "uncertainty_out_of_range",
+        "note": "R2: score=101 is one step above the valid range [0,100]. FLAG promoted to ESCALATE — 2 FLAGs exist in section 3.2.S.6."
+      },
+      {
+        "finding_id": "F-103",
+        "qa_status": "ESCALATE",
+        "flag_code": "uncertainty_out_of_range",
+        "note": "R2: score=-1 is one step below the valid range [0,100]. FLAG promoted to ESCALATE by the same section rule."
+      }
+    ],
+    "section_escalations": ["3.2.S.6"]
+  }
+}

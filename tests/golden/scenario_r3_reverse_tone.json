@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "scenario": "r3_reverse_tone",
+    "rule_under_test": "R3 — tone contradiction, reverse direction: rationale says FAIL, evidence says PASS",
+    "direction": "NEGATIVE (should FLAG)",
+    "description": "The existing scenario_r2_r3_double_flag_escalates.json tests R3 in the forward direction: rationale says 'complies / acceptable' while evidence says 'mismatch'. This scenario tests the REVERSE direction: rationale asserts non-compliance ('does not meet', 'fails') while the evidence is unambiguously positive ('compliant', 'within limits'). This catches agents that mis-classify a passing result as failing — the opposite error. A single FLAG in a unique section stays at FLAG (no second finding to trigger escalation).",
+    "real_world_basis": "Could arise if the RAG agent retrieves the wrong passage and concludes a failing verdict when the actual test result was within limits.",
+    "authoring_note": "Rationale must contain ONLY unambiguous failure words (fails, does not meet, exceeds). The word 'non-compliant' embeds 'compliant' which the regex matches at word boundaries — using it makes rat_ok=True AND rat_fail=True simultaneously, preventing R3 from firing in either direction. Use 'fails', 'does not meet', 'exceeds', 'mismatch', 'incorrect', or 'outdated' instead.",
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-110",
+        "ctd_section": "3.2.S.4",
+        "rationale": "The water content determination fails the stated specification. The result does not meet the ICH Q6A acceptance criterion and exceeds the declared limit.",
+        "evidence_snippet": "Karl Fischer titration: water content 0.21% w/w. Specification: NMT 0.5% w/w. Result is within limits and confirmed compliant.",
+        "citation": "ICH Q6A Specifications: Test Procedures and Acceptance Criteria for New Drug Substances, Decision Tree 4",
+        "uncertainty_score": 45,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-110",
+        "qa_status": "FLAG",
+        "flag_code": "rationale_contradicts_evidence",
+        "note": "R3 fires (reverse direction): rationale asserts 'fails / does not meet / exceeds' while evidence states 'within limits / confirmed compliant'. Surface tone contradiction detected. Single FLAG in 3.2.S.4 — stays at FLAG, not promoted."
+      }
+    ],
+    "section_escalations": []
+  }
+}

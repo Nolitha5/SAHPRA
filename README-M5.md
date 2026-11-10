@@ -16,7 +16,7 @@ domain ground truth for the SAHPRA Module 3.2.S automated dossier review prototy
 | **Assessor UI (Human Gate)** | `frontend/` | React/Vite/TS interface: findings grouped by CTD section, QA status badges, decision buttons, audit hand-off |
 | **M1 adapter stub** | `backend/adapters/m1_adapter.py` | Replaceable interface for M1 Orchestrator `/analyse` and Human Gate callback |
 | **M4 audit adapter stub** | `backend/adapters/m4_adapter.py` | Replaceable interface for M4 audit log; writes to `data/audit_log.jsonl` until real contract supplied |
-| **Golden-answer fixtures** | `tests/golden/` | Three synthetic dossier scenarios for M4's evaluation harness |
+| **Golden-answer fixtures** | `tests/golden/` | Synthetic QA/S.5 scenarios for M4's evaluation harness |
 
 ---
 
@@ -79,13 +79,14 @@ cd backend
 python -m pytest tests/ -v
 ```
 
-**41 tests — 3 files:**
+**45 tests — 4 files:**
 
 | File | What it covers |
 |---|---|
 | `tests/test_qa_critic.py` | QA/Critic rules: citation, score range, contradiction, escalation; mock_findings F-005 out-of-range score |
 | `tests/test_s5_standards.py` | S.5 agent: COMPLIANT, NON_COMPLIANT, NEEDS_REVIEW, replaceability; S.5 layer of `scenario_outdated_standard.json` |
-| `tests/test_golden_scenarios.py` | Golden-answer scenario validation against QA/Critic output |
+| `tests/test_golden_scenarios.py` | Golden-answer scenario validation against QA/Critic output (13 scenarios) |
+| `tests/test_findings_api.py` | Raw, single, and QA-reviewed findings API endpoints |
 
 ---
 

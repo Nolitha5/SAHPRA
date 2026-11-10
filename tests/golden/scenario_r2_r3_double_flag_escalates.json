@@ -1,0 +1,55 @@
+{
+  "_meta": {
+    "scenario": "r2_r3_double_flag_escalates",
+    "rule_under_test": "R2 (uncertainty out of range) + R3 (tone contradiction) — section escalation",
+    "direction": "NEGATIVE (two FLAGs in same section → ESCALATE both)",
+    "description": "Two findings both belong to 3.2.S.3. F-020 has an out-of-range uncertainty score (R2 → FLAG). F-021 has a rationale that says 'complies' while the evidence says 'mismatch' (R3 → FLAG). Because 2 FLAGs exist in the same section, both are promoted to ESCALATE by the section rule.",
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-020",
+        "ctd_section": "3.2.S.3",
+        "rationale": "The impurity profile from HPLC analysis shows all individual impurities are within ICH Q3A limits.",
+        "evidence_snippet": "Total impurities: 0.42% (limit 0.5%). All impurities within specification.",
+        "citation": "ICH Q3A(R2) Impurities in New Drug Substances, Table 1",
+        "uncertainty_score": 115,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      },
+      {
+        "finding_id": "F-021",
+        "ctd_section": "3.2.S.3",
+        "rationale": "The polymorphic form complies with the specified polymorph. XRPD confirms Form I is present and within acceptable limits.",
+        "evidence_snippet": "XRPD pattern shows mismatch with reference Form I. Characteristic peaks at 2θ = 12.4° and 18.7° are absent.",
+        "citation": "ICH Q6A Decision Trees for Polymorphism Testing",
+        "uncertainty_score": 55,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-020",
+        "qa_status": "ESCALATE",
+        "flag_code": "uncertainty_out_of_range",
+        "note": "R2: score 115 is outside [0, 100]. Promoted from FLAG to ESCALATE because 2+ FLAGs exist in section 3.2.S.3."
+      },
+      {
+        "finding_id": "F-021",
+        "qa_status": "ESCALATE",
+        "flag_code": "rationale_contradicts_evidence",
+        "note": "R3: rationale says 'complies / acceptable' while evidence says 'mismatch'. Promoted from FLAG to ESCALATE by the same section rule."
+      }
+    ],
+    "section_escalations": ["3.2.S.3"]
+  }
+}

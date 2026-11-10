@@ -2,9 +2,12 @@
 S.5 Reference Standards agent.
 
 Accepts a structured S5Claim and a MonographRepository, then:
-  1. Looks up the pharmacopoeial monograph current at the submission date.
-  2. Compares the sponsor's claimed edition to the retrieved current edition.
-  3. Returns an S5Finding with verdict COMPLIANT, NON_COMPLIANT, or NEEDS_REVIEW.
+  1. Checks completeness against the IPRP QWGG S.5 checklist (sub-items a–d).
+  2. Looks up the pharmacopoeial monograph current at the submission date.
+  3. Compares the sponsor's claimed edition to the retrieved current edition.
+  4. Returns an S5Finding with:
+       - verdict: COMPLIANT, NON_COMPLIANT, or NEEDS_REVIEW
+       - completeness_flags: list of IPRP checklist items the applicant left blank
 
 MonographRepository is a Protocol (replaceable interface).  The mock
 implementation (MockMonographRepository) uses explicitly labelled in-memory
@@ -13,6 +16,9 @@ records and is the only implementation used until M2's RKB is available.
 This module NEVER invents monograph names, edition numbers, citations or
 regulatory conclusions.  If the required information is not available it
 returns NEEDS_REVIEW with a clear explanation.
+
+IPRP reference: IPRP QWGG Guidance for Quality Assessors – Drug Substance,
+Section S.5 Reference Standards or Materials (page 17/22).
 """
 
 from __future__ import annotations
@@ -21,10 +27,10 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Protocol
 
-from models import S5Claim, S5Finding
+from models import ReferenceStandardType, S5Claim, S5Finding
 
 
-# ── Replaceable interface ─────────────────────────────────────────────
+# ── Replaceable interface ─────────────────────────────────────────────────────
 
 @dataclass(frozen=True)
 class MonographRecord:
@@ -60,7 +66,7 @@ class MonographRepository(Protocol):
         ...
 
 
-# ── Mock implementation ───────────────────────────────────────────────
+# ── Mock implementation ───────────────────────────────────────────────────────
 
 _MOCK_NOTE = "MOCK DATA — not from a real pharmacopoeia; for development only"
 
@@ -100,6 +106,20 @@ _MOCK_RECORDS: list[MonographRecord] = [
         monograph_name="Aspirin", page="1251",
         source_note=_MOCK_NOTE,
     ),
+    # United States Pharmacopeia — Amlodipine Besylate
+    # Based on real dossier: USP lot R09060; added to support Amlodipine test cases.
+    MonographRecord(
+        standard="USP", substance_name="amlodipine besylate",
+        edition="USP 46", valid_from=date(2023, 5, 1),
+        monograph_name="Amlodipine Besylate", page="502",
+        source_note=_MOCK_NOTE,
+    ),
+    MonographRecord(
+        standard="USP", substance_name="amlodipine besylate",
+        edition="USP 47", valid_from=date(2024, 5, 1),
+        monograph_name="Amlodipine Besylate", page="518",
+        source_note=_MOCK_NOTE,
+    ),
 ]
 
 
@@ -129,20 +149,104 @@ class MockMonographRepository:
         return max(candidates, key=lambda r: r.valid_from)
 
 
-# ── Agent logic ───────────────────────────────────────────────────────
+# ── IPRP completeness checker ─────────────────────────────────────────────────
+
+def _check_completeness(claim: S5Claim) -> list[str]:
+    """
+    Check the claim against the IPRP QWGG S.5 checklist.
+
+    Returns a list of human-readable flag strings — one per missing required
+    field.  An empty list means the submission is structurally complete for S.5.
+
+    Sub-item mapping:
+      (a) lot_number + standard_type  [+ in-house characterisation if in-house]
+      (b) coa_submitted + ir_spectra_submitted
+      (c) working_std_qualified_against_primary
+      (d) reference_standard_source_detail
+    """
+    flags: list[str] = []
+
+    # Sub-item (a): lot/batch number required for all primary standards
+    if not claim.lot_number:
+        flags.append(
+            "sub-item (a): lot/batch number of the primary reference standard not provided"
+        )
+
+    # Sub-item (a): standard type (compendial vs in-house) must be declared
+    if claim.standard_type is None:
+        flags.append(
+            "sub-item (a): standard type (compendial / in-house) not declared"
+        )
+
+    # Sub-item (a): in-house primary — full characterisation required
+    if claim.standard_type == ReferenceStandardType.IN_HOUSE:
+        if not claim.inhouse_characterisation_methods:
+            flags.append(
+                "sub-item (a): in-house primary standard — characterisation methods "
+                "(IR, UV, NMR, MS) not provided"
+            )
+        if claim.inhouse_purity_assigned is None:
+            flags.append(
+                "sub-item (a): in-house primary standard — purity assignment "
+                "(mass balance or absolute purity) not stated"
+            )
+        if claim.inhouse_coa_submitted is None:
+            flags.append(
+                "sub-item (a): in-house primary standard — CoA submission status not stated"
+            )
+
+    # Sub-item (b): CoA and overlaid IR spectra
+    if claim.coa_submitted is None:
+        flags.append(
+            "sub-item (b): certificate of analysis (CoA) submission not stated"
+        )
+    if claim.ir_spectra_submitted is None:
+        flags.append(
+            "sub-item (b): overlaid IR spectra submission not stated"
+        )
+
+    # Sub-item (c): working standard traceability
+    if claim.working_std_qualified_against_primary is None:
+        flags.append(
+            "sub-item (c): secondary/working standard qualification against "
+            "compendial or primary reference standard not stated"
+        )
+
+    # Sub-item (d): source of standards used for testing
+    if not claim.reference_standard_source_detail:
+        flags.append(
+            "sub-item (d): source of reference standards used for identification, "
+            "purity, and potency testing not provided"
+        )
+
+    return flags
+
+
+# ── Agent logic ───────────────────────────────────────────────────────────────
 
 def check_s5_claim(
     claim: S5Claim,
     repository: MonographRepository,
 ) -> S5Finding:
     """
-    Validate one S.5 sponsor claim against the monograph repository.
+    Validate one S.5 sponsor claim against the IPRP checklist and the
+    monograph repository.
+
+    Steps:
+      1. Run completeness check (all IPRP sub-items a–d).
+      2. Look up the current edition in the repository.
+      3. Compare claimed vs current edition → verdict.
 
     Returns an S5Finding with:
       COMPLIANT     if claimed edition == current edition at submission date.
       NON_COMPLIANT if a current edition exists and differs from claimed.
       NEEDS_REVIEW  if no record is available; no verdict is made.
+
+    completeness_flags is populated regardless of verdict — a claim can be
+    COMPLIANT on the edition check but still have missing IPRP sub-items.
     """
+    completeness_flags = _check_completeness(claim)
+
     record = repository.get_current_edition(
         standard=claim.standard,
         substance_name=claim.substance_name,
@@ -167,6 +271,7 @@ def check_s5_claim(
                 "Manual pharmacopoeial check required before a compliance verdict can be issued."
             ),
             source_note="No record available in the current repository.",
+            completeness_flags=completeness_flags,
         )
 
     citation = (
@@ -190,6 +295,7 @@ def check_s5_claim(
             verdict="COMPLIANT",
             verdict_reason="Claimed edition matches the current edition at submission date.",
             source_note=record.source_note,
+            completeness_flags=completeness_flags,
         )
     else:
         return S5Finding(
@@ -210,4 +316,5 @@ def check_s5_claim(
                 f"({record.edition}) at submission date ({claim.submission_date})."
             ),
             source_note=record.source_note,
+            completeness_flags=completeness_flags,
         )

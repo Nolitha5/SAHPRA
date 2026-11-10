@@ -1,0 +1,70 @@
+{
+  "_meta": {
+    "scenario": "all_rules_pass",
+    "rule_under_test": "R1–R7 all pass — full positive scenario",
+    "direction": "POSITIVE (all findings should PASS)",
+    "description": "Three findings across two CTD sections. All structural checks pass: citations present, scores in range, rationale/evidence tones consistent. The S.5 finding is fully completed with all IPRP sub-item keywords (lot, CoA, working standard, source). No flags, no escalations. Represents a well-prepared submission.",
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-060",
+        "ctd_section": "3.2.S.2",
+        "rationale": "The synthesis route for Lisinopril dihydrate is consistent with the described manufacturing process. Reagents, solvents, and in-process controls are adequately described. Potential genotoxic impurities are identified and controlled.",
+        "evidence_snippet": "Manufacturing process is well-defined. ICH M7 genotoxic impurities are listed with control limits. All within specification.",
+        "citation": "ICH M7(R1) Assessment and Control of DNA Reactive (Mutagenic) Impurities, Table 1",
+        "uncertainty_score": 20,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      },
+      {
+        "finding_id": "F-061",
+        "ctd_section": "3.2.S.2",
+        "rationale": "Starting material specification is adequate. The proposed starting material Boc-Lys(Boc)-OH meets the ICH Q11 criteria for a reasonable starting material.",
+        "evidence_snippet": "Starting material specification includes identity, assay, and impurity limits. Compliant with ICH Q11 guidance.",
+        "citation": "ICH Q11 Development and Manufacture of Drug Substances, Section 5",
+        "uncertainty_score": 15,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      },
+      {
+        "finding_id": "F-062",
+        "ctd_section": "3.2.S.5",
+        "rationale": "Lisinopril: USP lot L0M396 cited as primary reference standard. Certificate of analysis (CoA) submitted with overlaid IR spectra confirming identity. Working standard WS-LIS-LAB-007 qualified against USP primary standard (lot L0M396). Source of all reference standards: United States Pharmacopeia. Edition claimed: USP 47.",
+        "evidence_snippet": "CoA submitted. Lot no. L0M396. IR spectra overlaid and consistent. Working standard traceability confirmed against primary. Source: USP.",
+        "citation": "Lisinopril, USP 47, p. 4891",
+        "uncertainty_score": 10,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-060",
+        "qa_status": "PASS",
+        "note": "R1: citation present. R2: score 20 in range. R3: rationale and evidence both signal compliance. No S.5 rules apply."
+      },
+      {
+        "finding_id": "F-061",
+        "qa_status": "PASS",
+        "note": "R1: citation present. R2: score 15 in range. R3: both tones consistent. No S.5 rules apply."
+      },
+      {
+        "finding_id": "F-062",
+        "qa_status": "PASS",
+        "note": "R1: citation present. R2: score 10 in range. R3: tones consistent. R7: all IPRP markers present (lot, CoA, working standard, source) — R7 does NOT fire. R4: lot no. L0M396 present. R5: CoA referenced. R6: working standard referenced. All pass."
+      }
+    ],
+    "section_escalations": []
+  }
+}

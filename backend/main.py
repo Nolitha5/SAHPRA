@@ -29,7 +29,7 @@ _FIXTURES = Path(__file__).parent / "mock_findings.json"
 
 def _load_raw_findings() -> list[Finding]:
     data = json.loads(_FIXTURES.read_text(encoding="utf-8"))
-    return [Finding(**item) for item in data]
+    return [Finding(**item) for item in data["findings"]]
 
 
 # ── Health ────────────────────────────────────────────────────────────

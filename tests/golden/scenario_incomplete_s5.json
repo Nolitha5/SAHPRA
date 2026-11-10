@@ -1,0 +1,38 @@
+{
+  "_meta": {
+    "scenario": "incomplete_s5",
+    "description": "Applicant has not included the required S.5 information in the SCoRE. The finding for 3.2.S.5 contains no reference to lot number, CoA, working standard, or source of standards. This mirrors the real-world failure observed in the Amlodipine_Valsartan_HCTZ review: 'Applicant has not included the required information in the SCoRE. Reviewer has not evaluated section in Dossier.' QA/Critic rule R7 must fire and the finding must be ESCALATE (direct — not via section flag count).",
+    "iprp_reference": "IPRP QWGG Guidance for Quality Assessors – Drug Substance, S.5 Reference Standards or Materials, page 17/22.",
+    "real_world_basis": "Score document: Amlodipine_Valsartan_HCTZ — 3.2.S.5 section flagged as not evaluated; reviewer note states applicant left section blank in SCoRE.",
+    "test_coverage": "test_golden_incomplete_s5_escalates (test_golden_scenarios.py)",
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-007",
+        "ctd_section": "3.2.S.5",
+        "rationale": "No information provided by the applicant for the reference standards section.",
+        "evidence_snippet": "Section 3.2.S.5 appears to be missing from the submitted dossier.",
+        "citation": "N/A — section not submitted",
+        "uncertainty_score": 90,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-007",
+        "qa_status": "ESCALATE",
+        "flag_code": "s5_section_not_completed",
+        "note": "Direct escalation via R7 — none of the IPRP S.5 sub-item indicators (lot, CoA, working standard, source) are present. This finding does not need a second FLAG in the same section to escalate; R7 triggers immediately."
+      }
+    ],
+    "section_escalations": ["3.2.S.5"]
+  }
+}

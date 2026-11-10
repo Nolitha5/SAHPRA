@@ -1,9 +1,9 @@
 {
   "_meta": {
     "scenario": "outdated_standard",
-    "description": "Sponsor claims BP 2019 for a submission made in March 2024. The current edition at that date was BP 2024. The S.5 agent must return NON_COMPLIANT. The QA/Critic receives the resulting finding; because the citation is present and the rationale is consistent with the evidence, it should PASS QA.",
+    "description": "Sponsor claims BP 2019 for a submission made in March 2024. The current edition at that date was BP 2024. The S.5 agent must return NON_COMPLIANT. The QA/Critic receives the resulting finding; because the citation is present, the score is in range, and the rationale is consistent with the evidence, it should PASS QA. The s5_claim now includes all IPRP sub-items (a-d) so the completeness check passes cleanly.",
     "test_coverage": "QA layer: test_golden_outdated_standard_finding_passes_qa (test_golden_scenarios.py). S.5 layer: test_golden_outdated_standard_s5_verdict (test_s5_standards.py).",
-    "version": "1.1",
+    "version": "1.2",
     "author": "M5"
   },
   "input": {
@@ -12,14 +12,22 @@
       "standard": "BP",
       "edition_claimed": "BP 2019",
       "test_method": "Purity by GC",
-      "submission_date": "2024-03-01"
+      "submission_date": "2024-03-01",
+      "standard_type": "compendial",
+      "lot_number": "BP-ETH-2019-042",
+      "coa_submitted": true,
+      "ir_spectra_submitted": true,
+      "working_standard_lot": "WS-ETH-LAB-001",
+      "working_standard_source": "In-house QC laboratory",
+      "working_std_qualified_against_primary": true,
+      "reference_standard_source_detail": "Purchased from British Pharmacopoeia Commission"
     },
     "findings": [
       {
         "finding_id": "F-003",
         "ctd_section": "3.2.S.5",
-        "rationale": "Sponsor claims compliance with BP 2019 edition. The current edition at submission date (2024-03-01) was BP 2024. Editions differ.",
-        "evidence_snippet": "Certificate of analysis references BP 2019 for purity test method.",
+        "rationale": "Sponsor claims compliance with BP 2019 edition. The current edition at submission date (2024-03-01) was BP 2024. Editions differ. Lot no. BP-ETH-2019-042. CoA submitted. Working standard WS-ETH-LAB-001 qualified against BP primary standard. Source: British Pharmacopoeia Commission.",
+        "evidence_snippet": "Certificate of analysis (CoA) references BP 2019 for purity test method. Working standard traceability confirmed.",
         "citation": "Ethanol, BP 2024, p. 856",
         "uncertainty_score": 20,
         "qa_status": null,
@@ -33,13 +41,14 @@
     "s5_finding": {
       "verdict": "NON_COMPLIANT",
       "edition_current": "BP 2024",
-      "edition_claimed": "BP 2019"
+      "edition_claimed": "BP 2019",
+      "completeness_flags": []
     },
     "findings": [
       {
         "finding_id": "F-003",
         "qa_status": "PASS",
-        "note": "Citation present, score in range, rationale consistent with evidence — QA passes. Regulatory concern (outdated edition) is captured in s5_finding.verdict."
+        "note": "Citation present, score in range, rationale consistent with evidence, all IPRP sub-item keywords present — QA passes. Regulatory concern (outdated edition) is captured in s5_finding.verdict."
       }
     ],
     "section_escalations": []

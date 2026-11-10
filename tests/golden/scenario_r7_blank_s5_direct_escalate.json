@@ -1,0 +1,38 @@
+{
+  "_meta": {
+    "scenario": "r7_blank_s5_direct_escalate",
+    "rule_under_test": "R7 — blank S.5 section (direct ESCALATE, no section-count needed)",
+    "direction": "NEGATIVE (should ESCALATE directly — no second finding required)",
+    "description": "Single S.5 finding with no IPRP sub-item keywords whatsoever. The rationale only describes an administrative gap. R7 fires immediately and sets qa_status=ESCALATE without needing a second flagged finding in the same section. This mirrors the AmoValHCTZ dossier failure: 'Applicant has not included the required information in the SCoRE.'",
+    "iprp_reference": "IPRP QWGG Guidance for Quality Assessors — Drug Substance, S.5, page 17/22",
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-050",
+        "ctd_section": "3.2.S.5",
+        "rationale": "No information provided by the applicant for the reference standards section. The SCoRE submission for 3.2.S.5 appears to be blank.",
+        "evidence_snippet": "Section 3.2.S.5 not completed in the submitted SCoRE document.",
+        "citation": "N/A — section not submitted",
+        "uncertainty_score": 95,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-050",
+        "qa_status": "ESCALATE",
+        "flag_code": "s5_section_not_completed",
+        "note": "R7 fires: none of the IPRP markers (lot, coa, certificate, working standard, secondary standard, source) appear in the combined rationale + evidence. Direct ESCALATE — R4, R5, R6 are skipped. Only 1 finding in section, but R7 bypasses the section-count threshold entirely."
+      }
+    ],
+    "section_escalations": ["3.2.S.5"]
+  }
+}

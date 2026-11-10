@@ -34,6 +34,17 @@ def _run_scenario(scenario_name: str):
     return reviewed, expected
 
 
+def test_all_golden_scenario_statuses_match():
+    for path in sorted(GOLDEN_DIR.glob("scenario_*.json")):
+        data = _load_scenario(path.name)
+        if "findings" not in data.get("input", {}) or "findings" not in data.get("expected_output", {}):
+            continue
+
+        reviewed, expected = _run_scenario(path.name)
+        actual = {finding.finding_id: finding.qa_status for finding in reviewed}
+        assert actual == expected, f"{path.name}: expected {expected!r}, got {actual!r}"
+
+
 # ── scenario: pass ────────────────────────────────────────────────────
 
 def test_golden_pass_all_findings_pass():

@@ -1,0 +1,106 @@
+{
+  "_meta": {
+    "scenario": "mixed_section_isolation",
+    "rule_under_test": "Section escalation isolation — escalation in one section must NOT affect findings in other sections",
+    "direction": "MIXED — section 3.2.S.3 escalates; sections 3.2.S.1 and 3.2.S.5 stay clean",
+    "description": "Five findings across three CTD sections. In 3.2.S.3, two findings both FLAG (R1 and R2 respectively), triggering the section escalation rule — both promoted to ESCALATE. In 3.2.S.1 one finding PASSes cleanly. In 3.2.S.5 one finding PASSes cleanly with all IPRP keywords present. This confirms that the section flag counter is per-section: the 3.2.S.3 escalation must NOT bleed into 3.2.S.1 or 3.2.S.5. A fifth finding in 3.2.S.1 also PASSes, confirming two PASSes in a section do not interact with two FLAGs in a different section.",
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-120",
+        "ctd_section": "3.2.S.1",
+        "rationale": "The nonproprietary name Metformin Hydrochloride is consistent with the INN and matches the declared substance in the dossier.",
+        "evidence_snippet": "Drug substance declared as Metformin Hydrochloride. INN confirmed. CAS 1115-70-4.",
+        "citation": "WHO INN Recommended List 46, Metformin",
+        "uncertainty_score": 5,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      },
+      {
+        "finding_id": "F-121",
+        "ctd_section": "3.2.S.1",
+        "rationale": "The molecular formula C4H11N5·HCl and molecular weight 165.62 g/mol are consistent with the declared substance.",
+        "evidence_snippet": "Structure confirmed by IR, NMR, and mass spectrometry. Molecular weight matches compendial value.",
+        "citation": "Metformin Hydrochloride, USP 47, p. 4521",
+        "uncertainty_score": 8,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      },
+      {
+        "finding_id": "F-122",
+        "ctd_section": "3.2.S.3",
+        "rationale": "The impurity profile from HPLC shows all specified impurities are within ICH Q3A limits.",
+        "evidence_snippet": "Total impurities: 0.18%. All individual impurities below 0.10% (threshold). Within specification.",
+        "citation": "",
+        "uncertainty_score": 25,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      },
+      {
+        "finding_id": "F-123",
+        "ctd_section": "3.2.S.3",
+        "rationale": "Polymorphic form characterisation by XRPD and DSC confirms Form II is present as specified.",
+        "evidence_snippet": "XRPD and DSC confirm Form II. Melting point 232°C consistent with specification.",
+        "citation": "ICH Q6A Decision Trees for Polymorphism Testing, Decision Tree 4",
+        "uncertainty_score": 999,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      },
+      {
+        "finding_id": "F-124",
+        "ctd_section": "3.2.S.5",
+        "rationale": "Metformin Hydrochloride: USP lot M0N233 cited as primary reference standard. Certificate of analysis (CoA) submitted with overlaid IR spectra. Working standard WS-MET-LAB-004 qualified against USP primary reference standard. Source of all reference standards: United States Pharmacopeia. Edition USP 47 claimed and current at submission date.",
+        "evidence_snippet": "CoA submitted. Lot no. M0N233. Working standard traceability confirmed. Source: USP. Edition USP 47 current.",
+        "citation": "Metformin Hydrochloride, USP 47, p. 4521",
+        "uncertainty_score": 12,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-120",
+        "qa_status": "PASS",
+        "note": "3.2.S.1: clean finding. The escalation in 3.2.S.3 must NOT affect this section."
+      },
+      {
+        "finding_id": "F-121",
+        "qa_status": "PASS",
+        "note": "3.2.S.1: second clean finding. Two PASSes in one section have no interaction with two FLAGs in another."
+      },
+      {
+        "finding_id": "F-122",
+        "qa_status": "ESCALATE",
+        "flag_code": "missing_citation",
+        "note": "3.2.S.3: R1 fires — citation is empty. Promoted from FLAG to ESCALATE because F-123 also FLAGs in the same section."
+      },
+      {
+        "finding_id": "F-123",
+        "qa_status": "ESCALATE",
+        "flag_code": "uncertainty_out_of_range",
+        "note": "3.2.S.3: R2 fires — score=999 is outside [0,100]. Promoted from FLAG to ESCALATE together with F-122."
+      },
+      {
+        "finding_id": "F-124",
+        "qa_status": "PASS",
+        "note": "3.2.S.5: all IPRP keywords present (lot, CoA, working standard, source). R4-R7 all pass. The 3.2.S.3 escalation does NOT affect this section."
+      }
+    ],
+    "section_escalations": ["3.2.S.3"]
+  }
+}

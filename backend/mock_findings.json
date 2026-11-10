@@ -1,14 +1,28 @@
 {
   "_meta": {
-    "description": "Synthetic dossier fixture for local development and manual testing. Contains five findings that exercise all QA/Critic paths: identity check (PASS), identity mismatch (PASS — structurally valid), reference-standard section (PASS), missing citation (FLAG), and deliberately out-of-range score (FLAG/ESCALATE).",
+    "description": "Synthetic dossier fixture for local development and manual testing. Contains five findings that exercise all QA/Critic paths: identity check (PASS), identity mismatch (PASS — structurally valid), reference-standard section (PASS), missing citation (FLAG), and deliberately out-of-range score (FLAG → ESCALATE via section rule).",
+    "version": "1.1",
+    "changes_from_v1.0": [
+      "F-003 rationale and evidence updated to include all IPRP S.5 sub-item keywords (lot number, CoA, working standard, source) so it correctly PASSes the QA/Critic. The S.5 agent (s5_standards.py) still returns NON_COMPLIANT for the outdated BP 2019 edition — that is unaffected.",
+      "F-005 uncertainty_score corrected from 100 (boundary-valid, would PASS) to 150 (out of range, triggers R2 FLAG). The _meta already described this intent; the data now matches it.",
+      "F-004 and F-005 are both in 3.2.S.3 — with F-005 now correctly FLAGging, two findings in 3.2.S.3 are flagged, triggering the section escalation rule. Both are promoted to ESCALATE."
+    ],
     "findings_notes": {
-      "F-001": "PASS — CAS number and INN are consistent. Baseline clean finding.",
-      "F-002": "PASS — CAS mismatch captured in rationale; finding is structurally valid (citation present, score in range). Regulatory concern is for the assessor.",
-      "F-003": "PASS — Outdated-standard claim; well-formed finding. S.5 agent (not QA/Critic) will return NON_COMPLIANT for this.",
-      "F-004": "FLAG — Empty citation field; QA/Critic must flag this.",
-      "F-005": "FLAG or ESCALATE — uncertainty_score=150 is intentionally out of range [0,100] to demonstrate QA/Critic enforcement. This value differs from scenario_pass.json which uses F-005 with score=15 (a correctly formed all-PASS scenario). The test test_mock_findings_f005_out_of_range_score_is_flagged pins this behaviour."
+      "F-001": "PASS — CAS number and INN are consistent. Baseline clean finding. R1-R3 all pass.",
+      "F-002": "PASS — CAS mismatch noted in rationale; finding is structurally valid (citation present, score in range, tone consistent). The regulatory concern (wrong CAS) is captured in the rationale for the assessor — QA/Critic does not make identity verdicts.",
+      "F-003": "PASS — Outdated-standard claim (BP 2019 vs current BP 2024); well-formed finding. All IPRP S.5 sub-item keywords present (lot, CoA, working standard, source) so R4-R7 do not fire. The S.5 agent (s5_standards.py / check_s5_claim) returns NON_COMPLIANT for the edition mismatch — that is separate from QA/Critic.",
+      "F-004": "ESCALATE (promoted) — Empty citation field triggers R1 (FLAG). Promoted to ESCALATE because F-005 also FLAGs in the same section 3.2.S.3, reaching the ≥2 threshold.",
+      "F-005": "ESCALATE (promoted) — uncertainty_score=150 is intentionally out of range [0,100]; triggers R2 (FLAG). Promoted to ESCALATE together with F-004 by the section rule. Test: test_mock_findings_f005_out_of_range_score_is_flagged."
     },
-    "do_not_use_for": "All-PASS assertions. Use tests/golden/scenario_pass.json for that."
+    "do_not_use_for": "All-PASS assertions. Use tests/golden/scenario_pass.json for that.",
+    "expected_qa_results": {
+      "F-001": "PASS",
+      "F-002": "PASS",
+      "F-003": "PASS",
+      "F-004": "ESCALATE",
+      "F-005": "ESCALATE",
+      "section_escalations": ["3.2.S.3"]
+    }
   },
   "findings": [
     {
@@ -26,7 +40,7 @@
     {
       "finding_id": "F-002",
       "ctd_section": "3.2.S.1",
-      "rationale": "The declared CAS number 50-00-0 does not match the declared INN 'Ethanol'. CAS 50-00-0 refers to Formaldehyde, not Ethanol.",
+      "rationale": "The declared CAS number 50-00-0 does not match the declared INN 'Ethanol'. CAS 50-00-0 refers to Formaldehyde, not Ethanol. This discrepancy is flagged for assessor review.",
       "evidence_snippet": "Sponsor declares drug substance as Ethanol, CAS 50-00-0.",
       "citation": "British Pharmacopoeia 2023, Ethanol monograph, p. 812",
       "uncertainty_score": 5,
@@ -38,9 +52,9 @@
     {
       "finding_id": "F-003",
       "ctd_section": "3.2.S.5",
-      "rationale": "Sponsor claims compliance with BP 2019 edition. The current edition at submission date (2024-03-01) was BP 2024.",
-      "evidence_snippet": "Certificate of analysis references BP 2019 for purity test method.",
-      "citation": "British Pharmacopoeia 2024, General Notices",
+      "rationale": "Sponsor claims compliance with BP 2019 edition. The current edition at submission date (2024-03-01) was BP 2024. Editions differ — a non-compliance verdict will be issued by the S.5 agent. Lot number BP-ETH-2019-042 cited. Certificate of analysis (CoA) submitted. Working standard WS-ETH-LAB-001 qualified against BP primary reference standard. Source of reference standards: British Pharmacopoeia Commission.",
+      "evidence_snippet": "CoA submitted. Lot no. BP-ETH-2019-042. Working standard traceability confirmed. Source: BP Commission. Edition BP 2019 claimed; current edition at submission date is BP 2024.",
+      "citation": "British Pharmacopoeia 2024, Ethanol monograph, p. 856",
       "uncertainty_score": 20,
       "qa_status": null,
       "assessor_decision": null,
@@ -65,7 +79,7 @@
       "rationale": "Particle size distribution meets specification.",
       "evidence_snippet": "D90 value of 45 µm reported; specification states ≤ 50 µm.",
       "citation": "In-house analytical method AM-045, version 3",
-      "uncertainty_score": 100,
+      "uncertainty_score": 150,
       "qa_status": null,
       "assessor_decision": null,
       "disposition_note": null,
