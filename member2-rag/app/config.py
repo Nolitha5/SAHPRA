@@ -117,6 +117,8 @@ class Settings:
     max_upload_mb: int = 20
     # The list of sources the knowledge base is expected to contain (Coverage tab).
     sources_manifest: Path = field(default_factory=lambda: PROJECT_ROOT / "sources" / "kb_v2_manifest.json")
+    # Tables found in the source PDFs (written by scripts/pdf_to_jsonl.py next to the passages).
+    tables_file: Path = field(default_factory=lambda: PROJECT_ROOT / "data" / "processed" / "kb_v2_w300_tables.json")
 
     def with_overrides(self, **changes: object) -> Settings:
         """Return a copy with some fields changed (handy for tests/benchmarks)."""
@@ -177,6 +179,7 @@ def load_settings(env_file: Path | None = None) -> Settings:
         web_dist=_path("M2_WEB_DIST", PROJECT_ROOT.parent / "dist"),
         max_upload_mb=_env_int("M2_MAX_UPLOAD_MB", 20),
         sources_manifest=_path("M2_SOURCES_MANIFEST", PROJECT_ROOT / "sources" / "kb_v2_manifest.json"),
+        tables_file=_path("M2_TABLES_FILE", PROJECT_ROOT / "data" / "processed" / "kb_v2_w300_tables.json"),
     )
     return settings.validate()
 

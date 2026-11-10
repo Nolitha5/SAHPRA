@@ -42,6 +42,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from pydantic import ValidationError
 
+from app.knowledge_base.pdf_tables import extract_tables, write_tables_file
 from app.schemas import ApplicabilityStatus, DocumentType, PassageRecord, normalise_ctd_section
 
 MIN_PAGE_CHARS = 40  # below this a page is treated as having no extractable text
@@ -77,6 +78,7 @@ class ConvertReport:
     header_footer_lines_removed: int = 0
     chunks: int = 0
     rejected: list[str] = field(default_factory=list)
+    tables: int = 0
 
 
 # ---------------------------------------------------------------------------
@@ -476,6 +478,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--chunk-size", type=int, default=300, help="words per chunk (about 400 tokens)")
     p.add_argument("--overlap", type=int, default=50, help="words shared between neighbouring chunks")
     p.add_argument("--output", type=Path, required=True)
+    p.add_argument("--tables-output", type=Path,
+                   help="tables file (default: <output>_tables.json next to the output)")
+    p.add_argument("--tables-dir", type=Path, help="table images (default: data/tables/<output name>)")
+    p.add_argument("--no-tables", action="store_true", help="do not extract tables")
     args = p.parse_args(argv)
 
     if not 50 <= args.chunk_size <= 1000:
@@ -505,7 +511,10 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
 
+    tables_output = args.tables_output or args.output.with_name(f"{args.output.stem}_tables.json")
+    tables_dir = args.tables_dir or args.output.parent.parent / "tables" / args.output.stem
     all_rows: list[dict] = []
+    all_tables: list[dict] = []
     reports = []
     for doc in docs:
         if not doc.pdf.exists():
@@ -517,6 +526,14 @@ def main(argv: list[str] | None = None) -> int:
             print(f"ERROR: {exc}", file=sys.stderr)
             return 1
         all_rows.extend(rows)
+        if not args.no_tables:
+            tables = extract_tables(
+                doc.pdf, f"{slug(doc.source_identifier)}-{slug(doc.document_version or 'nover')}",
+                doc.source_identifier, doc.document_version, detect_page_labels(extract_plain_pages(doc.pdf)),
+                doc.first_page, doc.last_page, tables_dir,
+            )
+            report.tables = len(tables)
+            all_tables.extend(tables)
         reports.append(report)
 
     ids = [r["chunk_id"] for r in all_rows]
@@ -529,15 +546,20 @@ def main(argv: list[str] | None = None) -> int:
         for row in all_rows:
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
+    if not args.no_tables:
+        write_tables_file(tables_output, tables_dir, all_tables)
+
     summary = {
         "output": str(args.output),
+        "tables_output": None if args.no_tables else str(tables_output),
+        "total_tables": len(all_tables),
         "chunk_size_words": args.chunk_size,
         "overlap_words": args.overlap,
         "total_chunks": len(all_rows),
         "documents": [r.__dict__ for r in reports],
         "note": (
-            "Temporary stand-in for Member 3's pipeline: no OCR, no tables, "
-            "CTD sections only as you supplied them."
+            "Temporary stand-in for Member 3's pipeline: no OCR; tables found by PyMuPDF are stored "
+            "separately (passage text unchanged); CTD sections only as you supplied them."
         ),
     }
     print(json.dumps(summary, indent=2))

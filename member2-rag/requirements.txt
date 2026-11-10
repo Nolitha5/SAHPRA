@@ -13,6 +13,7 @@ torch==2.14.1
 pydantic==2.13.5
 python-dotenv==1.2.3
 pypdf==5.9.0          # temporary PDF converter (scripts/pdf_to_jsonl.py)
+pymupdf==2.1          # finds tables in the PDFs and cuts out their images (app/knowledge_base/pdf_tables.py)
 cryptography==50.0.2  # lets pypdf open owner-password PDFs (e.g. SAHPRA guidelines)
 numpy>=1.26,<3
 

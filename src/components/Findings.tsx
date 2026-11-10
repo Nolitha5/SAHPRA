@@ -1,6 +1,8 @@
 import type { Citation, ComparisonRow, Finding } from '../types'
 import { pageText } from '../pages'
+import { findingTables } from '../findingTables'
 import AssessorReview from './AssessorReview'
+import SourceTables from './SourceTables'
 import { PassageCard, QaPill, StatusPill, plural, versionLabel } from './shared'
 
 // One agent finding, shown as Word-style tables, with the red assessor-review box.
@@ -131,6 +133,8 @@ export function FindingCard({ f }: { f: Finding }) {
             </p>
           )}
         </div>
+
+        <SourceTables tables={findingTables(f)} />
 
         {f.regulatory_evidence.length > 0 && (
           <details>

@@ -100,7 +100,7 @@ member2-rag/
 │   ├── search.py                 # (added) try retrieval from the command line
 │   ├── run_agent.py              # (added) run either agent from the command line
 │   └── evaluate_retrieval.py
-├── tests/                        # 168 unit tests + 2 integration tests
+├── tests/                        # 172 unit tests + 2 integration tests
 ├── benchmarks/
 │   ├── benchmark.jsonl           # template (synthetic items - replace!)
 │   ├── pilot.jsonl               # 20 ICH pilot questions (page-level labels)
@@ -174,7 +174,7 @@ python -m pytest
 python scripts/build_knowledge_base.py      # download, convert and index the 16 guidelines
 ```
 
-Expected: `168 passed, 2 deselected`.
+Expected: `172 passed, 2 deselected`.
 
 **Once the models are downloaded** (after the first search), set `HF_HUB_OFFLINE=1` and
 `TRANSFORMERS_OFFLINE=1` in `.env` (see `.env.example`). Otherwise every server start checks Hugging
@@ -369,7 +369,7 @@ method-validation completeness checklist, batch trend statistics.
 ## 12. Running tests
 
 ```powershell
-python -m pytest                 # 168 unit tests, no downloads, temp databases only
+python -m pytest                 # 172 unit tests, no downloads, temp databases only
 python -m pytest -m integration  # 2 tests with REAL models (downloads bge-small + bge-reranker-base)
 python -m pytest -v tests/test_s4_control.py
 python -m ruff check             # lint (pip install -r requirements-dev.txt once; config in ruff.toml)
@@ -579,6 +579,16 @@ python scripts/build_knowledge_base.py --download-only  # just fetch the PDFs
 
 To add or replace a guideline, edit `sources/kb_v2_manifest.json` (copy the title, version and date from
 the document itself) and run the script again.
+
+**Tables.** The converter also finds the tables in each PDF (PyMuPDF, `app/knowledge_base/pdf_tables.py`): 137
+tables in the 16 guidelines. For each it stores the cell text, read cell by cell so decimal points and spaces stay
+as printed ("0.05%", "Carbon tetrachloride") and footnote markers stay superscript ("0.12¹⁾", never "0.121)"),
+plus an image of the original table cut from the PDF. They are written next to the passages
+(`data/processed/kb_v2_w300_tables.json`, images in `data/tables/`, both git-ignored) and **do not change the
+passages or search**. Findings returned by the API carry `page_tables` (the tables on the pages of their supporting
+passages; the `Finding` contract itself is unchanged), images are served by `GET /api/tables/{id}/image`, and the
+dashboard and Word report show each table as a real table followed by the original image. Tables drawn without
+lines may not be found; their text stays in the passages as before. Always check values against the image.
 
 **Page numbers.** Every passage keeps two page numbers: `page_number`, the PDF page (its position in the
 file, what a PDF viewer jumps to and what benchmark labels use), and `page_label`, the number printed on the

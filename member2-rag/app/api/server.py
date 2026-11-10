@@ -27,7 +27,7 @@ from typing import Any
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -40,10 +40,11 @@ from app.integration import Member2Components, create_member2_components
 from app.knowledge_base.coverage import build_coverage, load_expected_sources
 from app.knowledge_base.indexing import InputFileError, index_text
 from app.knowledge_base.metadata import MetadataCorruptionError
+from app.knowledge_base.pdf_tables import TableStore
 from app.logging_utils import get_logger, log_event
 from app.retrieval.vector_search import InvalidQueryError, build_where
 from app.routing import ask
-from app.schemas import AgentRequest, SearchFilters
+from app.schemas import AgentRequest, Finding, SearchFilters
 
 logger = get_logger("api")
 API_VERSION = "1.0"
@@ -89,6 +90,7 @@ def create_app(
     settings = settings or (components.settings if components else get_settings())
     m2 = components or create_member2_components(settings)
     cases = BenchmarkCaseStore(settings.benchmark_file)
+    tables = TableStore(settings.tables_file)
     model_lock = threading.Lock()
 
     app = FastAPI(
@@ -249,11 +251,28 @@ def create_app(
         )
         return result.model_dump(mode="json")
 
+    def with_tables(finding: Finding) -> dict[str, Any]:
+        """The finding as JSON, plus `page_tables`: the tables on the pages of its passages
+        (chunk_id -> tables). The Finding contract itself is unchanged."""
+        out = finding.model_dump(mode="json")
+        page_tables: dict[str, list[dict[str, Any]]] = {}
+        for p in finding.regulatory_evidence:
+            found = tables.for_page(p.metadata.source_identifier, p.metadata.document_version, p.metadata.page_number)
+            if found:
+                page_tables[p.chunk_id] = [
+                    {k: t[k] for k in ("table_id", "source_identifier", "page_number", "page_label", "index_on_page",
+                                       "rows", "width", "height")}
+                    | {"image_url": f"/api/tables/{t['table_id']}/image"}
+                    for t in found
+                ]
+        out["page_tables"] = page_tables
+        return out
+
     def _run_agent(name: str, request: AgentRequest) -> list[dict[str, Any]]:
         findings = run_model(m2.agents[name].run, request)
         # Returned in full: the caller supplied any sponsor data in this request
         # and the dashboard needs the comparison rows. Nothing is logged or stored.
-        return [f.model_dump(mode="json") for f in findings]
+        return [with_tables(f) for f in findings]
 
     @app.post("/api/agents/evidence-rera")
     def evidence_rera(request: AgentRequest) -> list[dict[str, Any]]:
@@ -268,7 +287,15 @@ def create_app(
         """Just a question: search everything, pick the CTD section and agent, return the findings."""
         route, findings = run_model(ask, m2, body.question, current_only=body.current_only,
                                     use_reranker=body.use_reranker)
-        return {"route": route.as_dict(), "findings": [f.model_dump(mode="json") for f in findings]}
+        return {"route": route.as_dict(), "findings": [with_tables(f) for f in findings]}
+
+    @app.get("/api/tables/{table_id}/image")
+    def table_image(table_id: str) -> FileResponse:
+        """Image of an original table, cut from its PDF (only for tables listed in the tables file)."""
+        path = tables.image_path(table_id)
+        if path is None:
+            raise HTTPException(status_code=404, detail="No table image with that id.")
+        return FileResponse(path, media_type="image/png")
 
     # -- benchmark --------------------------------------------------------
     @app.get("/api/benchmark/cases")
