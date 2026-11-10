@@ -282,7 +282,13 @@ export async function buildFindingsReport(findings: Finding[], images: TableImag
       }
     }
 
-    // Assessor review in red: the saved comment, or an empty box to write in after printing.
+    if (f.regulatory_evidence.length) {
+      children.push(k.heading('Supporting passages', 2))
+      f.regulatory_evidence.forEach((p, i) => children.push(...passageBlock(k, p, i + 1)))
+    }
+
+    // Assessor review in red, always LAST in each finding: the saved comment, or an empty box
+    // to write in after printing.
     children.push(k.heading('Assessor review', 2))
     const comment = loadComment(f.finding_id)
     const reviewWidths = [2400, CONTENT_WIDTH - 2400]
@@ -307,11 +313,6 @@ export async function buildFindingsReport(findings: Finding[], images: TableImag
         ] }),
       ],
     }))
-
-    if (f.regulatory_evidence.length) {
-      children.push(k.heading('Supporting passages', 2))
-      f.regulatory_evidence.forEach((p, i) => children.push(...passageBlock(k, p, i + 1)))
-    }
   })
 
   const doc = documentShell(d, 'Regulatory Evidence Findings', children)

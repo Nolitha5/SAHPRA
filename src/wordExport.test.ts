@@ -87,6 +87,15 @@ describe('Word export', () => {
     expect(xml).not.toMatch(/\n<\/w:t>/) // no raw newlines inside text runs
   })
 
+  it('puts the assessor review last, after the supporting passages', async () => {
+    const withTable = { ...finding, page_tables: { [passage.chunk_id]: [table] } } as Finding
+    const xml = await documentXml(await buildFindingsReport([withTable], { [table.table_id]: PNG }), 'findings-order.docx')
+    const order = ['Citations', 'Tables on the cited pages', 'Supporting passages', 'Assessor review'].map(h => xml.indexOf(h))
+    expect(order.every(i => i >= 0)).toBe(true)
+    expect([...order].sort((a, b) => a - b)).toEqual(order)
+    expect(xml.lastIndexOf('Assessor comment')).toBeGreaterThan(xml.lastIndexOf('Synthetic passage text'))
+  })
+
   it('leaves an empty red review box when there is no comment', async () => {
     const xml = await documentXml(await buildFindingsReport([finding]), 'findings-empty.docx')
     expect(xml).toContain('Assessor comment')
