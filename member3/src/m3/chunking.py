@@ -9,7 +9,7 @@ swappable later for a real tokenizer without changing the call shape.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Iterable
 
 DEFAULT_CHUNK_SIZE = 512
@@ -54,6 +54,8 @@ def chunk_section_blocks(
     overlap: int = DEFAULT_OVERLAP,
 ) -> list[TextChunk]:
     """Chunk each SectionBlock independently; chunks never span two blocks."""
+    if size < 1 or not 0 <= overlap < size:
+        raise ValueError("Chunk size must be positive and overlap must be smaller than size.")
     chunks: list[TextChunk] = []
     for block in blocks:
         words = block.text.split()

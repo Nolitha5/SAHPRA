@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 from .schemas import DossierChunk
 
@@ -33,8 +34,33 @@ def write_case_json(
     as_of: str | None = None,
     relevant_regulatory_codes: list[str] | None = None,
 ) -> Path:
+    payload = to_case_json(case_id, chunks, as_of, relevant_regulatory_codes)
+    return write_json(out_path, payload)
+
+
+def write_json(out_path: str | Path, payload: dict | list) -> Path:
+    """Publish complete JSON atomically, without leaving a partial output."""
     path = Path(out_path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    payload = to_case_json(case_id, chunks, as_of, relevant_regulatory_codes)
-    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    temporary_path = None
+    try:
+        with NamedTemporaryFile(mode="w", dir=path.parent, encoding="utf-8",
+                                delete=False, prefix=".m3-", suffix=".tmp") as stream:
+            temporary_path = Path(stream.name)
+            json.dump(payload, stream, ensure_ascii=False, indent=2, allow_nan=False)
+            stream.write("\n")
+        temporary_path.replace(path)
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
     return path
+
+
+def require_separate_output(out_path: str | Path, inputs: list[str]) -> None:
+    output = Path(out_path).resolve()
+    if output.suffix.lower() != ".json" or any(
+        output == Path(source).resolve()
+        or (output.exists() and Path(source).exists() and output.samefile(source))
+        for source in inputs
+    ):
+        raise ValueError("Choose a .json output path separate from the input PDFs.")

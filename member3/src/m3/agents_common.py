@@ -14,20 +14,29 @@ import hashlib
 from .schemas import DossierChunk, Finding, FindingStatus, SponsorEvidence
 
 
+def is_subsection(chunk: DossierChunk, code: str) -> bool:
+    section = chunk.ctd_section.upper()
+    code = code.upper()
+    return section == code or section.startswith(code + ".")
+
+
 def chunks_in_section(chunks: list[DossierChunk], prefix: str) -> list[DossierChunk]:
     """Chunks whose CTD section falls under `prefix` (e.g. '3.2.S.2'),
     excluding anything the pipeline already flagged as unreadable."""
-    p = prefix.upper()
     return [
         c
         for c in chunks
-        if c.ctd_section.upper().startswith(p) and not c.quality_flag
+        if is_subsection(c, prefix) and not c.quality_flag
     ]
 
 
 def present_subsections(chunks: list[DossierChunk]) -> set[str]:
     """Set of distinct CTD section codes present among the given chunks."""
-    return {c.ctd_section.upper() for c in chunks}
+    sections = set()
+    for chunk in chunks:
+        parts = chunk.ctd_section.upper().split(".")
+        sections.update(".".join(parts[:size]) for size in range(4, len(parts) + 1))
+    return sections
 
 
 def make_finding_id(agent_id: str, case_id: str, tag: str) -> str:

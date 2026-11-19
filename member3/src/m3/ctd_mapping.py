@@ -12,7 +12,7 @@ PDF backend (Docling / PyMuPDF / Unstructured) produced the raw lines.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 # Canonical S.1 .. S.7 headings per the IPRP QWGG guidance / ICH M4Q structure.
 _KNOWN_SECTIONS = {
@@ -50,6 +50,12 @@ _HEADING_RE = re.compile(
     r"^\s*(?:3\.2\.)?(S(?:\.\d+){1,3})\b[\s:.\-]*",
     re.IGNORECASE,
 )
+_TOC_ENTRY_RE = re.compile(r"(?:[.·…]{2,}\s*|\s{2,})\d+\s*$")
+_REFERENCE_RE = re.compile(
+    r"^(?:is|was|contains|provides|describes|shows|lists|reports|should|must|see|for)\b",
+    re.IGNORECASE,
+)
+_OCR_S_CONFUSION = re.compile(r"^\s*3\.2\.[85](?=\.\d)")
 
 
 @dataclass(frozen=True)
@@ -60,19 +66,28 @@ class SectionMatch:
     confidence: float  # 1.0 = exact known heading, 0.6 = recognised pattern only
 
 
-def detect_heading(line: str) -> SectionMatch | None:
+def detect_heading(line: str, *, ocr: bool = False) -> SectionMatch | None:
     """Return a SectionMatch if `line` looks like a CTD S.x[.y[.z]] heading."""
     stripped = line.strip()
-    if not stripped:
+    if not stripped or _TOC_ENTRY_RE.search(stripped):
         return None
     m = _HEADING_RE.match(stripped)
     if not m:
+        if ocr and _OCR_S_CONFUSION.match(stripped):
+            corrected = detect_heading(_OCR_S_CONFUSION.sub("3.2.S", stripped, count=1))
+            if corrected and corrected.title and corrected.title.casefold() == (
+                _KNOWN_SECTIONS.get(corrected.short_code, "").casefold()
+            ) and re.search(r"\s+[A-Za-z]", stripped):
+                return replace(corrected, confidence=0.8)
+        return None
+    remainder = stripped[m.end():].strip(" -:.")
+    if _REFERENCE_RE.match(remainder):
         return None
     short = m.group(1).upper()
     # Normalise "S.04.1" style accidental zero-padding, keep digits as-is otherwise.
     parts = short.split(".")
     short = ".".join([parts[0]] + [str(int(p)) for p in parts[1:]])
-    title = stripped[m.end():].strip(" -:.") or _KNOWN_SECTIONS.get(short)
+    title = remainder or _KNOWN_SECTIONS.get(short)
     confidence = 1.0 if short in _KNOWN_SECTIONS else 0.6
     return SectionMatch(
         code=f"3.2.{short}",
@@ -96,9 +111,12 @@ class SectionTracker:
         self.current: str | None = None
         self.current_confidence: float = 0.0
 
-    def feed(self, line: str) -> SectionMatch | None:
-        match = detect_heading(line)
+    def feed(self, line: str, *, ocr: bool = False) -> SectionMatch | None:
+        match = detect_heading(line, ocr=ocr)
         if match is not None:
-            self.current = match.code
-            self.current_confidence = match.confidence
+            self.set_heading(match)
         return match
+
+    def set_heading(self, match: SectionMatch) -> None:
+        self.current = match.code
+        self.current_confidence = match.confidence

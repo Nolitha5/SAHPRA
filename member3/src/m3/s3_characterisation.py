@@ -25,6 +25,7 @@ import re
 from .agents_common import (
     chunks_in_section,
     evidence_from_chunk,
+    is_subsection,
     make_finding_id,
     missing_subsection_finding,
     present_subsections,
@@ -46,7 +47,13 @@ _TECHNIQUES = {
     "MS": re.compile(r"\b(mass spec|MS|m/z)\b", re.I),
     "elemental": re.compile(r"\belemental analysis\b", re.I),
     "XRD": re.compile(r"\b(XRD|x[- ]?ray diffraction)\b", re.I),
+    "Raman": re.compile(r"\bRaman\b", re.I),
 }
+_NEGATION = re.compile(
+    r"\b(?:no|without|not|never|neither|unavailable|omitted|pending|proposed|planned)\b",
+    re.I,
+)
+_CLAUSE_BREAK = re.compile(r"[;!?]|\.(?=\s|$)|\b(?:but|however|whereas)\b", re.I)
 
 # Impurity mention + an associated level like "0.08%" or "0.1 %".
 _IMPURITY_RE = re.compile(
@@ -54,14 +61,10 @@ _IMPURITY_RE = re.compile(
     re.I,
 )
 _IMPURITY_NAMED_RE = re.compile(
-    r"\bimpurity\s+([A-Z0-9][\w\-]*)\b",
+    r"\bimpurity\s+([A-Z](?:-?\d+)?|\d+[A-Z]?|[A-Z]{2,8}-\d+[A-Z]?)\b(?![\w-])",
     re.I,
 )
 _LEVEL_RE = re.compile(r"\b\d+(?:\.\d+)?\s?%")
-
-
-def _subsection_text(chunks: list[DossierChunk], code: str) -> str:
-    return " ".join(c.text for c in chunks if c.ctd_section.upper() == code.upper())
 
 
 def review(case_id: str, chunks: list[DossierChunk]) -> list[Finding]:
@@ -98,11 +101,14 @@ def review(case_id: str, chunks: list[DossierChunk]) -> list[Finding]:
             )
 
     # 2. Structure-elucidation techniques present in S.3.1?
-    s31_text = _subsection_text(s3, "3.2.S.3.1")
-    if s31_text:
-        found = [name for name, rx in _TECHNIQUES.items() if rx.search(s31_text)]
+    s31_chunks = [c for c in s3 if is_subsection(c, "3.2.S.3.1")]
+    if s31_chunks:
+        clauses = [
+            clause for c in s31_chunks for clause in _CLAUSE_BREAK.split(c.text)
+            if not _NEGATION.search(clause)
+        ]
+        found = [name for name, rx in _TECHNIQUES.items() if any(rx.search(c) for c in clauses)]
         if len(found) < 2:
-            s31_chunks = [c for c in s3 if c.ctd_section.upper() == "3.2.S.3.1"]
             findings.append(
                 Finding(
                     finding_id=make_finding_id(AGENT_ID, case_id, "s31-techniques"),
@@ -114,10 +120,9 @@ def review(case_id: str, chunks: list[DossierChunk]) -> list[Finding]:
                     sponsor_evidence=[evidence_from_chunk(c) for c in s31_chunks[:2]],
                     rationale=(
                         "Few structure-elucidation techniques were detected in "
-                        f"3.2.S.3.1 (found: {found or 'none'}). For a non-compendial "
-                        "substance, elemental analysis, IR, UV, NMR and MS are "
-                        "normally expected. Assessor to confirm sufficiency "
-                        "(spectra may be image-only and not yet captured as text)."
+                        f"3.2.S.3.1 (found: {found or 'none'}). Assessor to confirm "
+                        "which evidence applies and whether it is sufficient. "
+                        "Image-only spectra may require manual inspection."
                     ),
                     uncertainty=0.55,
                     attributes={"check": "consistency", "techniques_found": found},
@@ -125,11 +130,14 @@ def review(case_id: str, chunks: list[DossierChunk]) -> list[Finding]:
             )
 
     # 3. Impurities named in S.3.2 -> link to S.4 control.
-    s32_chunks = [c for c in s3 if c.ctd_section.upper() == "3.2.S.3.2"]
-    s32_text = _subsection_text(s3, "3.2.S.3.2")
-    if s32_text and _IMPURITY_RE.search(s32_text):
-        named = sorted({m.group(1).upper() for m in _IMPURITY_NAMED_RE.finditer(s32_text)})
-        has_levels = bool(_LEVEL_RE.search(s32_text))
+    s32_chunks = [
+        c for c in s3 if is_subsection(c, "3.2.S.3.2") and _IMPURITY_RE.search(c.text)
+    ]
+    if s32_chunks:
+        named = sorted({
+            m.group(1).upper() for c in s32_chunks for m in _IMPURITY_NAMED_RE.finditer(c.text)
+        })
+        has_levels = any(_LEVEL_RE.search(c.text) for c in s32_chunks)
         findings.append(
             Finding(
                 finding_id=make_finding_id(AGENT_ID, case_id, "s32-impurity-link"),
@@ -142,10 +150,9 @@ def review(case_id: str, chunks: list[DossierChunk]) -> list[Finding]:
                 rationale=(
                     "Impurities are described in 3.2.S.3.2"
                     + (f" (named: {', '.join(named)})" if named else "")
-                    + ". Each identified impurity should have a corresponding "
-                    "acceptance criterion in S.4.1 and, where process-related, be "
-                    "traceable to starting materials in S.2.3. Flagged for "
-                    "cross-section traceability (M4) and S.4 control (M2)."
+                    + ". Check whether the dossier traces their origin and specifies "
+                    "applicable controls or stability monitoring. The linked "
+                    "sections are review targets."
                 ),
                 uncertainty=0.35,
                 attributes={

@@ -1,40 +1,36 @@
-"""
-End-to-end M3 ingestion pipeline: one dossier PDF -> list[DossierChunk].
-
-This is the Tier 0 walking-skeleton version per the delegation doc: ingest
-one dossier, produce clean chunks for a handful of pages with correct
-section tags, hand off in the exact shape M2 already built against. Table
-extraction (Docling) and the S.2/S.3 agents are the next layers on top of
-this, not required for the thin thread to prove itself.
-"""
+"""Convert eCTD drug substance PDFs into page-cited, redacted chunks."""
 from __future__ import annotations
 
 import hashlib
 import re
+import unicodedata
+from collections.abc import Iterable
 from pathlib import Path
 
 from .chunking import DEFAULT_CHUNK_SIZE, DEFAULT_OVERLAP, SectionBlock, chunk_section_blocks
-from .ctd_mapping import SectionTracker
-from .extraction import extract_pages
+from .ctd_mapping import SectionTracker, detect_heading
+from .extraction import LayoutItem, PageText, extract_pages
+from .language import detect_language
 from .pii_filter import scan_and_redact
 from .schemas import DossierChunk
 
-# A line is "garbled" if it has an unusually high ratio of non-alphanumeric,
-# non-space characters — typical of a failed OCR pass or extraction noise.
-_GARBLED_RATIO = 0.4
-_MIN_CHUNK_CHARS = 10
+_CAPTION = re.compile(r"^(?:figure|fig\.)\s+[A-Z0-9][\w.\-]*\s*[:.\-–]", re.I)
+_TOC = re.compile(r"^\s*(?:table of contents|contents)\s*$", re.I)
+_TOC_ENTRY = re.compile(r"(?:[.·…]{2,}\s*|\s{2,})\d+\s*$")
+_OUTSIDE_S = re.compile(r"^3\.2\.[PAR](?:\.\d+)*\b", re.I)
 
 
 def _looks_garbled(text: str) -> bool:
-    if not text.strip():
-        return True
-    alnum_or_space = sum(1 for c in text if c.isalnum() or c.isspace())
-    return (alnum_or_space / len(text)) < (1 - _GARBLED_RATIO)
+    readable = sum(c.isalnum() or c.isspace() for c in text)
+    return not any(c.isalnum() for c in text) or readable / len(text) < 0.6
 
 
-def _chunk_id(document_id: str, ctd_section: str, page: int | None, idx: int) -> str:
-    raw = f"{document_id}|{ctd_section}|{page}|{idx}"
-    return "m3-" + hashlib.sha1(raw.encode("utf-8")).hexdigest()[:12]
+def _digest(path: Path) -> str:
+    with path.open("rb") as source:
+        digest = hashlib.sha256()
+        for block in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(block)
+        return digest.hexdigest()
 
 
 def ingest_dossier(
@@ -42,96 +38,160 @@ def ingest_dossier(
     document_id: str | None = None,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     chunk_overlap: int = DEFAULT_OVERLAP,
+    *,
+    ocr_language: str = "eng",
 ) -> list[DossierChunk]:
-    """Ingest one dossier PDF end-to-end and return DossierChunk objects.
-
-    Garbled or empty extractions are never dropped silently: they come
-    through as a chunk with `quality_flag` set, so M2/M4/M5 can see — and
-    the assessor can be told — that a part of the dossier could not be
-    read, instead of that gap disappearing.
-    """
+    """Ingest one PDF. Every emitted item is traceable to one physical page."""
     path = Path(pdf_path)
-    document_id = document_id or path.name
+    return _ingest_pdf(path, document_id or path.name, _digest(path), ocr_language,
+                       chunk_size, chunk_overlap)
 
-    pages = extract_pages(path)
 
+def _ingest_pdf(
+    path: Path, document_id: str, source_digest: str, ocr_language: str,
+    chunk_size: int = DEFAULT_CHUNK_SIZE, chunk_overlap: int = DEFAULT_OVERLAP,
+) -> list[DossierChunk]:
+    if chunk_size < 1 or not 0 <= chunk_overlap < chunk_size:
+        raise ValueError("Chunk size must be positive and overlap must be smaller than size.")
+    document_id = scan_and_redact(document_id).redacted_text
     tracker = SectionTracker()
-    blocks: list[SectionBlock] = []
-    current_block_lines: list[str] = []
-    current_section = None
-    current_confidence = 0.0
-    current_page = None
+    chunks: list[DossierChunk] = []
+    page_sequences: dict[int, int] = {}
+    heading_page: PageText | None = None
 
-    def _flush():
-        if current_block_lines and current_section:
-            blocks.append(
-                SectionBlock(
-                    ctd_section=current_section,
-                    text="\n".join(current_block_lines),
-                    page=current_page,
-                    confidence=current_confidence,
-                )
-            )
+    for page in extract_pages(path, ocr_language=ocr_language):
+        items = page.items if page.items is not None else [
+            LayoutItem("text", line) for line in page.text.splitlines()
+        ]
+        pending: list[str] = []
 
-    for page_text in pages:
-        for line in page_text.text.splitlines():
-            match = tracker.feed(line)
+        def emit(text: str = "", *, kind: str = "text", rows: list[dict] | None = None,
+                 hits: list[str] | None = None, flag: str | None = None,
+                 original_page: PageText | None = None, attribute_section: bool = True) -> None:
+            source_page = original_page or page
+            sequence = page_sequences.get(source_page.page, 0)
+            section = (tracker.current if attribute_section else None) or "UNKNOWN"
+            identity = f"{source_digest}\x1f{document_id}\x1f{source_page.page}\x1f{section}\x1f{sequence}"
+            chunks.append(DossierChunk(
+                chunk_id="m3-" + hashlib.sha256(identity.encode()).hexdigest()[:24],
+                document_id=document_id, ctd_section=section, page=source_page.page,
+                kind=kind, text=text, table_rows=rows or [],
+                metadata={"section_confidence": tracker.current_confidence if attribute_section else 0.0,
+                          "extraction_source": source_page.source, "pii_redactions": hits or [],
+                          "source_sha256": source_digest},
+                quality_flag=flag or ("CTD_SECTION_UNKNOWN" if section == "UNKNOWN" else None),
+            ))
+            page_sequences[source_page.page] = sequence + 1
+
+        def flush() -> None:
+            if not pending:
+                return
+            original = "\n".join(pending)
+            pending.clear()
+            scan = scan_and_redact(original)
+            garbled = _looks_garbled(original)
+            block = SectionBlock(tracker.current or "UNKNOWN", scan.redacted_text)
+            for chunk in chunk_section_blocks([block], chunk_size, chunk_overlap):
+                flag = "GARBLED_OR_EMPTY_EXTRACTION" if garbled or _looks_garbled(chunk.text) else None
+                emit(chunk.text, hits=scan.hits, flag=flag)
+
+        def close_empty_section() -> None:
+            nonlocal heading_page
+            if heading_page is not None:
+                emit(flag="EMPTY_SECTION", original_page=heading_page)
+                heading_page = None
+
+        if page.source == "empty":
+            close_empty_section()
+            emit(flag=page.issues[0] if page.issues else "EMPTY_EXTRACTION", attribute_section=False)
+            # A missing page could contain a heading. Require a new anchor.
+            tracker = SectionTracker()
+            continue
+        for issue in page.issues:
+            emit(flag=issue, attribute_section=False)
+        lines = [item.text.strip() for item in items if item.text.strip()]
+        if lines and (_TOC.fullmatch(lines[0]) or (
+            sum(bool(_TOC_ENTRY.search(line)) for line in lines) >= 2
+            and all(detect_heading(line) is None for line in lines)
+        )):
+            emit(flag="TABLE_OF_CONTENTS_SKIPPED", attribute_section=False)
+            continue
+        for item in items:
+            if item.kind == "table":
+                heading_page = None
+                flush()
+                rows: list[dict] = []
+                hits: list[str] = []
+                for cells in item.rows or []:
+                    row = {}
+                    for index, value in enumerate(cells, 1):
+                        if value is None:
+                            row[f"column_{index}"] = None
+                            continue
+                        scan = scan_and_redact(unicodedata.normalize("NFC", value))
+                        row[f"column_{index}"] = scan.redacted_text
+                        hits.extend(scan.hits)
+                    rows.append(row)
+                text = "\n".join(" | ".join(value or "" for value in row.values()) for row in rows)
+                flag = None if any(value and value.strip() for row in rows for value in row.values()) else "EMPTY_TABLE"
+                emit(text, kind="table", rows=rows, hits=hits, flag=flag)
+                continue
+            line = unicodedata.normalize("NFC", item.text).strip()
+            if not line:
+                continue
+            match = detect_heading(line, ocr=page.source == "ocr")
             if match is not None:
-                _flush()
-                current_block_lines = []
-                current_section = match.code
-                current_confidence = match.confidence
-                current_page = page_text.page
-                continue
-            if tracker.current is None:
-                # Content before the first recognised heading (cover page,
-                # TOC, etc.) — not attributable to any CTD section; skip
-                # rather than mis-tag it.
-                continue
-            current_block_lines.append(line)
-            if current_page is None:
-                current_page = page_text.page
-    _flush()
+                flush()
+                close_empty_section()
+                tracker.set_heading(match)
+                heading_page = page
+            elif _OUTSIDE_S.match(line):
+                flush()
+                close_empty_section()
+                tracker = SectionTracker()
+            elif _CAPTION.match(line):
+                heading_page = None
+                flush()
+                scan = scan_and_redact(line)
+                emit(scan.redacted_text, kind="figure_caption", hits=scan.hits)
+            else:
+                heading_page = None
+                pending.append(line)
+        flush()
+        if page.page not in page_sequences and heading_page is None:
+            emit(flag="EMPTY_EXTRACTION")
+    if heading_page is not None:
+        close_empty_section()
+    chunks.sort(key=lambda chunk: chunk.page or 0)
+    sample: list[str] = []
+    sample_chars = 0
+    for chunk in chunks:
+        if chunk.kind != "text" or chunk.quality_flag:
+            continue
+        sample.append(re.sub(r"\[REDACTED_[A-Z_]+\]", "", chunk.text))
+        sample_chars += len(sample[-1])
+        if sample_chars >= 10_000:
+            break
+    language, confidence = detect_language(" ".join(sample)[:10_000])
+    for chunk in chunks:
+        chunk.metadata.update(language=language, language_confidence=confidence)
+    return chunks
 
-    section_chunks = chunk_section_blocks(blocks, size=chunk_size, overlap=chunk_overlap)
 
-    out: list[DossierChunk] = []
-    for sc in section_chunks:
-        scan = scan_and_redact(sc.text)
-        quality_flag = None
-        if _looks_garbled(scan.redacted_text) or len(scan.redacted_text.strip()) < _MIN_CHUNK_CHARS:
-            quality_flag = "GARBLED_OR_EMPTY_EXTRACTION"
-        chunk = DossierChunk(
-            chunk_id=_chunk_id(document_id, sc.ctd_section, sc.page, sc.chunk_index),
-            document_id=document_id,
-            ctd_section=sc.ctd_section,
-            text=scan.redacted_text,
-            page=sc.page,
-            kind="text",
-            table_rows=[],
-            metadata={
-                "section_confidence": sc.section_confidence,
-                "pii_redactions": scan.hits,
-            },
-            quality_flag=quality_flag,
-        )
-        out.append(chunk)
-
-    # Quality pages that produced nothing attributable at all (e.g. a
-    # section with zero recognised heading anywhere) should still be
-    # visible as a flagged gap rather than silently missing.
-    if not out:
-        out.append(
-            DossierChunk(
-                chunk_id=_chunk_id(document_id, "UNKNOWN", None, 0),
-                document_id=document_id,
-                ctd_section="UNKNOWN",
-                text="",
-                page=None,
-                kind="text",
-                table_rows=[],
-                metadata={"reason": "no CTD S.x heading recognised in document"},
-                quality_flag="NO_SECTION_HEADINGS_FOUND",
-            )
-        )
-    return out
+def ingest_dossier_files(
+    pdf_paths: Iterable[str | Path], *, ocr_language: str = "eng",
+) -> list[DossierChunk]:
+    """Ingest a case, skipping byte-identical uploads without merging citations."""
+    paths = [Path(path) for path in pdf_paths]
+    if not paths:
+        raise ValueError("Provide at least one dossier PDF.")
+    seen: set[str] = set()
+    chunks: list[DossierChunk] = []
+    for path in paths:
+        digest = _digest(path)
+        if digest in seen:
+            continue
+        seen.add(digest)
+        document_id = f"{path.name}#{digest[:16]}" if len(paths) > 1 else path.name
+        chunks.extend(_ingest_pdf(path, document_id, digest, ocr_language))
+    return chunks

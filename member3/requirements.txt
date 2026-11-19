@@ -2,6 +2,7 @@ pydantic>=2.0
 pymupdf>=1.24
 pytesseract>=0.3.10
 pillow>=10.0
+langdetect==1.0.9
 # Add when approved for the team environment (next layer, not required for Tier 0):
 # docling
 # unstructured

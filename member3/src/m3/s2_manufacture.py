@@ -25,6 +25,7 @@ import re
 from .agents_common import (
     chunks_in_section,
     evidence_from_chunk,
+    is_subsection,
     make_finding_id,
     missing_subsection_finding,
     present_subsections,
@@ -45,13 +46,16 @@ _REQUIRED_SUBSECTIONS = {
 }
 
 # Cues used for light internal-consistency checks on the process description.
-_ADDRESS_CUES = re.compile(r"\b(address|street|road|avenue|plot|block|unit|p\.?\s*o\.?\s*box|\d{3,})\b", re.I)
-_FLOW_CUES = re.compile(r"\b(flow\s*diagram|scheme|step\s*\d|synthetic route|reaction)\b", re.I)
+_ADDRESS_CUES = re.compile(
+    r"\b(?:[\w-]+\s+(?:street|road|avenue|boulevard|lane|drive)|"
+    r"(?:plot|block|unit)\s+[A-Z0-9-]+)\b", re.I,
+)
+_FLOW_CUES = re.compile(r"\b(?:flow\s*(?:diagram|chart)|(?:reaction|process|synthetic)\s+scheme)\b", re.I)
 _STARTING_MATERIAL_CUES = re.compile(r"\b(starting material|raw material|reagent|solvent|catalyst)\b", re.I)
 
 
 def _subsection_text(chunks: list[DossierChunk], code: str) -> str:
-    return " ".join(c.text for c in chunks if c.ctd_section.upper() == code.upper())
+    return " ".join(c.text for c in chunks if is_subsection(c, code))
 
 
 def review(case_id: str, chunks: list[DossierChunk]) -> list[Finding]:
@@ -115,7 +119,7 @@ def review(case_id: str, chunks: list[DossierChunk]) -> list[Finding]:
     # 2. Consistency checks on S.2.1 (manufacturer address present?)
     s21_text = _subsection_text(s2, "3.2.S.2.1")
     if s21_text and not _ADDRESS_CUES.search(s21_text):
-        s21_chunks = [c for c in s2 if c.ctd_section.upper() == "3.2.S.2.1"]
+        s21_chunks = [c for c in s2 if is_subsection(c, "3.2.S.2.1")]
         findings.append(
             Finding(
                 finding_id=make_finding_id(AGENT_ID, case_id, "s21-no-address"),
@@ -139,7 +143,7 @@ def review(case_id: str, chunks: list[DossierChunk]) -> list[Finding]:
     # 3. S.2.2 process description — flow diagram / route cues present?
     s22_text = _subsection_text(s2, "3.2.S.2.2")
     if s22_text and not _FLOW_CUES.search(s22_text):
-        s22_chunks = [c for c in s2 if c.ctd_section.upper() == "3.2.S.2.2"]
+        s22_chunks = [c for c in s2 if is_subsection(c, "3.2.S.2.2")]
         findings.append(
             Finding(
                 finding_id=make_finding_id(AGENT_ID, case_id, "s22-no-flow"),
@@ -164,7 +168,10 @@ def review(case_id: str, chunks: list[DossierChunk]) -> list[Finding]:
     #    should trace. Emit a link hint for the Cross-Section agent (M4).
     s23_text = _subsection_text(s2, "3.2.S.2.3")
     if s23_text and _STARTING_MATERIAL_CUES.search(s23_text):
-        s23_chunks = [c for c in s2 if c.ctd_section.upper() == "3.2.S.2.3"]
+        s23_chunks = [
+            c for c in s2
+            if is_subsection(c, "3.2.S.2.3") and _STARTING_MATERIAL_CUES.search(c.text)
+        ]
         findings.append(
             Finding(
                 finding_id=make_finding_id(AGENT_ID, case_id, "s23-link"),
