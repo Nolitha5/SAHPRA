@@ -1,0 +1,132 @@
+{
+  "description": "Shared M2 <-> S.6 integration fixture. Real output of app.adapters.s6_requirements.S6RequirementSource.search() on the M2 knowledge base. Each 'requirements' item validates as S.6's RKBRequirement. Items are cited regulatory passages that may contain a requirement, not validated requirements or compliance decisions.",
+  "generated_at": "2026-11-20T07:38:16+00:00",
+  "collection": "kb_v2_large_w300",
+  "embedding_model": "BAAI/bge-large-en-v1.5",
+  "reranker_model": "BAAI/bge-reranker-base",
+  "settings": {
+    "candidate_k": 10,
+    "final_k": 5,
+    "min_rerank_score": 0.0
+  },
+  "cases": [
+    {
+      "topic": "materials of construction of the primary packaging components",
+      "question": "What regulatory guidance applies to materials of construction of the primary packaging components in the container closure system of the drug substance (CTD 3.2.S.6)?",
+      "requirements": [
+        {
+          "requirement_id": "ich-m4q-r1-step-4-p16-c0-w300",
+          "guideline": "ICH M4Q(R1)",
+          "section": "3.2",
+          "text": "Reference ICH Guideline: Q6A Biotech: For desired product and product-related substances, details should be provided on primary, secondary and higher-order structure, post-translational forms (e.g., glycoforms), biological activity, purity, and immunochemical properties, when relevant. Reference ICH Guideline: Q6B 3.2.S.3.2 Impurities (name, manufacturer) Information on impurities should be provided. Reference ICH Guidelines: Q3A, Q3C, Q5C, Q6A, and Q6B 3.2.S.4 Control of Drug Substance (name, manufacturer) 3.2.S.4.1 Specification (name, manufacturer) The specification for the drug substance should be provided. Reference ICH Guidelines: Q6A and Q6B 3.2.S.4.2 Analytical Procedures (name, manufacturer) The analytical procedures used for testing the drug substance should be provided. Reference ICH Guidelines: Q2A and Q6B 3.2.S.4.3 Validation of Analytical Procedures (name, manufacturer) Analytical validation information, including experimental data for the analytical procedures used for testing the drug substance, should be provided. Reference ICH Guidelines: Q2A, Q2B, and Q6B 3.2.S.4.4 Batch Analyses (name, manufacturer) Description of batches and results of batch analyses should be provided. Reference ICH Guidelines: Q3A, Q3C, Q6A, and Q6B 3.2.S.4.5 Justification of Specification (name, manufacturer) Justification for the drug substance specification should be provided. Reference ICH Guidelines: Q3A, Q3C, Q6A and Q6B 3.2.S.5 Reference Standards or Materials (name, manufacturer) Information on the reference standards or reference materials used for testing of the drug substance should be provided. Reference ICH Guidelines: Q6A and Q6B 3.2.S.6 Container Closure System (name, manufacturer) A description of the container closure system(s) should be provided, including the identity of materials of construction of each primary packaging component, and their specifications. The specifications should include description and identification (and critical dimensions with drawings, where appropriate). Non-compendial methods (with validation) should be included, where appropriate.",
+          "citation": "ICH M4Q(R1) (Step 4), p. 10 (PDF p. 16), CTD 3.2",
+          "source_ref": {
+            "source_type": "m2_rkb",
+            "source_id": "ich-m4q-r1-step-4-p16-c0-w300",
+            "section": "3.2",
+            "document": "The Common Technical Document for the Registration of Pharmaceuticals for Human Use: Quality (Step 4)",
+            "page": 16,
+            "field_path": null
+          }
+        }
+      ],
+      "scores": {
+        "ich-m4q-r1-step-4-p16-c0-w300": 1.1864
+      },
+      "below_threshold": 6,
+      "knowledge_base_size": 761,
+      "searches": [
+        {
+          "search": "ctd_3.2.S.6_with_parents",
+          "returned": 5,
+          "relevant": 1,
+          "reranked": true
+        },
+        {
+          "search": "all_guidelines",
+          "returned": 5,
+          "relevant": 1,
+          "reranked": true
+        }
+      ]
+    },
+    {
+      "topic": "glass vial with rubber stopper",
+      "question": "What regulatory guidance applies to glass vial with rubber stopper in the container closure system of the drug substance (CTD 3.2.S.6)?",
+      "requirements": [],
+      "scores": {},
+      "below_threshold": 8,
+      "knowledge_base_size": 761,
+      "searches": [
+        {
+          "search": "ctd_3.2.S.6_with_parents",
+          "returned": 5,
+          "relevant": 0,
+          "reranked": true
+        },
+        {
+          "search": "all_guidelines",
+          "returned": 5,
+          "relevant": 0,
+          "reranked": true
+        }
+      ]
+    },
+    {
+      "topic": "protection of the drug substance from light and moisture",
+      "question": "What regulatory guidance applies to protection of the drug substance from light and moisture in the container closure system of the drug substance (CTD 3.2.S.6)?",
+      "requirements": [
+        {
+          "requirement_id": "ich-m4q-r1-step-4-p19-c0-w300",
+          "guideline": "ICH M4Q(R1)",
+          "section": "3.2",
+          "text": "Differences between the manufacturing process(es ) used to produce pivotal clinical batches and the process described in 3.2.P.3.3 that can influence the performance of the product should be discussed. 3.2.P.2.4 Container Closure System (name, dosage form) The suitability of the container closure system (described in 3.2.P.7) used for the storage, transportation (shipping) and use of the drug product should be discussed. This discussion should consider, e.g., choice of materials, protection from moisture and light, compatibility of the materials of construction with the dosage form (including sorption to container and leaching) safety of materials of construction, and performance (such as reproducibility of the dose delivery from the device when presented as part of the drug product). 3.2.P.2.5 Microbiological Attributes (name, dosage form) Where appropriate, the microbiological attributes of the dosage form should be discussed, including, for example, the rationale for not performing microbial limits testing for nonsterile products and the selection and effectiveness of preservative systems in products containing antimicrobial preservatives. For st erile products, the integrity of the container closure system to prevent microbial contamination should be addressed. 3.2.P.2.6 Compatibility (name, dosage form) The compatibility of the drug product with reconstitution diluent(s) or dosage devices (e.g., precipitation of drug substance in solution, sorption on injection vessels, stability) should be addressed to provide appropriate and supportive information for the labeling. 3.2.P.3 Manufacture (name, dosage form) 3.2.P.3.1 Manufacturer(s) (name, dosage form) The name, address, and responsibility of each manufacturer, including contractors, and each proposed production site or facility involved in manufacturing and testing should be provided. 3.2.P.3.2 Batch Formula (name, dosage form) A batch formula should be provided that includes a list of all components of the dosage form to be used in the manufacturing process, their amounts on a per batch basis, including overages, and a reference to their quality standards.",
+          "citation": "ICH M4Q(R1) (Step 4), p. 13 (PDF p. 19), CTD 3.2",
+          "source_ref": {
+            "source_type": "m2_rkb",
+            "source_id": "ich-m4q-r1-step-4-p19-c0-w300",
+            "section": "3.2",
+            "document": "The Common Technical Document for the Registration of Pharmaceuticals for Human Use: Quality (Step 4)",
+            "page": 19,
+            "field_path": null
+          }
+        },
+        {
+          "requirement_id": "ich-m4q-r1-step-4-p16-c0-w300",
+          "guideline": "ICH M4Q(R1)",
+          "section": "3.2",
+          "text": "Reference ICH Guideline: Q6A Biotech: For desired product and product-related substances, details should be provided on primary, secondary and higher-order structure, post-translational forms (e.g., glycoforms), biological activity, purity, and immunochemical properties, when relevant. Reference ICH Guideline: Q6B 3.2.S.3.2 Impurities (name, manufacturer) Information on impurities should be provided. Reference ICH Guidelines: Q3A, Q3C, Q5C, Q6A, and Q6B 3.2.S.4 Control of Drug Substance (name, manufacturer) 3.2.S.4.1 Specification (name, manufacturer) The specification for the drug substance should be provided. Reference ICH Guidelines: Q6A and Q6B 3.2.S.4.2 Analytical Procedures (name, manufacturer) The analytical procedures used for testing the drug substance should be provided. Reference ICH Guidelines: Q2A and Q6B 3.2.S.4.3 Validation of Analytical Procedures (name, manufacturer) Analytical validation information, including experimental data for the analytical procedures used for testing the drug substance, should be provided. Reference ICH Guidelines: Q2A, Q2B, and Q6B 3.2.S.4.4 Batch Analyses (name, manufacturer) Description of batches and results of batch analyses should be provided. Reference ICH Guidelines: Q3A, Q3C, Q6A, and Q6B 3.2.S.4.5 Justification of Specification (name, manufacturer) Justification for the drug substance specification should be provided. Reference ICH Guidelines: Q3A, Q3C, Q6A and Q6B 3.2.S.5 Reference Standards or Materials (name, manufacturer) Information on the reference standards or reference materials used for testing of the drug substance should be provided. Reference ICH Guidelines: Q6A and Q6B 3.2.S.6 Container Closure System (name, manufacturer) A description of the container closure system(s) should be provided, including the identity of materials of construction of each primary packaging component, and their specifications. The specifications should include description and identification (and critical dimensions with drawings, where appropriate). Non-compendial methods (with validation) should be included, where appropriate.",
+          "citation": "ICH M4Q(R1) (Step 4), p. 10 (PDF p. 16), CTD 3.2",
+          "source_ref": {
+            "source_type": "m2_rkb",
+            "source_id": "ich-m4q-r1-step-4-p16-c0-w300",
+            "section": "3.2",
+            "document": "The Common Technical Document for the Registration of Pharmaceuticals for Human Use: Quality (Step 4)",
+            "page": 16,
+            "field_path": null
+          }
+        }
+      ],
+      "scores": {
+        "ich-m4q-r1-step-4-p19-c0-w300": 0.1878,
+        "ich-m4q-r1-step-4-p16-c0-w300": 0.1805
+      },
+      "below_threshold": 6,
+      "knowledge_base_size": 761,
+      "searches": [
+        {
+          "search": "ctd_3.2.S.6_with_parents",
+          "returned": 5,
+          "relevant": 2,
+          "reranked": true
+        },
+        {
+          "search": "all_guidelines",
+          "returned": 5,
+          "relevant": 1,
+          "reranked": true
+        }
+      ]
+    }
+  ]
+}

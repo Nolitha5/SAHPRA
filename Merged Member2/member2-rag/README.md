@@ -527,6 +527,29 @@ shared_retrieval = m2.retrieval                   # .retrieve(query, filters, ca
 * If an LLM ever reads retrieved text, pass it through `format_evidence_for_prompt()` — it wraps passages
   as escaped, clearly-labelled **untrusted data**.
 
+### For the S.6 Container Closure Agent
+
+S.6 defines a port `RequirementSource.get_requirements(topic) -> Sequence[RKBRequirement]`
+(branch `thobeka-s6-container-closure`, `src/container_closure/ports.py`). M2's side of it is
+[`app/adapters/s6_requirements.py`](app/adapters/s6_requirements.py); it returns dicts with exactly the
+fields of S.6's `RKBRequirement` / `SourceReference`, so S.6's adapter only validates them:
+
+```python
+from app.adapters.s6_requirements import S6RequirementSource
+m2_source = S6RequirementSource(m2.retrieval)                 # m2 = create_member2_components()
+reqs = [RKBRequirement.model_validate(r) for r in m2_source.get_requirements("glass vial")]
+```
+
+* The topic becomes a focused question; M2 searches with the 3.2.S.6 filter (plus parents) **and**
+  unfiltered, merges by `chunk_id`, and keeps only passages that pass `is_relevant_enough`.
+* `[]` means no evidence was found: S.6 reports INSUFFICIENT_DATA, never "no requirement exists".
+* `search(topic)` returns the same plus scores, the number of weak matches and the searches run (for audit).
+* Each item is a cited **passage** (~300 words, can span several headings), not an atomic requirement.
+  `section` is the CTD tag of the whole guideline (e.g. `3.2` for ICH M4Q), so S.6 must find the
+  relevant sentence itself and must not treat drug-product text (3.2.P.x) as a drug-substance requirement.
+* Shared fixture with real output: [`examples/s6_requirements.example.json`](examples/s6_requirements.example.json).
+  No guideline in the knowledge base is specific to 3.2.S.6, so results are thin (often 0–2 items).
+
 ### Integration checklist
 
 **Member 1 — Orchestration**
