@@ -1,0 +1,50 @@
+{
+  "_meta": {
+    "scenario": "s5_amlodipine_web_retrieved",
+    "description": "Complete S.5 reference standards finding for Amlodipine Besylate where the monograph citation was obtained via controlled web retrieval (CrossRef DOI lookup on USP prefix 10.31003). The CrossRef API confirmed USP monograph existence (DOI 10.31003/uspnf_m3570_06_01, publisher U.S. Pharmacopeial Convention, type=standard, created 2022-11-14) without accessing paywalled content. content_verified is False — a human reviewer must consult usp.org to verify assigned content. All IPRP S.5 sub-items (a)–(d) are covered in the rationale. The CrossRef DOI provides a citable source so R1 does not fire. QA/Critic R4–R6 all pass; qa_status must be PASS.",
+    "rule_under_test": "R1 (citation present — does not fire), R4, R5, R5b, R6 (all pass for a complete compendial finding with web-retrieved citation)",
+    "direction": "POSITIVE (complete USP Amlodipine Besylate RS, web-retrieved DOI citation — should PASS)",
+    "iprp_reference": "IPRP QWGG Guidance for Quality Assessors – Drug Substance, S.5 Reference Standards or Materials, page 18. Bullet (a): compendial RS — lot number and CoA required. Assessment point (i): source of standards. Assessment point (iii): working standard qualification.",
+    "retrieval_context": {
+      "retrieval_enabled": true,
+      "evidence_tier": "TIER_1_EXISTENCE_CONFIRMED",
+      "content_verified": false,
+      "source": "CrossRef API prefix 10.31003 (U.S. Pharmacopeial Convention)",
+      "doi": "10.31003/uspnf_m3570_06_01",
+      "doi_created_date": "2022-11-14",
+      "edition_estimate": "USP 46-NF 41 (est.)",
+      "pubchem_cid": 60496,
+      "cas_number": "111470-99-6",
+      "inchi_key": "ZPBWCRDSRKPIDG-UHFFFAOYSA-N",
+      "note": "CrossRef confirms monograph existence only. Full text and assigned content require usp.org access. content_verified must be set to True by a human reviewer before this record is treated as fully verified."
+    },
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-AML-WEB-001",
+        "ctd_section": "3.2.S.5",
+        "rationale": "Sponsor claims USP Reference Standard for Amlodipine Besylate. Lot number USP-AML-2024-R046 is provided. Certificate of analysis (CoA) submitted with purity assigned. Overlaid IR spectra of the USP RS and Amlodipine Besylate drug substance batch submitted confirming identity. Working standard WS-AML-LAB-003 qualified against USP RS lot USP-AML-2024-R046. Source of standards: purchased from United States Pharmacopeia. [Evidence: USP monograph existence confirmed via CrossRef DOI 10.31003/uspnf_m3570_06_01 (publisher: U.S. Pharmacopeial Convention; type: standard; created: 2022-11-14; estimated edition: USP 46-NF 41). content_verified=False — human review of usp.org required to confirm assigned content.]",
+        "evidence_snippet": "Lot no. USP-AML-2024-R046. CoA submitted with purity assigned. Overlaid IR spectra consistent. Working standard WS-AML-LAB-003 traceability confirmed. Source: USP. CrossRef DOI: 10.31003/uspnf_m3570_06_01 (USP 46-NF 41, est.).",
+        "citation": "Amlodipine Besylate. U.S. Pharmacopeial Convention. USP 46-NF 41 (est.). DOI: 10.31003/uspnf_m3570_06_01. Available at: https://doi.org/10.31003/uspnf_m3570_06_01. Retrieved 2026-11-16. [content_verified=False — human review required]",
+        "uncertainty_score": 20,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-AML-WEB-001",
+        "qa_status": "PASS",
+        "note": "All IPRP S.5 sub-item text indicators present: lot number (USP-AML-2024-R046), CoA, IR spectra (overlaid), working standard (WS-AML-LAB-003), source (USP). CrossRef DOI citation present so R1 does not fire. R4 (lot number), R5 (CoA/characterisation), R5b (working standard), R6 (source) all pass. content_verified=False is noted in the retrieval context but does not block QA/Critic PASS — it is a flag for the human assessor. PASS."
+      }
+    ],
+    "section_escalations": []
+  }
+}

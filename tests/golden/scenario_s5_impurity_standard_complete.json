@@ -1,0 +1,37 @@
+{
+  "_meta": {
+    "scenario": "s5_impurity_standard_complete",
+    "description": "A compendial primary RS finding that also documents impurity standards with full characterisation and assigned purity. All IPRP sub-items (a)–(d) are present in the finding text, plus explicit mention of impurity standard identity and purity. QA/Critic R4–R6 all pass; qa_status must be PASS.",
+    "rule_under_test": "R4, R5, R5b, R6 (all pass); impurity standard content exercises R7 indirectly via 'source' keyword",
+    "direction": "POSITIVE (compendial RS with complete impurity standard documentation — should PASS)",
+    "iprp_reference": "IPRP QWGG Guidance for Quality Assessors – Drug Substance, S.5, page 18. Assessment point (iv): 'Impurity standard (characterisation, purity), if applicable.'",
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-IMP-001",
+        "ctd_section": "3.2.S.5",
+        "rationale": "Sponsor uses USP 47 Reference Standard for Compound Alpha, lot number USP-CA-2024-R112. Certificate of analysis (CoA) submitted. Overlaid IR spectra of the reference standard and drug substance submitted confirming identity. Working standard WS-CA-LAB-007 qualified against the USP primary reference standard. Source of standards: purchased from United States Pharmacopeia. Impurity standard for Alpha-Impurity-1 characterised by IR and NMR spectroscopy; purity assigned at 98.6% and documented in the impurity standard CoA supplied by Sigma Reference Materials.",
+        "evidence_snippet": "Lot no. USP-CA-2024-R112. CoA submitted. Overlaid IR spectra consistent. Working standard WS-CA-LAB-007 traceability confirmed. Source: USP. Impurity standard Alpha-Impurity-1: IR and NMR characterisation complete; purity 98.6% assigned.",
+        "citation": "Compound Alpha, USP 47, p. 1102; Alpha-Impurity-1 CoA, Sigma Reference Materials, Lot SRM-AI1-2024-004.",
+        "uncertainty_score": 10,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-IMP-001",
+        "qa_status": "PASS",
+        "note": "All R4–R6 keywords present: lot number, CoA, IR spectra (overlaid), working standard, source. Impurity standard characterisation and purity documented. R7 does not fire. PASS."
+      }
+    ],
+    "section_escalations": []
+  }
+}

@@ -112,8 +112,13 @@ body {
 
 /* ── AI vs human sections ───────────────────────────────────────────── */
 .finding-card__ai-section,
+.finding-card__s5-section,
 .finding-card__decision-section {
   padding: 1rem;
+}
+.finding-card__s5-section {
+  border-top: 1px solid var(--colour-border);
+  background: #f0f4f8;
 }
 .finding-card__decision-section {
   border-top: 2px dashed var(--colour-border);
@@ -186,6 +191,282 @@ body {
 .badge--flag     { background: #fff3e0; color: var(--colour-flag); border: 1px solid #ffcc80; }
 .badge--escalate { background: #ffebee; color: var(--colour-escalate); border: 1px solid #ef9a9a; }
 .badge--pending  { background: #eceff1; color: var(--colour-pending); border: 1px solid #b0bec5; }
+
+/* ── S.5 Reference Standards panel ─────────────────────────────────── */
+.s5-loading {
+  font-size: 0.85rem;
+  color: var(--colour-text-secondary);
+  font-style: italic;
+}
+
+.s5-error {
+  font-size: 0.85rem;
+  color: var(--colour-escalate);
+  background: #ffebee;
+  border: 1px solid #ef9a9a;
+  border-radius: var(--radius);
+  padding: 0.4rem 0.75rem;
+}
+
+.s5-result { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.s5-result__verdict-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* S.5 verdict badges — distinct from QA status badges */
+.s5-verdict {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 3px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.s5-verdict--compliant {
+  background: #e8f5e9;
+  color: #1b5e20;
+  border: 1px solid #81c784;
+}
+.s5-verdict--non-compliant {
+  background: #ffebee;
+  color: #b71c1c;
+  border: 1px solid #ef9a9a;
+}
+.s5-verdict--needs-review {
+  background: #fff8e1;
+  color: #e65100;
+  border: 1px solid #ffcc02;
+}
+
+.s5-result__reason {
+  font-size: 0.875rem;
+  color: var(--colour-text);
+}
+
+.s5-result__flags { display: flex; flex-direction: column; gap: 0.3rem; }
+
+.s5-flags__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--colour-flag);
+}
+
+.s5-flags__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-left: 0.5rem;
+}
+
+.s5-flag-item {
+  font-size: 0.82rem;
+  color: var(--colour-text);
+  padding: 0.2rem 0.5rem;
+  background: #fff3e0;
+  border-left: 3px solid var(--colour-flag);
+  border-radius: 2px;
+  text-transform: capitalize;
+}
+
+.s5-result__complete {
+  font-size: 0.82rem;
+  color: var(--colour-pass);
+  font-weight: 600;
+}
+
+.s5-result__source-note {
+  font-size: 0.75rem;
+  color: var(--colour-text-secondary);
+  font-style: italic;
+  border-top: 1px solid var(--colour-border);
+  padding-top: 0.4rem;
+  margin-top: 0.2rem;
+}
+
+/* ── Evidence sufficiency chip (Phase 4) ────────────────────────────── */
+/* Rendered by EvidenceSufficiencyChip in FindingCard.tsx.               */
+/* BEM: s5-sufficiency (base) + s5-sufficiency--<value> (modifier).      */
+
+.s5-sufficiency {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: default;        /* tooltip on hover; not interactive */
+}
+
+/* SUPPORTED — all IPRP sub-items present; edition matches */
+.s5-sufficiency--supported {
+  background: #e8f5e9;
+  color: #1b5e20;
+  border: 1px solid #81c784;
+}
+
+/* PARTIAL — edition check resolved but structural gaps remain */
+.s5-sufficiency--partial {
+  background: #fff8e1;
+  color: #e65100;
+  border: 1px solid #ffcc80;
+}
+
+/* CONFLICTING — two retrieval sources returned contradictory edition data */
+.s5-sufficiency--conflicting {
+  background: #fce4ec;
+  color: #880e4f;
+  border: 1px solid #f48fb1;
+}
+
+/* INSUFFICIENT — edition data unavailable AND structural gaps present */
+.s5-sufficiency--insufficient {
+  background: #ffebee;
+  color: #b71c1c;
+  border: 1px solid #ef9a9a;
+}
+
+/* NOT_VERIFIED — claim complete but no edition record found */
+/* CSS class name uses hyphen: s5-sufficiency--not-verified              */
+.s5-sufficiency--not-verified {
+  background: #eceff1;
+  color: #37474f;
+  border: 1px solid #b0bec5;
+}
+
+/* ── Ollama AI reasoning commentary panel (Phase 5) ─────────────────── */
+/* Rendered by ModelReviewSection in FindingCard.tsx.                     */
+/* BEM root: s5-model-review                                               */
+
+.s5-model-review {
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+  background: var(--colour-surface);
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+/* Toggle button — full-width, looks like a panel header */
+.s5-model-review__toggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #e8edf2;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1a3a5c;
+  text-align: left;
+  transition: background 0.15s;
+}
+.s5-model-review__toggle:hover { background: #d6e0ea; }
+.s5-model-review__toggle:focus-visible {
+  outline: 2px solid #1565c0;
+  outline-offset: -2px;
+}
+
+.s5-model-review__toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.s5-model-review__model-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  background: #c8d8e8;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #1a3a5c;
+  letter-spacing: 0.03em;
+  text-transform: none;
+}
+
+.s5-model-review__chevron {
+  font-size: 0.65rem;
+  color: #546e7a;
+  flex-shrink: 0;
+}
+
+/* Collapsible body */
+.s5-model-review__body {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  border-top: 1px solid var(--colour-border);
+}
+
+/* Disclaimer — always first and visually prominent */
+.s5-model-review__disclaimer {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #7b3f00;
+  background: #fff3e0;
+  border: 1px solid #ffcc80;
+  border-left: 3px solid #f57c00;
+  border-radius: 2px;
+  padding: 0.4rem 0.6rem;
+  line-height: 1.4;
+}
+
+/* Meta line — model name + timestamp */
+.s5-model-review__meta {
+  font-size: 0.75rem;
+  color: var(--colour-text-secondary);
+}
+
+/* Empty state — no issues found */
+.s5-model-review__empty {
+  font-size: 0.82rem;
+  color: var(--colour-pass);
+  font-style: italic;
+}
+
+/* Each issue group (potential issues / missing info / etc.) */
+.s5-model-review__group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.s5-model-review__group-heading {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--colour-text-secondary);
+}
+
+/* Bullet list inside each group */
+.s5-model-review__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-left: 0.5rem;
+}
+
+.s5-model-review__list li {
+  font-size: 0.82rem;
+  color: var(--colour-text);
+  padding: 0.2rem 0.5rem;
+  background: #f5f7fa;
+  border-left: 3px solid #90a4ae;
+  border-radius: 2px;
+  line-height: 1.4;
+}
 
 /* ── Decision area ──────────────────────────────────────────────────── */
 .decision-prompt { font-size: 0.82rem; color: var(--colour-text-secondary); margin-bottom: 0.75rem; }
@@ -273,3 +554,401 @@ body {
   .app-header__inner { flex-direction: column; align-items: flex-start; }
   .uncertainty-bar { width: 100%; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   S5 Assessment Panel — IPRP S.5 structured layout
+   Added Phase 1 frontend restructuring
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Panel wrapper */
+.s5panel {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Section common */
+.s5panel__section {
+  padding: 1rem;
+  border-top: 1px solid var(--colour-border);
+}
+
+.s5panel__section-heading {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a3a5c;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.s5panel__section-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: #1a3a5c;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Section A colour accent */
+.s5panel__section--a { border-left: 3px solid #1565c0; }
+.s5panel__section--b { border-left: 3px solid #2e7d32; }
+.s5panel__section--c { border-left: 3px solid #e65100; }
+.s5panel__section--d { border-left: 3px solid #546e7a; }
+
+/* Overview grid (Section A) */
+.s5panel__overview-grid {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: 0.3rem 0.75rem;
+  font-size: 0.82rem;
+  margin-bottom: 0.6rem;
+}
+.s5panel__overview-grid dt {
+  font-weight: 600;
+  color: var(--colour-text-secondary);
+}
+.s5panel__overview-grid dd { color: var(--colour-text); }
+
+/* Verdict badges */
+.s5panel__verdict {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-right: 0.4rem;
+}
+.s5panel__verdict--compliant     { background: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; }
+.s5panel__verdict--non-compliant { background: #ffebee; color: #b71c1c; border: 1px solid #ef9a9a; }
+.s5panel__verdict--needs-review  { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
+
+/* Evidence tier badges */
+.s5panel__tier-badge {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.s5panel__tier-badge--tier1 { background: #e8f5e9; color: #1b5e20; }
+.s5panel__tier-badge--tier2 { background: #fff8e1; color: #f57f17; }
+.s5panel__tier-badge--tier3 { background: #f3e5f5; color: #6a1b9a; }
+
+/* Evidence sufficiency chip */
+.s5panel__sufficiency {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-left: 0.3rem;
+}
+.s5panel__sufficiency--supported    { background: #e8f5e9; color: #1b5e20; }
+.s5panel__sufficiency--partial      { background: #fff3e0; color: #e65100; }
+.s5panel__sufficiency--conflicting  { background: #fce4ec; color: #880e4f; }
+.s5panel__sufficiency--insufficient { background: #ffebee; color: #b71c1c; }
+.s5panel__sufficiency--not-verified { background: #f5f5f5; color: #616161; }
+
+/* Verdict reason + source note */
+.s5panel__verdict-reason {
+  font-size: 0.82rem;
+  color: var(--colour-text);
+  margin-bottom: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  background: #fafafa;
+  border-left: 3px solid #90a4ae;
+  border-radius: 2px;
+}
+.s5panel__source-note {
+  font-size: 0.75rem;
+  color: var(--colour-text-secondary);
+  font-style: italic;
+}
+
+/* Misc inline helpers */
+.s5panel__not-provided      { color: #9e9e9e; font-style: italic; font-size: 0.8rem; }
+.s5panel__not-provided-text { color: #9e9e9e; font-style: italic; }
+.s5panel__not-applicable    { color: #546e7a; font-style: italic; font-size: 0.8rem; }
+.s5panel__not-verified      { color: #e65100; font-style: italic; font-size: 0.8rem; }
+.s5panel__complete          { color: #2e7d32; font-size: 0.82rem; }
+.s5panel__secondary-text    { color: var(--colour-text-secondary); font-size: 0.8rem; }
+.s5panel__bool--yes         { color: #2e7d32; font-weight: 600; }
+.s5panel__bool--no          { color: #c62828; font-weight: 600; }
+
+/* Not-applicable / not-provided block paragraphs */
+.s5panel__not-applicable-block,
+.s5panel__not-provided-block {
+  font-size: 0.82rem;
+  color: var(--colour-text-secondary);
+  padding: 0.5rem;
+  background: #fafafa;
+  border-radius: var(--radius);
+}
+
+/* Reference standards tables (Section B) */
+.s5panel__subsection { margin-bottom: 1rem; }
+.s5panel__subsection-heading {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--colour-text-secondary);
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.s5panel__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.s5panel__table th {
+  text-align: left;
+  padding: 0.3rem 0.5rem;
+  background: #f1f3f4;
+  border: 1px solid var(--colour-border);
+  font-weight: 600;
+  color: var(--colour-text-secondary);
+}
+.s5panel__table td {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--colour-border);
+  color: var(--colour-text);
+}
+
+/* KV list (Section B in-house, Section D) */
+.s5panel__kv-list {
+  display: grid;
+  grid-template-columns: 14rem 1fr;
+  gap: 0.3rem 0.75rem;
+  font-size: 0.82rem;
+  margin-bottom: 0.6rem;
+}
+.s5panel__kv-list dt {
+  font-weight: 600;
+  color: var(--colour-text-secondary);
+}
+
+/* Assessment points (Section C) */
+.s5panel__flags-summary {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffcc80;
+  border-radius: 3px;
+  padding: 0.1rem 0.4rem;
+}
+.s5panel__points-list { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.s5panel__point {
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.s5panel__point--has-gaps { border-color: #ffb74d; }
+
+.s5panel__point-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: #f8f9fa;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.82rem;
+}
+.s5panel__point-toggle:hover { background: #f1f3f4; }
+
+.s5panel__point-number {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #1a3a5c;
+  color: #fff;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.s5panel__point-title { flex: 1; font-weight: 600; color: var(--colour-text); }
+
+.s5panel__point-gap-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffcc80;
+  border-radius: 3px;
+  padding: 0.1rem 0.35rem;
+}
+.s5panel__point-chevron { font-size: 0.7rem; color: var(--colour-text-secondary); flex-shrink: 0; }
+
+.s5panel__point-body { padding: 0.75rem; background: #fff; }
+
+.s5panel__point-fields {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: 0.4rem 0.75rem;
+  font-size: 0.82rem;
+}
+.s5panel__point-fields dt {
+  font-weight: 600;
+  color: var(--colour-text-secondary);
+}
+.s5panel__ref-text    { font-style: italic; color: var(--colour-text-secondary); }
+.s5panel__source-text { font-size: 0.78rem; color: var(--colour-text-secondary); }
+
+/* Gap lists */
+.s5panel__gap-list { list-style: none; padding: 0; margin: 0; }
+.s5panel__gap-item {
+  display: inline-block;
+  font-size: 0.75rem;
+  background: #fff3e0;
+  color: #bf360c;
+  border: 1px solid #ffcc80;
+  border-radius: 3px;
+  padding: 0.1rem 0.4rem;
+  margin: 0.1rem 0.2rem 0.1rem 0;
+}
+
+/* Rule references */
+.s5panel__rule-list { list-style: none; padding: 0; margin: 0; }
+.s5panel__rule-item {
+  display: inline-block;
+  font-size: 0.75rem;
+  background: #e3f2fd;
+  color: #0d47a1;
+  border: 1px solid #90caf9;
+  border-radius: 3px;
+  padding: 0.1rem 0.4rem;
+  margin: 0.1rem 0.2rem 0.1rem 0;
+}
+
+/* Model review collapsible (Section D) */
+.s5panel__model-review {
+  margin-top: 0.75rem;
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.s5panel__model-review-toggle {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: #f8f9fa;
+  border: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--colour-text);
+  text-align: left;
+}
+.s5panel__model-review-toggle:hover { background: #f1f3f4; }
+.s5panel__model-review-body { padding: 0.75rem; font-size: 0.82rem; }
+.s5panel__disclaimer {
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-left: 3px solid #f9a825;
+  border-radius: 2px;
+  padding: 0.4rem 0.6rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+  color: #4e3b00;
+}
+.s5panel__meta { font-size: 0.78rem; color: var(--colour-text-secondary); margin-bottom: 0.5rem; }
+.s5panel__review-group { margin-bottom: 0.5rem; }
+.s5panel__review-group h5 {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--colour-text-secondary);
+  margin-bottom: 0.25rem;
+}
+.s5panel__review-group ul { margin: 0; padding-left: 1.25rem; }
+.s5panel__review-group li { font-size: 0.8rem; margin-bottom: 0.15rem; }
+
+/* Internal traceability collapsible (Section D) */
+.s5panel__traceability,
+.finding-card__traceability {
+  margin-top: 0.75rem;
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.s5panel__traceability-toggle,
+.finding-card__traceability-toggle {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.4rem 0.75rem;
+  background: #fafafa;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--colour-text-secondary);
+  text-align: left;
+}
+.s5panel__traceability-toggle:hover,
+.finding-card__traceability-toggle:hover { background: #f1f3f4; }
+
+.s5panel__traceability-body,
+.finding-card__traceability-body {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 0.3rem 0.75rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.82rem;
+  background: #fff;
+}
+.s5panel__traceability-body dt,
+.finding-card__traceability-body dt {
+  font-weight: 600;
+  color: var(--colour-text-secondary);
+}
+.s5panel__evidence-snippet { font-style: italic; }
+
+/* QA section for non-S5 findings */
+.finding-card__qa-section { padding: 1rem; border-top: 1px solid var(--colour-border); }
+
+.finding-card__rule-list { list-style: none; padding: 0; margin: 0; }
+.finding-card__rule-item {
+  display: inline-block;
+  font-size: 0.75rem;
+  background: #e3f2fd;
+  color: #0d47a1;
+  border: 1px solid #90caf9;
+  border-radius: 3px;
+  padding: 0.1rem 0.4rem;
+  margin: 0.1rem 0.2rem 0.1rem 0;
+}
+
+/* Inline QA status (used in Section D) */
+.qa-status-inline {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.qa-status-inline--pass     { background: #e8f5e9; color: var(--colour-pass); }
+.qa-status-inline--flag     { background: #fff3e0; color: var(--colour-flag); }
+.qa-status-inline--escalate { background: #ffebee; color: var(--colour-escalate); }
+
+/* Section E label override in FindingCard */
+.finding-card__decision-section .s5panel__section-label {
+  background: #546e7a;
+}
+
+/* S5 loading / error states */
+.finding-card__s5-loading,
+.finding-card__s5-error { padding: 1rem; }

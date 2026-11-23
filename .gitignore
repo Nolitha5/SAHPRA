@@ -1,3 +1,8 @@
 node_modules/
 data/
 *.log
+__pycache__/
+*.py[cod]
+.pytest_cache/
+frontend/dist/
+frontend/vite.config.ts.timestamp-*.mjs

@@ -1,0 +1,37 @@
+{
+  "_meta": {
+    "scenario": "s5_pheur_content_not_stated",
+    "description": "A Ph. Eur. reference standard finding where lot number, CoA, IR spectra, working standard, and source are all documented (R4–R6 pass), but whether the Ph. Eur. RS is used for content (quantitative analysis) rather than identity only is not stated. The QA/Critic text rules pass because all keyword markers are present. The structured ph_eur_used_for_content=None gap is caught by s5_standards.py Fix B — not by the QA/Critic. This scenario documents the G7 architecture boundary for the Ph. Eur.-specific check.",
+    "rule_under_test": "R4–R6 all pass (keywords present); ph_eur_used_for_content structural gap detected by s5_standards.py Fix B",
+    "direction": "POSITIVE for QA/Critic (PASS); structured gap detected upstream by s5_standards.py",
+    "iprp_reference": "IPRP QWGG Guidance for Quality Assessors – Drug Substance, S.5, page 18. Assessment point (i): 'If a Ph. Eur. reference standard is used for quantitative analysis, the reference standard should be for content (not for identity only).'",
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-PE-001",
+        "ctd_section": "3.2.S.5",
+        "rationale": "Sponsor claims Ph. Eur. Chemical Reference Substance (CRS) for Compound Gamma. Lot number CRS-CG-2024-PE-003 is provided. Certificate of analysis (CoA) obtained from EDQM. Overlaid IR spectra of the CRS and drug substance submitted confirming identity. Working standard WS-CG-PE-001 qualified against the Ph. Eur. CRS. Source of standards: European Directorate for the Quality of Medicines (EDQM). Whether the Ph. Eur. CRS is used for content determination (quantitative analysis) or identity testing only is not stated in the submission.",
+        "evidence_snippet": "Lot no. CRS-CG-2024-PE-003. CoA from EDQM. IR spectra overlaid. Working standard WS-CG-PE-001 traceability confirmed. Source: EDQM. Use for content vs identity not stated.",
+        "citation": "Compound Gamma CRS, Ph. Eur. 11.0, EDQM, Lot CRS-CG-2024-PE-003.",
+        "uncertainty_score": 35,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-PE-001",
+        "qa_status": "PASS",
+        "note": "QA/Critic text-keyword rules R4–R6 all pass: lot number, CoA, IR spectra (overlaid), working standard, and source are all present. The missing ph_eur_used_for_content declaration (IPRP assessment point i) is a structured-field gap detected by s5_standards.py _check_completeness Fix B, not by qa_critic.py text rules. G7 architecture boundary: QA/Critic is last-line text check only."
+      }
+    ],
+    "section_escalations": []
+  }
+}

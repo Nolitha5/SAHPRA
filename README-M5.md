@@ -79,11 +79,11 @@ cd backend
 python -m pytest tests/ -v
 ```
 
-**45 tests — 4 files:**
+**Core test files:**
 
 | File | What it covers |
 |---|---|
-| `tests/test_qa_critic.py` | QA/Critic rules: citation, score range, contradiction, escalation; mock_findings F-005 out-of-range score |
+| `tests/test_qa_critic.py` | QA/Critic rules: citation, score range, contradiction, escalation |
 | `tests/test_s5_standards.py` | S.5 agent: COMPLIANT, NON_COMPLIANT, NEEDS_REVIEW, replaceability; S.5 layer of `scenario_outdated_standard.json` |
 | `tests/test_golden_scenarios.py` | Golden-answer scenario validation against QA/Critic output (13 scenarios) |
 | `tests/test_findings_api.py` | Raw, single, and QA-reviewed findings API endpoints |
@@ -96,9 +96,11 @@ python -m pytest tests/ -v
 |---|---|---|
 | `GET` | `/health` | Liveness check |
 | `GET` | `/findings` | Raw mock findings (no QA applied) |
-| `GET` | `/findings/reviewed` | Mock findings after QA/Critic review (used by UI) |
+| `GET` | `/findings/reviewed` | QA-reviewed demo finding with its latest local assessor decision |
 | `POST` | `/qa/review` | Run QA/Critic on a supplied findings list |
+| `POST` | `/s5/assess` | Assess a structured S.5 claim, apply QA/Critic, and return all eight Section C criteria |
 | `POST` | `/s5/check` | Check a sponsor S.5 standard claim |
+| `POST` | `/documents/upload` | Ingest regulatory reference material for the knowledge base |
 | `POST` | `/decisions/{finding_id}` | Record assessor decision; writes to stub audit log |
 | `POST` | `/m1/human-gate` | Stub: post QA-stamped findings to M1 Human Gate callback |
 
@@ -129,13 +131,15 @@ curl -X POST http://localhost:8000/qa/review \
 
 | File | Contents |
 |---|---|
-| `backend/mock_findings.json` | `{_meta, findings}` object — 5 synthetic findings across 3 CTD sections. **F-005 has `uncertainty_score: 150` intentionally** to exercise QA/Critic out-of-range enforcement. For an all-PASS dataset use `tests/golden/scenario_pass.json`. |
+| `backend/mock_findings.json` | Demo fixture containing F-003 for CTD 3.2.S.5 Reference Standards. |
 | `backend/s5_standards.py` (`_MOCK_RECORDS`) | BP Ethanol (2019, 2020, 2024) and USP Aspirin (42, 47) |
 | `tests/golden/scenario_pass.json` | 3 structurally valid findings — all PASS. F-005 uses score 15 (valid). |
 | `tests/golden/scenario_identity_fail.json` | CAS number mismatch (Ethanol vs Formaldehyde). QA PASS — structurally valid; regulatory concern for assessor. |
 | `tests/golden/scenario_outdated_standard.json` | BP 2019 claimed at 2024 submission date. Has `input.s5_claim` and `expected_output.s5_finding` for S.5 layer. |
 
-All mock data is synthetic and clearly labelled. No real dossier data is used.
+The assessor demo uses synthetic F-003 data. Applicant dossier upload and extraction belong to system orchestration, which supplies the structured S.5 claim to M5. Section E decisions are saved to the local audit stub at `backend/data/audit_log.jsonl` and restored on refresh.
+
+Section C uses the QAR-01 through QAR-04 and AS-01 through AS-04 report criterion IDs. The edition-check finding also exposes a legacy evidence reference using a separate ID set. Keep these namespaces in mind when consuming the API.
 
 ---
 

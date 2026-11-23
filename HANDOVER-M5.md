@@ -6,6 +6,12 @@
 
 ---
 
+## Current demo
+
+F-003 is the single synthetic CTD 3.2.S.5 finding. The interface submits its structured claim to `POST /s5/assess` for the Agent 8 assessment, Agent 12 QA review, and eight Section C criteria. Section E restores the last saved decision from the local M4 audit stub. Applicant dossier upload and extraction sit with orchestration. The document ingestion endpoint accepts regulatory knowledge-base sources and rejects applicant dossier uploads.
+
+The phase notes below describe earlier snapshots.
+
 ## What was done
 
 ### Phase 0 — Inspection (read-only)

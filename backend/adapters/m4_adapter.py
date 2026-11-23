@@ -66,6 +66,24 @@ class LocalFileAuditAdapter:
         except OSError:
             return False
 
+    def latest_decisions(self) -> dict[str, AuditRecord]:
+        """Return the latest complete local audit entry for each finding."""
+        decisions: dict[str, AuditRecord] = {}
+        try:
+            with self._path.open(encoding="utf-8") as audit_log:
+                for line in audit_log:
+                    try:
+                        record = AuditRecord(**json.loads(line))
+                        datetime.fromisoformat(record.timestamp)
+                        if record.decision in ("Approve", "Query", "Reject"):
+                            decisions[record.finding_id] = record
+                    except (ValueError, TypeError):
+                        # Ignore incomplete or malformed audit entries.
+                        continue
+        except FileNotFoundError:
+            pass
+        return decisions
+
 
 def make_audit_record(
     finding_id: str,

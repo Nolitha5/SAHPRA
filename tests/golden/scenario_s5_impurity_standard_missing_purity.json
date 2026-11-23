@@ -1,0 +1,37 @@
+{
+  "_meta": {
+    "scenario": "s5_impurity_standard_missing_purity",
+    "description": "A finding where the primary RS documentation is complete (lot, CoA, IR, working standard, source all present) but the impurity standard is mentioned without an assigned purity value. The QA/Critic rules R4–R6 operate on text keywords only and cannot detect the missing structured field — this scenario confirms R4–R6 all pass despite the structural gap. The finding PASSes QA/Critic. This documents the known architecture limitation (G7): structured impurity standard completeness is enforced by s5_standards.py _check_completeness, not by qa_critic.py text-keyword rules.",
+    "rule_under_test": "R4–R6 all pass (text keywords present); G7 architecture limitation documented",
+    "direction": "POSITIVE for QA/Critic (PASS); structured gap detected upstream by s5_standards.py",
+    "iprp_reference": "IPRP QWGG Guidance for Quality Assessors – Drug Substance, S.5, page 18. Assessment point (iv): impurity standard purity required.",
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-IMP-002",
+        "ctd_section": "3.2.S.5",
+        "rationale": "Sponsor uses USP 47 Reference Standard for Compound Beta, lot number USP-CB-2024-R220. Certificate of analysis (CoA) submitted. Overlaid IR spectra submitted confirming identity. Working standard WS-CB-023 qualified against the USP primary reference standard. Source: purchased from United States Pharmacopeia. An impurity standard for Beta-Impurity-2 is referenced but no assigned purity value is stated in the submission.",
+        "evidence_snippet": "Lot no. USP-CB-2024-R220. CoA submitted. IR spectra overlaid. Working standard WS-CB-023 traceability confirmed. Source: USP. Impurity standard Beta-Impurity-2 referenced; purity not stated.",
+        "citation": "Compound Beta, USP 47, p. 2204.",
+        "uncertainty_score": 40,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-IMP-002",
+        "qa_status": "PASS",
+        "note": "QA/Critic text-keyword rules R4–R6 all pass: lot number, CoA, IR spectra, working standard, and source keywords are all present. The missing impurity standard purity (IPRP assessment point iv) is a structured-field gap detected by s5_standards.py _check_completeness, not by qa_critic.py. This is the documented G7 architecture limitation: QA/Critic is a last-line text check only."
+      }
+    ],
+    "section_escalations": []
+  }
+}

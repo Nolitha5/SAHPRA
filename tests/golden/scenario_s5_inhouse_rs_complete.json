@@ -1,0 +1,37 @@
+{
+  "_meta": {
+    "scenario": "s5_inhouse_rs_complete",
+    "description": "A fully characterised in-house primary reference standard. The finding rationale references lot number, CoA with purity assigned by mass balance, overlaid IR spectra, working standard qualification, and source of standards. All IPRP sub-items (a)–(d) are covered. QA/Critic rules R4–R6 must all pass; qa_status must be PASS.",
+    "rule_under_test": "R4, R5, R5b, R6 (all must PASS for a complete in-house RS finding)",
+    "direction": "POSITIVE (complete in-house primary RS — should PASS)",
+    "iprp_reference": "IPRP QWGG Guidance for Quality Assessors – Drug Substance, S.5 Reference Standards or Materials, page 18. Bullet (c): in-house RS must be fully characterised (IR, UV, NMR, MS); CoA with purity assigned submitted.",
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-IH-001",
+        "ctd_section": "3.2.S.5",
+        "rationale": "Sponsor uses an in-house primary reference standard for Synthetic Compound X. Lot number IH-SCX-2024-001 is provided. The in-house standard is fully characterised by IR, UV, NMR, and MS spectroscopy. A certificate of analysis (CoA) has been submitted with purity assigned at 99.4% by mass balance. Overlaid IR spectra of the in-house RS and the drug substance batch are submitted confirming identity. Working standard WS-SCX-IH-002 has been qualified against the in-house primary reference standard. Source of standards: in-house preparation at ABC Analytical Laboratory.",
+        "evidence_snippet": "Lot no. IH-SCX-2024-001. CoA submitted; purity 99.4% by mass balance. IR, UV, NMR, MS characterisation complete. Overlaid IR spectra submitted. Working standard WS-SCX-IH-002 qualified against in-house primary. Source: ABC Analytical Laboratory.",
+        "citation": "In-house characterisation report, ABC Analytical Laboratory, Ref. IH-SCX-2024-001-CR, 2024.",
+        "uncertainty_score": 15,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-IH-001",
+        "qa_status": "PASS",
+        "note": "All IPRP S.5 sub-item indicators present: lot number (IH-SCX-2024-001), CoA, IR spectra (overlaid), working standard, source. R4–R6 all pass. No section-escalation threshold met."
+      }
+    ],
+    "section_escalations": []
+  }
+}

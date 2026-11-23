@@ -1,0 +1,38 @@
+{
+  "_meta": {
+    "scenario": "s5_inhouse_rs_missing_characterisation",
+    "description": "An in-house primary reference standard where the rationale mentions lot number, source, and working standard but does NOT reference CoA, IR spectra, or characterisation methods. R5 (CoA not referenced) and R5b (IR spectra not referenced) must both fire. Two flag reasons on one finding, one flagged finding in section — stays FLAG (section escalation threshold not met).",
+    "rule_under_test": "R5 (s5_coa_not_referenced) + R5b (s5_ir_spectra_not_referenced)",
+    "direction": "NEGATIVE (in-house RS missing CoA and IR references — should FLAG)",
+    "iprp_reference": "IPRP QWGG Guidance for Quality Assessors – Drug Substance, S.5, page 18. Bullet (c): 'state if a certificate of analysis has been submitted with purity assigned'; CoA and overlaid IR spectra required.",
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-IH-002",
+        "ctd_section": "3.2.S.5",
+        "rationale": "Sponsor uses an in-house primary reference standard for Synthetic Compound Y. Lot number IH-SCY-2024-005 is provided. Working standard WS-SCY-003 was standardised against the primary in-house standard. Source of standards: in-house preparation, XYZ Research Unit.",
+        "evidence_snippet": "Lot no. IH-SCY-2024-005 confirmed. Working standard WS-SCY-003 traceability documented. Source: XYZ Research Unit.",
+        "citation": "In-house preparation summary, XYZ Research Unit, Ref. IH-SCY-2024-005, 2024.",
+        "uncertainty_score": 55,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-IH-002",
+        "qa_status": "FLAG",
+        "flag_codes": ["s5_coa_not_referenced", "s5_ir_spectra_not_referenced"],
+        "note": "R5: no certificate of analysis (CoA) or 'coa' keyword referenced. R5b: no overlaid IR spectra referenced. Lot number and working standard are present so R4 and R6 pass. R7 does not fire (lot and source keywords present). Only one flagged finding in section — stays FLAG."
+      }
+    ],
+    "section_escalations": []
+  }
+}

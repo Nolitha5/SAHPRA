@@ -1,0 +1,47 @@
+{
+  "_meta": {
+    "scenario": "s5_web_retrieval_failure",
+    "description": "S.5 reference standards finding where web retrieval returned NEEDS_REVIEW — the substance could not be confirmed in USP via CrossRef, and the sponsor's dossier provides no independent citable source. The rationale contains all required IPRP S.5 text indicators (lot number, CoA, IR spectra, working standard, source) so R4–R6 do not fire, but the absence of any citation triggers R1 (missing citation) → FLAG. This scenario validates that the retrieval failure path produces a FLAG result that correctly routes the finding to a human assessor, and that the system does not suppress the flag merely because retrieval was attempted.",
+    "rule_under_test": "R1 (missing citation — fires, qa_status=FLAG)",
+    "direction": "NEGATIVE (retrieval NEEDS_REVIEW + no sponsor citation — should FLAG via R1)",
+    "iprp_reference": "IPRP QWGG Guidance for Quality Assessors – Drug Substance, S.5 Reference Standards or Materials, page 18. All bullets (a)–(d) text indicators present in rationale, but absence of a citable source prevents PASS.",
+    "retrieval_context": {
+      "retrieval_enabled": true,
+      "evidence_tier": "NEEDS_REVIEW",
+      "content_verified": false,
+      "source": null,
+      "doi": null,
+      "doi_created_date": null,
+      "edition_estimate": null,
+      "note": "CrossRef prefix search for '10.31003' returned 0 results for the queried substance name. PubChem synonym resolution found no USAN alias that yielded a CrossRef hit. Sponsor dossier also provides no independent citation. Manual lookup on usp.org or alternative pharmacopoeia (Ph. Eur., WHO Ph.Int.) required."
+    },
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-AML-WEB-FAIL-001",
+        "ctd_section": "3.2.S.5",
+        "rationale": "Sponsor claims USP Reference Standard for Amlodipine Besylate. Lot number USP-AML-2024-R046 is provided. Certificate of analysis (CoA) submitted with purity assigned. Overlaid IR spectra of the USP RS and Amlodipine Besylate drug substance batch submitted confirming identity. Working standard WS-AML-LAB-003 qualified against USP RS lot USP-AML-2024-R046. Source of standards: purchased from United States Pharmacopeia. [Web retrieval result: NEEDS_REVIEW — USP monograph could not be confirmed via CrossRef for this substance. No USAN alias resolved. Manual lookup on usp.org required. content_verified=False.]",
+        "evidence_snippet": "Lot no. USP-AML-2024-R046. CoA submitted. Overlaid IR spectra consistent. Working standard WS-AML-LAB-003 documented. Source: USP. Retrieval: NEEDS_REVIEW — no DOI confirmed.",
+        "citation": "",
+        "uncertainty_score": 45,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-AML-WEB-FAIL-001",
+        "qa_status": "FLAG",
+        "note": "R1 fires: citation field is empty and no citable source was confirmed by web retrieval (NEEDS_REVIEW). R4 (lot number present), R5 (CoA/characterisation language present), R5b (working standard present), R6 (source: USP stated) would individually pass, but R1 overrides to FLAG. The finding must be routed to a human assessor to locate and verify the pharmacopoeial citation before a compliant assessment can be completed. FLAG."
+      }
+    ],
+    "section_escalations": []
+  }
+}

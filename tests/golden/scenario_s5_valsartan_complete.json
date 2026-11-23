@@ -1,0 +1,37 @@
+{
+  "_meta": {
+    "scenario": "s5_valsartan_complete",
+    "description": "Complete S.5 reference standards finding for Valsartan (USP 47). All IPRP sub-items (a)–(d) are documented: lot number, CoA, overlaid IR spectra, working standard qualification, and source. Mirrors the SCoRE fixed-dose combination dossier pattern for the Valsartan API. QA/Critic R4–R6 all pass; qa_status must be PASS. Added following Fix D which introduced USP/Valsartan mock records.",
+    "rule_under_test": "R4, R5, R5b, R6 (all pass for a complete compendial Valsartan finding)",
+    "direction": "POSITIVE (complete USP Valsartan RS — should PASS)",
+    "iprp_reference": "IPRP QWGG Guidance for Quality Assessors – Drug Substance, S.5 Reference Standards or Materials, page 18.",
+    "version": "1.0",
+    "author": "M5"
+  },
+  "input": {
+    "findings": [
+      {
+        "finding_id": "F-VAL-001",
+        "ctd_section": "3.2.S.5",
+        "rationale": "Sponsor claims USP 47 Reference Standard for Valsartan. Lot number USP-VAL-2024-R047 is provided. Certificate of analysis (CoA) submitted. Overlaid IR spectra of the USP RS and Valsartan drug substance batch submitted confirming identity. Working standard WS-VAL-LAB-011 qualified against USP RS lot USP-VAL-2024-R047. Source of standards: purchased from United States Pharmacopeia.",
+        "evidence_snippet": "Lot no. USP-VAL-2024-R047. CoA submitted. Overlaid IR spectra consistent. Working standard WS-VAL-LAB-011 traceability confirmed. Source: USP.",
+        "citation": "Valsartan, USP 47, p. 6589.",
+        "uncertainty_score": 10,
+        "qa_status": null,
+        "assessor_decision": null,
+        "disposition_note": null,
+        "decision_timestamp": null
+      }
+    ]
+  },
+  "expected_output": {
+    "findings": [
+      {
+        "finding_id": "F-VAL-001",
+        "qa_status": "PASS",
+        "note": "All IPRP S.5 sub-item text indicators present: lot number, CoA, IR spectra (overlaid), working standard, source. R4–R6 all pass. R7 does not fire. PASS."
+      }
+    ],
+    "section_escalations": []
+  }
+}

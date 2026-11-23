@@ -104,7 +104,9 @@ def test_intermediate_edition_at_submission_date():
 # ── NEEDS_REVIEW cases ────────────────────────────────────────────────
 
 def test_unknown_standard_needs_review():
-    claim = make_claim(standard="Ph.Eur.", substance_name="Ethanol")
+    # JP (Japanese Pharmacopoeia) has no mock records → repo returns None → NEEDS_REVIEW.
+    # Note: Ph.Eur./Ethanol *does* exist in the mock repo, so it cannot test this path.
+    claim = make_claim(standard="JP", substance_name="Ethanol")
     result = check_s5_claim(claim, repo)
     assert result.verdict == "NEEDS_REVIEW"
 
@@ -123,7 +125,8 @@ def test_submission_before_any_record_needs_review():
 
 
 def test_needs_review_citation_is_none():
-    claim = make_claim(standard="Ph.Eur.", substance_name="Ethanol")
+    # JP has no mock records → NEEDS_REVIEW → citation must be None.
+    claim = make_claim(standard="JP", substance_name="Ethanol")
     result = check_s5_claim(claim, repo)
     assert result.citation is None
 
@@ -213,3 +216,46 @@ def test_custom_repository_is_accepted():
     )
     result = check_s5_claim(claim, _SingleRecordRepo())
     assert result.verdict == "COMPLIANT"
+
+
+# ── Regression: incomplete claims (null edition / submission_date) ─────
+# These guard against the Pydantic validation error that occurred when
+# S5Finding.edition_claimed was typed `str` (non-Optional) but the claim
+# passed edition_claimed=None.  The fix: S5Finding.edition_claimed is now
+# Optional[str] = None in both models.py and types.ts.
+
+def test_null_edition_claimed_does_not_raise():
+    """A claim with edition_claimed=None must not raise; verdict must be NEEDS_REVIEW."""
+    claim = make_claim(edition_claimed=None, submission_date=date(2024, 3, 1))
+    # Should not raise Pydantic ValidationError or any other exception
+    result = check_s5_claim(claim, repo)
+    assert result.verdict == "NEEDS_REVIEW", (
+        f"Expected NEEDS_REVIEW when edition_claimed is None, got {result.verdict!r}"
+    )
+
+
+def test_null_submission_date_does_not_raise():
+    """A claim with submission_date=None must not raise; verdict must be NEEDS_REVIEW."""
+    claim = make_claim(edition_claimed="BP 2024", submission_date=None)
+    result = check_s5_claim(claim, repo)
+    assert result.verdict == "NEEDS_REVIEW", (
+        f"Expected NEEDS_REVIEW when submission_date is None, got {result.verdict!r}"
+    )
+
+
+def test_both_null_does_not_raise():
+    """Both edition_claimed and submission_date None — still must not raise."""
+    claim = make_claim(edition_claimed=None, submission_date=None)
+    result = check_s5_claim(claim, repo)
+    assert result.verdict == "NEEDS_REVIEW", (
+        f"Expected NEEDS_REVIEW when both optional fields are None, got {result.verdict!r}"
+    )
+
+
+def test_null_edition_finding_has_null_edition_claimed():
+    """When edition_claimed is None, S5Finding.edition_claimed must also be None (not 'None' string)."""
+    claim = make_claim(edition_claimed=None, submission_date=date(2024, 3, 1))
+    result = check_s5_claim(claim, repo)
+    assert result.edition_claimed is None, (
+        f"Expected edition_claimed=None in finding, got {result.edition_claimed!r}"
+    )

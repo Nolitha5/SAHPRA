@@ -3,8 +3,8 @@
     "scenario": "all_rules_pass",
     "rule_under_test": "R1–R7 all pass — full positive scenario",
     "direction": "POSITIVE (all findings should PASS)",
-    "description": "Three findings across two CTD sections. All structural checks pass: citations present, scores in range, rationale/evidence tones consistent. The S.5 finding is fully completed with all IPRP sub-item keywords (lot, CoA, working standard, source). No flags, no escalations. Represents a well-prepared submission.",
-    "version": "1.0",
+    "description": "Three findings across two CTD sections. All structural checks pass: citations present, scores in range, rationale/evidence tones consistent. The S.5 finding is fully completed with all IPRP sub-item keywords (lot, CoA, overlaid IR spectra, working standard, source). No flags, no escalations. Represents a well-prepared submission.",
+    "version": "1.1",
     "author": "M5"
   },
   "input": {
@@ -62,7 +62,7 @@
       {
         "finding_id": "F-062",
         "qa_status": "PASS",
-        "note": "R1: citation present. R2: score 10 in range. R3: tones consistent. R7: all IPRP markers present (lot, CoA, working standard, source) — R7 does NOT fire. R4: lot no. L0M396 present. R5: CoA referenced. R6: working standard referenced. All pass."
+        "note": "R1: citation present. R2: score 10 in range. R3: tones consistent. R7: all IPRP markers present (lot, CoA, working standard, source) — R7 does NOT fire. R4: lot no. L0M396 present. R5: CoA referenced. R5b: IR spectra referenced ('overlaid IR spectra'). R6: working standard referenced. All pass."
       }
     ],
     "section_escalations": []

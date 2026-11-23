@@ -3,7 +3,7 @@
     "scenario": "outdated_standard",
     "description": "Sponsor claims BP 2019 for a submission made in March 2024. The current edition at that date was BP 2024. The S.5 agent must return NON_COMPLIANT. The QA/Critic receives the resulting finding; because the citation is present, the score is in range, and the rationale is consistent with the evidence, it should PASS QA. The s5_claim now includes all IPRP sub-items (a-d) so the completeness check passes cleanly.",
     "test_coverage": "QA layer: test_golden_outdated_standard_finding_passes_qa (test_golden_scenarios.py). S.5 layer: test_golden_outdated_standard_s5_verdict (test_s5_standards.py).",
-    "version": "1.2",
+    "version": "1.3",
     "author": "M5"
   },
   "input": {
@@ -27,7 +27,7 @@
         "finding_id": "F-003",
         "ctd_section": "3.2.S.5",
         "rationale": "Sponsor claims compliance with BP 2019 edition. The current edition at submission date (2024-03-01) was BP 2024. Editions differ. Lot no. BP-ETH-2019-042. CoA submitted. Working standard WS-ETH-LAB-001 qualified against BP primary standard. Source: British Pharmacopoeia Commission.",
-        "evidence_snippet": "Certificate of analysis (CoA) references BP 2019 for purity test method. Working standard traceability confirmed.",
+        "evidence_snippet": "Certificate of analysis (CoA) references BP 2019 for purity test method. Overlaid IR spectra submitted. Working standard traceability confirmed.",
         "citation": "Ethanol, BP 2024, p. 856",
         "uncertainty_score": 20,
         "qa_status": null,
@@ -48,7 +48,7 @@
       {
         "finding_id": "F-003",
         "qa_status": "PASS",
-        "note": "Citation present, score in range, rationale consistent with evidence, all IPRP sub-item keywords present — QA passes. Regulatory concern (outdated edition) is captured in s5_finding.verdict."
+        "note": "Citation present, score in range, rationale consistent with evidence, all IPRP sub-item keywords present (lot, CoA, IR spectra, working standard, source) — QA passes. Regulatory concern (outdated edition) is captured in s5_finding.verdict."
       }
     ],
     "section_escalations": []
